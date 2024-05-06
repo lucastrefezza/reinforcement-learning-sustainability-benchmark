@@ -1,0 +1,141 @@
+\documentclass[a0paper,portrait]{baposter}
+\usepackage{url}
+\usepackage{wrapfig}
+\usepackage{lmodern}
+\usepackage{lipsum,graphicx}
+\usepackage[utf8]{inputenc} %unicode support
+\usepackage[T1]{fontenc}
+
+\selectcolormodel{cmyk}
+
+\graphicspath{{figures/}} % Directory in which figures are stored
+
+\newcommand{\compresslist}{%
+\setlength{\itemsep}{0pt}%
+\setlength{\parskip}{1pt}%
+\setlength{\parsep}{0pt}%
+}
+
+\newenvironment{boenumerate}
+  {\begin{enumerate}\renewcommand\labelenumi{\textbf\theenumi.}}
+  {\end{enumerate}}
+
+
+\begin{document}
+
+\definecolor{Mycolor1}{HTML}{173f4c}
+\definecolor{Mycolor2}{HTML}{173f4c}
+
+\begin{poster}
+{
+grid=false,
+headerborder=open, % Adds a border around the header of content boxes
+colspacing=1em, % Column spacing
+bgColorOne=white, % Background color for the gradient on the left side of the poster
+bgColorTwo=white, % Background color for the gradient on the right side of the poster
+borderColor=Mycolor1, % Border color
+headerColorOne=Mycolor2, % Background color for the header in the content boxes (left side)
+headerColorTwo=Mycolor2, % Background color for the header in the content boxes (right side)
+headerFontColor=white, % Text color for the header text in the content boxes
+boxColorOne=white, % Background color of the content boxes
+textborder=rounded, %rectangle, % Format of the border around content boxes, can be: none, bars, coils, triangles, rectangle, rounded, roundedsmall, roundedright or faded
+eyecatcher=false, % Set to false for ignoring the left logo in the title and move the title left
+headerheight=0.11\textheight, % Height of the header
+headershape=rounded, % Specify the rounded corner in the content box headers, can be: rectangle, small-rounded, roundedright, roundedleft or rounded
+headershade=plain,
+headerfont=\Large\textsf, % Large, bold and sans serif font in the headers of content boxes
+%textfont={\setlength{\parindent}{1.5em}}, % Uncomment for paragraph indentation
+linewidth=2pt % Width of the border lines around content boxes
+}
+{}
+%
+%----------------------------------------------------------------------------------------
+%	Reinforcement Learning Sustainability Benchmark, Luca Strefezza
+%----------------------------------------------------------------------------------------
+%
+{
+\textsf %Sans Serif
+{
+{Projects Proposal: \\ \Large{Reinforcement Learning Sustainability Benchmark}}
+}
+} % Poster title
+% {\vspace{0.2em} Add Author Name, Add another author name\\ 
+% {\small \vspace{0.7em} Department of Computing, TU Dublin, Tallaght, Dublin, Ireland}} 
+{\sf\vspace{0.2em}\\
+Software Engineering for Artificial Intelligence\\  % 
+l.strefezza1@studenti.unisa.it  % Author email address
+
+}
+{\includegraphics[width=.25\linewidth]{figures/SeSaLab.png}}
+
+
+\headerbox{Projects Scope}{name=scope,column=0,row=0, span=3}{
+The project scope addresses the energy consumption of deep reinforcement learning (DRL) solutions and their impact on the environment and business costs. Beginning with the resurgence of the field following the development of Deep Q-Networks (DQN) by DeepMind in the early 2010s, there have been a number of algorithm proposals over time that with minor modifications to DQN or using a completely different paradigm (such as policy gradient methods) sought to improve the performance achieved by the learning agent.
+
+Although the performance of the various solutions has been extensively studied and tracked, little effort has been directed toward understanding how the tweaks to the DQN introduced to improve performance impacted energy consumption, or what the cost of the alternative approaches developed was, per se and in comparison with previous solutions.
+
+The project will delve into this aspect by trying to identify the trade-off between performance and energy consumption of some of the most widely used DRL algorithms, so that an interested company or individual can evaluate which solution to use based on the needs of the specific use case.
+}
+
+
+% this states the box starts at column 0 (edge of page), directly below the box labelled scope for a span of 1 (column wide)
+\headerbox{Starting Assets}{name=startingasset,column=0,below=scope,span=1}{
+	(Works cited in the APA format)
+	\begin{itemize}
+		\item Sutton, R. S., \& Barto, A. G. (2018). \textit{Reinforcement learning: An introduction.} MIT press.
+		\item Mnih, V., Kavukcuoglu, K., Silver, D., Graves, A., Antonoglou, I., Wierstra, D., \& Riedmiller, M. (2013). Playing atari with deep reinforcement learning. \textit{arXiv preprint arXiv:1312.5602.}
+		\item Hessel, M., Modayil, J., Van Hasselt, H., Schaul, T., Ostrovski, G., Dabney, W., ... \& Silver, D. (2018, April). Rainbow: Combining improvements in deep reinforcement learning. \textit{In Proceedings of the AAAI conference on artificial intelligence} (Vol. 32, No. 1).
+		\item Kostrikov, I., Yarats, D., \& Fergus, R. (2020). Image augmentation is all you need: Regularizing deep reinforcement learning from pixels. \textit{arXiv preprint arXiv:2004.13649.}
+	\end{itemize}
+
+%adjust this
+\vspace{2cm} 
+
+}
+
+
+% this states the box starts at column 0 (edge of page), directly below the box labelled scope for a span of 1 (column wide)
+\headerbox{Project Example 1}{name=idea1,column=1,below=scope,span=2}{
+
+
+
+\vspace{2cm} %remove this, only added for spacing
+
+}
+
+% this states the box starts at column 0 (edge of page), directly below the box labelled scope for a span of 1 (column wide)
+\headerbox{Project Example 2}{name=idea2,column=1,below=idea1,span=2}{
+
+
+
+\vspace{2cm} %remove this, only added for spacing
+
+}
+
+% this states the box starts at column 0 (edge of page), directly below the box labelled scope for a span of 1 (column wide)
+\headerbox{Minimum Requirements}{name=idea3,column=1,below=idea2,span=2}{
+
+
+
+\vspace{5.4cm} %remove this, only added for spacing
+
+}
+
+
+
+
+\headerbox{Ideas}{name=acriteria,column=0,below=idea3,span=2,above=bottom}{
+  \vspace{0.3cm}
+%leave this blank
+
+}
+
+\headerbox{Award Criteria}{name=awcriteria,column=2,below=idea3,span=1,above=bottom}{
+  \vspace{0.3cm}
+
+
+}
+
+\end{poster}
+
+\end{document}
