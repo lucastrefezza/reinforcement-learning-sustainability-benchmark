@@ -86,51 +86,58 @@ The project will delve into this aspect by trying to identify the trade-off betw
 		\item Mnih, V., Kavukcuoglu, K., Silver, D., Graves, A., Antonoglou, I., Wierstra, D., \& Riedmiller, M. (2013). Playing atari with deep reinforcement learning. \textit{arXiv preprint arXiv:1312.5602.}
 		\item Hessel, M., Modayil, J., Van Hasselt, H., Schaul, T., Ostrovski, G., Dabney, W., ... \& Silver, D. (2018, April). Rainbow: Combining improvements in deep reinforcement learning. \textit{In Proceedings of the AAAI conference on artificial intelligence} (Vol. 32, No. 1).
 		\item Kostrikov, I., Yarats, D., \& Fergus, R. (2020). Image augmentation is all you need: Regularizing deep reinforcement learning from pixels. \textit{arXiv preprint arXiv:2004.13649.}
+		\item Schwarzer, M., Anand, A., Goel, R., Hjelm, R. D., Courville, A., \& Bachman, P. (2020). Data-efficient reinforcement learning with self-predictive representations. \textit{arXiv preprint arXiv:2007.05929.}
+		\item Schulman, J., Wolski, F., Dhariwal, P., Radford, A., \& Klimov, O. (2017). Proximal policy optimization algorithms. \textit{arXiv preprint arXiv:1707.06347.}
+		\item Fujimoto, S., Hoof, H., \& Meger, D. (2018, July). Addressing function approximation error in actor-critic methods. In \textit{International conference on machine learning} (pp. 1587-1596). PMLR.
 	\end{itemize}
 
-%adjust this
-\vspace{2cm} 
+% adjust this
+% \vspace{2cm} 
 
 }
 
 
 % this states the box starts at column 0 (edge of page), directly below the box labelled scope for a span of 1 (column wide)
-\headerbox{Project Example 1}{name=idea1,column=1,below=scope,span=2}{
+\headerbox{Project Idea}{name=idea,column=1,below=scope,span=2}{
+The main idea of the project is to train various reinforcement learning algorithms on the same task to assess their energy consumption and performance. DRL algorithms can be devided in two main cathegories: value based (i.e. algorithms based on the approximation of a value function, be it the state-value function or the action-value function) and policy gradient. The latter are methods that approximate directly the policy, and includes as a special case the actor critic methods, which approximate contemporarly a policy (said actor) and a value function (said critic).
 
+In our benchmark we will consider, regardind the first cathegory, the DQN, which constitutes the first example of success of deep reinforcement learning (so that we have a sort of baseline), and RAINBOW, a method that involves a lot of the tweaks and improvement made to the original DQN. In addition to these two, we will test various of the single tweaks to assess their individual contribution to energy consumption and performance, and more advanced methods like SPR (Self-Predictive Representations, introduced in the fifth work cited).
 
+Regarding policy gradient and actor critic methods, we will start with a basic one like REINFORCE and/or REINFORCE with baseline (chapter 13 of the first cited work) or the very similar Vanilla Policy Gradient (VPG). We will then move on to Proximal Policy Optimization (PPO), Deep Deterministic Policy Gradient (DDPG)  and its evolutions Twin Delayed DDPG (TD3, seventh work cited) and DRQ (Data-regularized Q, fourth cited work).
 
-\vspace{2cm} %remove this, only added for spacing
+Regarding the task on which to compare the algorithms, there are several suitable candidates: Atari 100k, one of the continuous control task of the DeepMind Control Suite, or one of the many other task (besides Atari) included in OpenAI Gymnasium (formerly Gym), and so on. We will probably opt for the Atari 100k, a discrete task that consists of playing one of the Atari games for 100000 interactions. 
+The reason for this choice is that this is a widely used benchmark, well suited for running almost all popular DRL algorithms; however, we reserve the right to change the number of interactions (obviously keeping it consistent for all algorithms) or the task altogether, should hardware and time constraints dictate it.
 
-}
-
-% this states the box starts at column 0 (edge of page), directly below the box labelled scope for a span of 1 (column wide)
-\headerbox{Project Example 2}{name=idea2,column=1,below=idea1,span=2}{
-
-
-
-\vspace{2cm} %remove this, only added for spacing
+The basic idea of this benchmark is to execute all the algorithms for the same number of environment interactions, so that we can compare the score they achieve and the energy consumption of each one of them. Another interesting comparison might be to take the score obtained by the lowest performer on the trial just described and re-train all the algorithm only until they reach that score, this way we can compare how much time and energy each one of them takes to achieve it.
 
 }
 
 % this states the box starts at column 0 (edge of page), directly below the box labelled scope for a span of 1 (column wide)
-\headerbox{Minimum Requirements}{name=idea3,column=1,below=idea2,span=2}{
+%\headerbox{Project Idea 2}{name=idea2,column=1,below=idea,span=2}{
+%
+%
+%
+%\vspace{2cm} %remove this, only added for spacing
+%
+%}
 
+% this states the box starts at column 0 (edge of page), directly below the box labelled idea for a span of 2 (column wide)
+\headerbox{Minimum Requirements}{name=minimumrequirements,column=1,below=idea,span=2}{
+We can assume as a minimum requirement to meet in order to consider the project completed the carrying out the benchmark described in the previous sections, using Atari 100k on at least five value-based algorithms (including the "baseline" DQN) and three policy gradient algorithms: one of the basics (REINFORCE, REINFORCE with baseline or VPG), DDPG and one of its evolutions (TD3 or DRQ).
 
-
-\vspace{5.4cm} %remove this, only added for spacing
-
+\vspace{0.7cm} %remove this, only added for spacing
 }
 
 
 
 
-\headerbox{Ideas}{name=acriteria,column=0,below=idea3,span=2,above=bottom}{
+\headerbox{Ideas}{name=acriteria,column=0,below=startingasset,span=2,above=bottom}{
   \vspace{0.3cm}
 %leave this blank
 
 }
 
-\headerbox{Award Criteria}{name=awcriteria,column=2,below=idea3,span=1,above=bottom}{
+\headerbox{Award Criteria}{name=awcriteria,column=2,below=startingasset,span=1,above=bottom}{
   \vspace{0.3cm}
 
 
