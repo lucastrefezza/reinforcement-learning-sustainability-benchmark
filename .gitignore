@@ -1,3 +1,34 @@
+# CleanRL
+
+slurm
+.aim
+code/runs
+balance_bot.xml
+code/cleanrl/ppo_continuous_action_isaacgym/isaacgym/examples
+code/cleanrl/ppo_continuous_action_isaacgym/isaacgym/isaacgym
+code/cleanrl/ppo_continuous_action_isaacgym/isaacgym/LICENSE.txt
+code/cleanrl/ppo_continuous_action_isaacgym/isaacgym/rlgpu_conda_env.yml
+code/cleanrl/ppo_continuous_action_isaacgym/isaacgym/setup.py
+
+IsaacGym_Preview_3_Package.tar.gz
+IsaacGym_Preview_4_Package.tar.gz
+cleanrl_hpopt.db
+debug.sh.docker.sh
+docker_cache
+rl-video-*.mp4
+rl-video-*.json
+code/cleanrl_utils/charts_episode_reward
+code/tutorials
+.DS_Store
+*.tfevents.*
+code/wandb
+openaigym.*
+videos/*
+code/cleanrl/videos/*
+code/benchmark/**/*.svg
+code/benchmark/**/*.pkl
+mjkey.txt
+
 # PYTHON
 
 # Byte-compiled / optimized / DLL files
