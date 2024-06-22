@@ -1,0 +1,209 @@
+
+\chapter{Espressioni Regolari Pratiche}
+
+Come anticipato nell'introduzione le espressioni regolari pratiche hanno moltissime declinazioni. Vari lavori nel corso del tempo hanno tentato di formalizzare un sottoinsieme comune di caratteristiche condivise dalla maggioranza delle PRE in uso, o una di queste nella loro interezza. Tra i lavori più completi in tal senso troviamo \cite{alfred:patterns}, che fornisce una definizione formale delle rewbr e dei linguaggi da loro denotati facendo uso del concetto di \textit{variabile}. A questo lavoro si accompagnano diversi altri, quali \cite{freydenberger:pre} che effettua un focus sulla concisione e sulla decidibilità delle espressioni regolari pratiche, prima fornendone una definizione formale, poi dimostrando che non possono essere minimizzate in modo efficace (né rispetto alla lunghezza, né rispetto al numero di variabili) e l'indecidibilità di diversi problemi di decisione (come universalità e regolarità) che le riguardano.
+
+Citiamo infine \cite{campeanu:formal_study}, lavoro dedicato alla trattazione formale delle espressioni regolari pratiche. La motivazione alla base del lavoro svolto fornita dagli autori è la stessa che ha spinto alla creazione di questo lavoro: è chiaro che la potenza espressiva delle espressioni regolari pratiche sia superiore a quella delle espressioni regolari classiche, ma quali sono i loro limiti? Come si confrontano con altre classi di linguaggi al di là di quella dei regolari? Come dimostrare che un linguaggio non sia denotabile da una espressione regolare pratica? Se per dimostrare che lo sia infatti è sufficiente fornire la PRE che denota il linguaggio, la dimostrazione dell'opposto richiede strumenti formali ben definiti. I seguenti esempi forniti nel lavoro citato aiutano a chiarire il concetto: i linguaggi $L_1 = \{a^nba^n \mid n \in \Nz\}$ ed $L_2 = \{ww \mid w \in \{a, b\}^*\}$ sono facilmente denotabili tramite espressioni regolari pratiche, il primo tramite la PRE $(a*)b\backslash1$, il secondo tramite la PRE $((a|b)*)\backslash1$ (gli esempi sono scritti seguendo lo standard ECMAScript (JavaScript), ma sarebbero molto simili se non identici in molti altri standard largamente diffusi), il linguaggio $L_3 = \{a^nb^n \mid n \in \Nz \}$ invece non è denotabile tramite PRE, ma per dimostrare ciò è necessario sviluppare un trattamento formale delle PRE.
+
+Per far ciò introdurremo prima la terminologia comunemente utilizzata nelle applicazioni che fanno uso di espressioni regolari di qualunque genere, ed alcuni concetti alla base delle PRE, per poi fornire la definizione data in \cite{campeanu:formal_study} e successivamente una nostra definizione.
+
+\section{Terminologia}
+
+Il primo dei termini utilizzati nelle applicazioni che si andrà a descrivere e definire è \textit{gruppo di cattura}. Un gruppo di cattura non è altro che una porzione di un'espressione regolare racchiusa tra parentesi, generalmente tonde. Questo termine si è diffuso nelle applicazioni pratiche in quanto utile ad elaborare sottostringhe della stringa di cui l'espressione regolare nella sua interezza ha effettuato il match. In questo lavoro useremo il termine con questa accezione, chiamando gruppo di cattura una qualunque porzione di un'espressione regolare racchiusa tra parentesi tonde, anche se questa porzione dovesse rappresentare l'espressione regolare nella sua interezza. L'espressione regolare $a^*((aa)^*b + (bb)^*a)b^*$ ad esempio contiene tre gruppi di cattura: $(aa)$, $(bb)$ e $((aa)^*b + (bb)^*a)$.
+
+Al di là di una terminologia più ampia e/o diversa, le applicazioni che fanno uso di espressioni regolari hanno sviluppato nel corso del tempo anche una \textit{sintassi} diversa. Ciò è dovuto appunto alla necessità di tenere conto dell'ambiente in cui queste regexp sono utilizzate, per tale motivo nasce il bisogno di utilizzare un carattere di \textit{escape} (tipicamente il carattere \textit{backslash}:~$\backslash$) per caratteri che hanno altrimenti un significato speciale, o per riconoscere caratteri che in un ambiente teorico o non creano problemi, quali spazi, tabulazioni, accapo e così via, o che non esistono, come le ancore di inizio e fine riga (rispettivamente i caratteri \^~e \$).
+
+Agli escape e caratteri speciali si aggiungono diversi costrutti rientranti nella definizione di syntactic sugar di cui nell'introduzione, come le \textit{classi di caratteri}, che consentono di rappresentare un insieme di caratteri letterali in maniera concisa, ad esempio in caso si voglia effettuare il match di un qualunque carattere minuscolo dell'alfabeto latino, invece di elencarli tutti separandoli con la clausola OR (carattere $\vert$), è possibile utilizzare la classe $[a-z]$. Come intuibile una classe di caratteri viene definita elencandoli tra due parentesi quadre, o separandoli con un trattino per includere tutti i caratteri tra i due esplicitamente riportati (secondo l'ordinamento ASCII).
+
+Bisogna infine tener conto di altre particolarità dell'applicazione pratica delle espressioni regolari che non si presentano in un ambiente teorico. Tra queste la più importante è sicuramente il concetto di match multipli o globali (spesso abilitati o disabilitati tramite un flag posto alla fine della regexp): si tratta del fenomeno per cui un'espressione regolare, durante il parsing di una stringa, può effettuare più match. Il meccanismo secondo cui ciò avviene può variare in base al linguaggio, allo standard ed all'implementazione, mentre il comportamento della regexp può essere influenzato decidendo se fermarsi al primo match ottenuto o proseguire nel parsing fino ad ottenere tutti i possibili match. Nel proseguire del lavoro ignoreremo questa caratteristica, considerando un match nello stesso modo in cui lo si considera nell'ambito teorico e delle espressioni regolari classiche.
+
+\subsection{Backreference}
+\label{sec:backreference}
+Dedichiamo infine una sezione alla backreference, punto cruciale di questo lavoro. Le backreference effettuano il match dello stesso identico testo di cui un gruppo di cattura ha effettuato il match in precedenza; sono implementate principalmente in due modi: trattando esplicitamente le variabili, quindi esplicitando la memorizzazione in una variabile del testo di cui un gruppo di cattura ha effettuato un match, oppure in maniera implicita, usando cioè dei riferimenti numerici a dei gruppi di cattura che si intende abbiano memorizzato implicitamente il testo di cui hanno effettuato il match. Per chiarire il concetto di backreference forniremo un esempio con entrambe le tipologie di implementazione, prima l'esplicita, poi quella implicita.
+
+Riconsideriamo il linguaggio non regolare $L_2 = \{ww \mid w \in \{a, b\}^*\}$, come esposto in~\cite{freydenberger:pre} questo linguaggio è denotato dall'espressione regolare pratica $((a \vert b)*)\%x x$. Questa espressione può essere interpretata nel modo seguente: per ogni espressione regolare $R$, l'espressione $(R)\%x$ effettua il match dello stesso testo di $R$ e lo memorizza nella variabile $x$. In quest'esempio la sottoespressione $((a \vert b)*)\%x$ può effettuare il match di una qualunque parola $w \in \{a, b\}^*$, ed una volta effettuato il match di $w$, il suo valore viene assegnato alla variabile $x$. A questo punto ogni futura occorrenza di $x$ nell'espressione regolare è sostituita con $w$, ed effettuerà il match solo di questa stessa identica parola, conducendo quindi al linguaggio $L_2$. Allo stesso modo, la PRE $((a \vert b)*)\%xxx$ denota il linguaggio $\{www \mid w \in \{a, b\}^*\}$.
+
+In caso di modalità implicita invece, la PRE che denota il linguaggio $L_2$ è la seguente: $((a|b)*)\backslash1$. Come si può notare, la backreference invece di essere esplicitamente memorizzata in una variabile, poi riutilizzata, è richiamata tramite i simboli $\backslash1$ (backslash ed 1). La memorizzazione del valore di cui il gruppo di cattura ha effettuato il match in questo caso è automatica, in qualunque momento si può quindi fare riferimento al testo catturato in precedenza usando lo backslash ed un numero: $\backslash n, n \in \N$. Il numero utilizzato fa riferimento al corrispettivo gruppo di cattura, i quali sono implicitamente numerati a partire da sinistra verso destra secondo l'ordine di occorrenza della parentesi di apertura, iniziando dal numero \num{1}. Nel nostro esempio quindi questa PRE contiene due gruppi di cattura: $((a|b)*)$ e $(a|b)*$. Al primo si farà riferimento tramite il numero \num{1}, al secondo tramite il numero \num{2}.
+
+Il motivo per cui sono necessari due gruppi di cattura è che i gruppi di cattura \textit{ripetuti} (in inglese \foreignlanguage{english}{\textit{repeated capturing group}}) mantengono memorizzata solo l'ultima iterazione. Con gruppi di cattura ripetuti si intende quelli seguiti dagli operatori $^*$ o $^+$, il motivo di questa nomenclatura diventa quindi chiara a livello intuitivo, visto l'effetto di questi operatori, ma è supportata anche da una motivazione pratica, e cioè il fatto che nelle implementazioni il processo di matching di questi operatori è effettivamente eseguito in maniera iterativa (nella maggioranza dei casi). Il gruppo di cattura $(a|b)*$ quindi manterrà memorizzato solo l'ultimo carattere di cui effettuerà il match, non l'intera stringa a partire dal primo carattere di cui ha effettuato il match fino all'ultimo, per tale motivo è necessario il gruppo di cattura che lo ingloba nella sua interezza, compreso l'operatore star, al fine di avere un riferimento all'intera stringa di cui si è effettuato il match.
+
+Per chiarire ulteriormente questo punto, immaginiamo di effettuare il match della stringa $aabaab$ utilizzando la PRE in questione ($((a|b)*)\backslash1$). Il primo gruppo di cattura effettuerà il match della sottostringa $aab$, mentre la backreference $\backslash1$, facendo riferimento alla stringa catturata dal primo gruppo di cattura, effettuerà ancora il match di $aab$, completando così il match della stringa. Se al termine della PRE aggiungessimo uno $\backslash2$ per far riferimento a ciò che è stato catturato dal secondo gruppo di cattura (cioè quello più interno), questo tenterebbe di effettuare il match di una $b$, l'ultimo carattere catturato dal repeated capturing group appunto, per avere un match quindi avremmo bisogno della stringa $aabaabb$. Il linguaggio denotato dalla PRE $((a|b)*)\backslash1\backslash2$ infatti è $L_4 = \{xyw \mid x \in \{a, b\}^*, y \in \{a, b\}, w = xyy\}$.
+
+
+Riportiamo infine un ulteriore esempio, fornito in~\cite{regexp:tutorial}, riguardante un caso d'uso reale, che oltre alla backreference mostra l'utilizzo di varie altre funzionalità delle espressioni regolari pratiche esposte in precedenza.
+\begin{esempio}
+	Supponiamo di voler effettuare il match di una coppia di tag HTML di apertura e di chiusura ed il testo intermedio. Inserendo il tag di apertura in una backreference, possiamo riutilizzare il suo nome per il match del tag di chiusura. L'espressione regolare pratica da utilizzare è la seguente: $<([A-Z][A-Z0-9]*)\backslash b[^\wedge >]*>.*?<\backslash/\backslash1>$.
+	
+	Analizzeremo ora tutti gli elementi che la compongono. La prima parentesi angolare è un carattere letterale, effettua cioè il match di se stesso. Questo carattere è seguito dall'unico gruppo di cattura presente in questa PRE (l'unica coppia di parentesi tonde), che cattura la stringa corrispondente ad $[A-Z][A-Z0-9]*$. Possiamo vedere quindi un esempio delle classi di caratteri precedentemente introdotte: $[A-Z]$ effettua il match di un qualunque carattere dell'alfabeto (con cui iniziano obbligatoriamente i tag html), $[A-Z0-9]*$ ai caratteri dell'alfabeto aggiunge le \num{10} cifre decimali, mentre lo star fa sì che si possa completare il match dell'intero nome del tag. Sottolineiamo come le due classi appena presentate tecnicamente effettuino il match solo dei caratteri maiuscoli, essendo però i nomi dei tag html case insensitive, questa PRE nella pratica andrebbe utilizzata abilitando il flag $i$, dichiarando cioè di effettuare i match in maniera non case sensitive. Il gruppo di cattura appena esposto quindi effettua il match del nome del tag, che sarà poi successivamente richiamato dalla backreference.
+	
+	A seguire troviamo $\backslash b$, si tratta di un \textit{meta escape} detto \textit{word boundary}, una sorta di ancora come i caratteri \^~e \$. Serve ad effettuare un match di lunghezza zero in una posizione detta \textit{confine di parola}. Senza entrare troppo nei dettagli, in quanto irrilevanti ai fini del presente lavoro, nel caso specifico è utilizzato al fine di impedire un match errato di due tag non corrispondenti, che sarebbe possibile per via del \textit{backtracking}, uno dei processi eseguiti dagli engine che effettuano i match delle espressioni regolari.
+	
+	Ignorando $\backslash b$ quindi, a seguire troviamo un'altra classe di caratteri: $[^\wedge >]$. Si tratta di una classe \textit{negativa}, il simbolo \^~all'inizio della classe indica di effettuare il match di qualunque carattere non sia presente tra le quadre, ed essendo l'unico carattere tra quadre la parentesi angolare, e la classe di caratteri seguita da uno star, questa sottoespressione effettuerà il match di qualunque carattere, fino a giungere al successivo carattere letterale che la segue nella PRE: $>$. Questa porzione della PRE è utilizzata per effettuare il match degli eventuali opzionali attributi che un tag html può avere.
+	
+	La successiva sottoespressione effettua il match del contenuto dei tag, troviamo ancora una volta un carattere speciale, il punto: "$.$", che effettua il match di un qualunque carattere (eccetto per il terminatore di linea), seguito dall'operatore star. Il punto interrogativo che segue lo star serve a modificarne il comportamento per effettuare il match in maniera \textit{lazy}, cioè effettuando si il match tra 0 ed un numero illimitato di volte, ma cercando di effettuarlo il minor numero di volte possibile, espandendo i caratteri catturati secondo necessità. Ancora una volta si tratta di un dettaglio implementativo che possiamo non approfondire oltre in questo contesto, e considerare quindi l'operatore $*?$ come un semplice $*$.
+	
+	A questo punto incontriamo due caratteri letterali, la parentesi angolare aperta ed il forward slash (semplicemente la barra in avanti presenti nei tag di chiusura html), di cui è necessario l'escape con il backslash in JavaScript, mentre in altri linguaggi quali Python e Java ad esempio non sarebbe necessario (avemmo quindi $</\backslash 1>$ al posto di $<\backslash/\backslash1>$). La regexp è completata infine dalla backreference $\backslash1$, che farà riferimento a ciò di cui il primo (ed unico) gruppo di cattura ha effettuato il match, e dall'ultimo carattere letterale $>$.
+\end{esempio}
+
+Concludiamo notando alcune altre peculiarità delle espressioni regolari pratiche. Come anticipato il numero con cui fare riferimento a ciò che è stato catturato da un gruppo di cattura si ottiene scansionando l'espressione regolare da sinistra a destra e contando le parentesi tonde di apertura di tutti i gruppi di cattura. La prima parentesi inizia il riferimento numero uno, la seconda il numero due e così via. Abbiamo assunto che ogni coppia di parentesi tonde identifichi un gruppo di cattura, nelle varie implementazioni però esistono delle eccezioni a questa regola in quanto le parentesi tonde possono essere utilizzate anche per altre tipologie di gruppi, che vanno quindi saltati durante il conteggio, come i gruppi \textit{non catturanti} (\foreignlanguage{english}{\textit{non-capturing groups}}). Questi si dimostrano molto comodi nella pratica, in quanto oltre a migliorare l'efficienza dei matching (non andando a memorizzare ciò che catturano appunto), permettono una gestione più semplice da parte dell'utente, che ha meno gruppi di cattura rilevanti per le backreference di cui tenere conto, e può ad esempio inserirne uno in un secondo momento senza bisogno di andare a modificare i riferimenti delle backreference già presenti. Ancora una volta si tratta di una caratteristica che non approfondiremo in quanto non essenziale ai fini di questo lavoro.
+
+Riportiamo esclusivamente per completezza un'altra funzionalità che alcuni engine per le espressioni regolari mettono a disposizione: la possibilità di dare un nome ad un gruppo di cattura, di nuovo una funzionalità utile nella gestione di espressioni regolari particolarmente complesse, ma a tutti gli effetti synctactic sugar.
+
+\section{Espressioni Regolari Pratiche}
+Siamo finalmente pronti a questo punto a definire formalmente le espressioni regolare pratiche. Riporteremo prima le definizioni di base fornite in~\cite{campeanu:formal_study}, tra i primi a riservare un trattamento formale alle espressioni regolari pratiche, per poi passare a fornire una nostra definizione.
+
+\paragraph{Definizione di regex e regex estese}
+Nel lavoro citato gli autori utilizzano il termine regex per indicare quelle che abbiamo chiamato espressioni regolari pratiche, faremo quindi lo stesso in questa sezione, dedicata a riportare i loro risultati.
+\begin{definizione}
+	Sia $\Sigma$ un insieme ordinato di tutti i caratteri stampabili, eccetto i seguenti, che sono scritti con un carattere di escape (il backslash: $\backslash$) davanti: (, ) {, }, [, ], \$, |, $\backslash$, ., ?, * e +. In aggiunta, $\Sigma$ include $\backslash n$ e $\backslash t$ ad indicare rispettivamente il \textit{new line} ed il tab. Di seguito si fornisce la definizione di una regex e del linguaggio da essa denotato. Data un'espressione $e$, useremo $L(e)$ per denotare l'insieme di tutte le parole di cui $e$ effettua il match, cioè il linguaggio che definisce.\\
+	\textbf{Forma base di una regex:}
+	\begin{enumerate}
+		\item $\forall a \in \Sigma, a$ è una regex ed $L(a) = \{a\}$. Si evidenzia che $\forall x \in  \{(, ), \{, \}, [, ], \$, \mid, \backslash, ., ?, *, +\}, \backslash x \in \Sigma$ ed è una regex, e $L(\backslash x) = \{x\}$. Inoltre $\backslash n$ e $\backslash t$ sono in $\Sigma$ e sono delle regex, e $L(\backslash n)$ e $L(\backslash t)$ denotano i linguaggi costituiti rispettivamente dai singleton del new line e del tab.
+		
+		\item Siano $e_1$ ed $e_2$ delle regex, allora:
+		\begin{itemize}
+			\item $(e_1)(e_2)$ (concatenazione) è una regex e $L((e_1)(e_2)) = L(e_1)L(e_2)$,
+			\item $(e1)|(e2)$ (unione) è una regex e $L((e_1)|(e_2)) = L(e_1) \cup L(e_2)$
+			\item $(e_1)*$ (star di Kleene) è una regex e $L((e_1)*) = (L(e_1))*$
+		\end{itemize}
+		Nella definizione dei linguaggi le parentesi possono essere omesse, nel qual caso valgono le regole di priorità tra gli operatori già espresse in precedenza.
+		
+		\item Una regex è formata utilizzando (\num{1}) e (\num{2}) un numero finito di volte.
+	\end{enumerate}
+	\textbf{Forme \textit{shorthand:}}
+	\begin{enumerate}
+		\item $\forall e$ regex, $(e)+$ è una regex ed $(e)+ \equiv e(e)*$.
+		\item Il carattere "." significa qualunque carattere eccetto "$\backslash n$".
+	\end{enumerate}
+	\textbf{Classi di caratteri:}
+	\begin{enumerate}
+		\item $\forall a_{i_1}, a_{i_2},\dots, a_{i_t} \in \Sigma, t \in \N, [a_{i_1} a_{i_2} \dots a_{i_t}]$ è una regex e\\
+		$[a_{i_1} a_{i_2} \dots a_{i_t}] \equiv a_{i_1} \mid a_{i_2} \mid \dots \mid a_{i_t}$.
+		\item $\forall a_i, a_j \in \Sigma$ tali che $a_i \leq a_j, [a_i-a_j]$ è una regex e\\
+		$[a_i-a_j] \equiv a_i\mid a_{i+1} \mid \dots \mid a_j$.
+		\item $\forall a_{i_1}, a_{i_2},\dots, a_{i_t} \in \Sigma, t \in \N, [^\wedge a_{i_1} a_{i_2} \dots a_{i_t}]$ è una regex e\\
+		$[^\wedge a_{i_1} a_{i_2} \dots a_{i_t}] \equiv b_{i_1} \mid b_{i_2} \mid \dots \mid b_{i_s}$, con $s \in \Nz$ e $\{b_{i_1}, b_{i_2}, \dots, b_{i_s} \} = \Sigma \setminus \{ a_{i_1}, a_{i_2},\dots, a_{i_t}\}$.
+		\item $\forall a_i, a_j \in \Sigma$ tali che $a_i \leq a_j, [^\wedge a_i-a_j]$ è una regex e $[^\wedge a_i-a_j] \equiv b_{i_1} \mid b_{i_2} \mid \dots \mid b_{i_s}$, con $s \in \Nz$ e $\{b_{i_1}, b_{i_2}, \dots, b_{i_s} \} = \Sigma \setminus \{ a_{i}, a_{i + 1},\dots, a_{j}\}$.
+		\item Combinazioni di (\num{1}) e (\num{2}), o (\num{3}) e (\num{4}) rispettivamente, sono regex.
+	\end{enumerate}
+	\textbf{Anchoring:}
+	\begin{enumerate}
+		\item $^\wedge$ è l'ancora di inizio riga.
+		\item $\$$ è l'ancora di fine riga.
+	\end{enumerate}
+Chiamiamo una espressioni che soddisfi le condizioni appena espresse \textit{regex}, evidenziando che la stringa vuota non è un a regex.
+\end{definizione}
+
+\begin{esempio}
+	L'espressione $^\wedge.*\$$ è una regex, che effettua il match di una qualunque linea/riga, inclusa la riga vuota.
+\end{esempio}
+\begin{esempio}
+	L'espressione $[A-Z][A-Za-z0-9]$ è una regex, che effettua il match di una qualunque parola che inizi con una lettera maiuscola e sia poi seguita da un qualunque numero di lettere e cifre.
+\end{esempio}
+
+Dalla definizione e dagli esempi forniti è chiaro come le regex possano riconoscere solo linguaggi regolari, per questo motivo gli autori introducono il costrutto della backreference, presente come visto in varie implementazioni, e chiaramente non regolare come ampiamente esposto:
+\begin{definizione}
+	\textbf{Back reference:} $\backslash m, m \in \N$ effettua il match del contenuto della $m$-esima coppia di parentesi che lo precede.
+\end{definizione}
+
+Anche in questo caso le coppie di parentesi sono ordinate secondo l'ordine di occorrenza della parentesi di apertura (sinistra). Inoltre, in caso l'$m$-esima coppia di parentesi sia in uno star di Kleene, allora $\backslash m$ effettuerà il match del contenuto dell' $m$-esima coppia di parentesi nell'ultima iterazione dello star di Kleene, come spiegato in precedenza relativamente alle implementazioni pratiche.
+
+\begin{esempio}
+	L'espressione $(a*)b\backslash 1$ definisce il linguaggio $\{a^nba^n \mid n \in \Nz\}$
+\end{esempio}
+
+A questo punto gli autori constatano come non sembri esserci un modo conveniente per definire ricorsivamente l'insieme delle regex estese $\alpha$ che soddisfino la condizione che ogni backreference in $\alpha$ occorra dopo la corrispondente coppia di parentesi. Pertanto, definiscono prima una nozione ausiliaria di semi-regex e le regex estese sono definite come una restrizione di queste.
+\begin{definizione}
+	Una \textit{semi-regex} è una regex su un alfabeto infinito
+	$$\Sigma \cup \{\backslash m \mid m \in \N\}$$
+	Sia $\alpha$ una semi-regex. Le coppie di parentesi in $\alpha$ sono numerate da sinistra a destra in base all'occorrenza della parentesi di sinistra (la parentesi di apertura) di ciascuna coppia. Una semi-regex $\alpha$ è una regex estesa se vale la seguente condizione: qualsiasi occorrenza di un simbolo di backreference $\backslash m, m \in \N$ in $\alpha$ è preceduta dalla parentesi di chiusura dell'$m$-esima coppia di parentesi di $\alpha$.
+\end{definizione}
+
+Prima della definizione di un match e del linguaggio riconosciuto da una regex estesa, gli autori ne forniscono una introduzione intuitiva:il match di una regex estesa $\alpha$ è una parola denotata dalla regex nel momento in cui ogni simbolo di backreference $\backslash m$ è rimpiazzato dal contenuto di una sottoespressione $\beta_m$ corrispondente all'$m$-esima coppia di parentesi in $\alpha$. Per via dell'operazione star, l'occorrenza di una data sottoespressione $\beta_m$ può contribuire ad un match con più \textit{sotto-parole}. Seguendo la convenzione di Perl e molte altre implementazioni, $\backslash m$ sarà rimpiazzato dal contenuto dell'ultima occorrenza (quella più a destra) di $\beta_m$ che appare prima dell'occorrenza di $\backslash m$.
+
+La condizione che ogni simbolo di backreference appaia dopo la corrispondente coppia di parentesi garantisce che un match come definito di seguito non contenga dipendenze circolari.
+
+Denotiamo l'insieme di occorrenze di una sotto espressione di una regex estesa $\alpha$ come $\sub(\alpha)$. Distinte occorrenze di una stessa sottoespressione sono considerate diversi elementi di $\sub(\alpha)$. Un match di una regex estesa $\alpha$ è definito come un albero $T(\alpha)$ che segue la struttura di $\alpha$. Naturalmente, per via dell'operatore star, $T_{\alpha}$ può contenere più copie di parti della struttura di $\alpha$.
+
+\begin{definizione}
+	Un match di una regex estesa $\alpha$ è un albero (diretto ed ordinato) finito $T_{\alpha}$. I nodi di $T_{\alpha}$ sono etichettati da elementi di $\Sigma^* \times \sub(\alpha)$ e $T_{\alpha}$ è costruito in accordo alle seguenti regole:
+	\begin{enumerate}
+		\item La radice di $T_{\alpha}$ è etichettata da un elemento $(w, \alpha), w \in \Sigma^*$.
+		
+		\item Assumiamo che un elemento $u$ di $T_{\alpha}$ sia etichettato da $(w, \beta)$, con $\beta = (\beta_1)(\beta_2) \in \sub(\alpha)$. Allora $u$ ha due successori che sono etichettati rispettivamente da $(w_i, \beta_i), i = 1, 2$, dove $w_1, w_2 \in \Sigma^*$ devono soddisfare $w = w_1w_2$.
+		
+		\item Assumiamo che un nodo $u$ di $T_\alpha$ sia etichettato da $(w, \beta), \beta = (\beta_1)|(\beta_2) \in \sub{\alpha}$. Allora $u$ ha un successore che è etichettato da uno degli elementi $(w, \beta_i), i \in \{1, 2\}$.
+		
+		\item Assumiamo che un nodo $u$ di $T_{\alpha}$ sia etichettato da $(w, \beta), \beta = (\beta_{1})* \in \sub(\alpha)$. Allora abbiamo due possibili casi: $w \ne \epsilon$ o $w = \epsilon$. Se $w \ne \epsilon$, $u$ ha $k \in \N$ successori etichettati da
+		$$ (w_1, \beta_1), \dots, (w_k, \beta_{1})$$
+		dove $w_1 \dots w_k = w, w_i \ne \epsilon, i = 1, \dots, k$. Se $w = \epsilon$, $u$ ha un singolo successore $u_1$ etichettato da $(\epsilon, \beta)$ e $u_1$ è una foglia di $T_{\alpha}$.
+		
+		\item Se $(w, \alpha), \alpha \in \Sigma$ occorre come etichetta di un nodo $u$, allora necessariamente $u$ è una foglia e $w = a$.
+		
+		\item Se $(w, \backslash m)$ occorre come etichetta di un nodo $u$ allora $u$ è una foglia e $w \in \Sigma^*$ è determinato come segue. Sia $\beta_m$ la sottoespressione di $\alpha$ racchiusa dall'$m$-esima coppia di parentesi di $\alpha$ e sia $u_{\beta_m}$ il precedente nodo di $T_{\alpha}$ nell'ordinamento standard sinistra-destra che è etichettato da un elemento dove il secondo componente è $\beta_m$ che precede $u$ nell'ordinamento da sinistra a destra dei nodi (si noti che tutti i nodi la cui etichetta contiene $\beta_m$ sono necessariamente indipendenti e quindi linearmente ordinati da sinistra a destra). Scegliamo $w$ come primo componente dell'etichetta di $u_{\beta_m}$. Infine, se $\beta_m$ non occorre nell'etichetta di alcun nodo di $T_{\alpha}$ fissiamo $w = \epsilon$.
+	\end{enumerate}
+	Il linguaggio denotato da una regex estesa $\alpha$ è definito come
+	$$ L(\alpha) = \{w \in \Sigma^* \mid (w, \alpha) \text{ etichetti la radice di qualche match } T_{\alpha}\} $$
+\end{definizione}
+La condizione (\num{6}) significa semplicemente che un simbolo di back reference $\backslash m$ è sostituito dalla precedente occorrenza del contenuto della sorroespressione $\beta_m$ corrispondente all'$m$-esima coppia di parentesi di $\alpha$. É possibile che $\beta_m$ non appaia nell'etichetta di alcun nodo di $T_\alpha$ se $\beta_m$ occorre in uno star di Kleene e nella condizione (\num{4}) scegliamo zero iterazioni dell'operazione star. In questo caso il contenuto di $\backslash m$ sarà $\epsilon$.
+
+Se la costruzione top-down non deterministica di $T_\alpha$ produce un simbolo foglia che violi una delle condizioni (\num{5}) o (\num{6}), allora l'albero risultante non è un match di $\alpha$ ben formato. Il fatto che un simbolo di back reference $\backslash m$ debba occorrere dopo l'espressione corrispondente all''$m$-esima coppia di parentesi garantisce che in (\num{6}) l'etichetta di $u_{\beta_m}$ possa essere determinata prima che l'etichetta di $u$ lo sia.
+
+\begin{esempio}
+	Sia $\alpha = (((a|b)*)c\backslash 2)*$. Allora $L(\alpha) = L_1^*$ dove
+	$$ L_1 = \{wcw \mid w\in \{a, b\}^*\} $$
+\end{esempio}
+
+Nel comparare i linguaggi delle regex estese con altre famiglie di linguaggi è conveniente avere una regex che denoti l'insieme vuoto. Nel seguito, gli autori assumono che il simbolo $\phi$ sia una regex e che denoti l'insieme vuoto. Come usuale, $\phi^*$ denota il singleton della parola vuota: $\{\epsilon\}$. Possiamo anche considerare  che l'alfabeto $\Sigma$ per una regex o una regex estesa $\alpha$ consista dei solo caratteri che occorrono in $\alpha$ se $\Sigma$ non è esplicitamente definita.
+\section{Mia Definizione}
+\begin{definizione}
+	Sia $\Sigma$ un alfabeto, una \textit{espressione regolare pratica}, o \textit{PRE}, sull'alfabeto $\Sigma$ è definita in maniera ricorsiva nel modo seguente:\\
+	\textbf{Passo Base:}
+	\begin{enumerate}
+		\item $\forall a \in \Sigma$,  $a$ è una espressione regolare pratica;
+		\item $\epsilon$ è una espressione regolare pratica;
+		\item $\emptyset$ è una espressione regolare pratica;
+	\end{enumerate}
+	\textbf{Passo Ricorsivo:} se $R$, $R_1$ ed $R_2$ sono espressioni regolari pratiche, allora:
+	\begin{enumerate}
+		\item $(R)$ è una espressione regolare pratica;
+		\item $R_1 \cup R_2$ (o, equivalentemente, $R_1 + R_2$) è una espressione regolare pratica;
+		\item $R_1 \cdot R_2$ (o, equivalentemente e più comunemente, $R_1R_2$)è una espressione regolare pratica;
+		\item $R^*$ è una espressione regolare pratica;
+		\item $(R)\backslash i$, con $0 < i \leq \lvert R \rvert_($, è una espressione regolare pratica;
+	\end{enumerate}
+\end{definizione}
+pensare se ultimo punto con parentesi o meno.
+
+\chapter{Automa a Nastri}
+\label{ch:automa}
+intro
+\section{Def Automa a Nastri}
+
+\section{Equivalenza NTFA - PRE}
+\subsection{Prima Direzione}
+\subsection{Seconda Direzione}
+
+---
+In blablabla def formale di espressioni regolari estese, ma vanno troppo verso il pratico, noi vogliamo puramente teorico.
+
+\chapter{Insiemistica}
+Esempio di definizione
+\begin{definizione}
+	Un \emph{insieme} è una qualunque collezione di \emph{oggetti} (di qualunque natura) che vengono detti \emph{elementi} dell'insieme.
+\end{definizione}
+Esempio di equazione
+\begin{equation*}
+	A = \Set{a, e, i, o, u, 5} = \Set{5, e, i, o, a, u} = \Set{5, 5, a, e, i, o, u}
+\end{equation*}
+
+Esempio gather
+\begin{gather*}
+	A = \Set{\text{vocali dell'alfabeto latino e numero $5$}}\\
+	B = \Set{0, 2, 4, 6, 8, \dots{}} = \Set{\text{numeri non negativi pari}}
+\end{gather*}
+
+Esempio \textit{esempio}
+\begin{esempio}
+	$B \text{ è infinito. } A = \Set{a, e, i, o, u, 5} \text{è finito e }\order{A} = 6$
+\end{esempio}

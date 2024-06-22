@@ -1,0 +1,39 @@
+% Insiemi Numerici
+\newcommand{\numberset}{\mathbb}
+\newcommand{\N}{\numberset{N}}
+\newcommand{\R}{\numberset{R}}
+\newcommand{\Q}{\numberset{Q}}
+\newcommand{\C}{\numberset{C}}
+\newcommand{\Np}{\N_{p}}
+\newcommand{\Nd}{\N_{d}}
+\newcommand{\Nz}{\N_{0}}
+
+% Lettere Greche
+\renewcommand{\epsilon}{\varepsilon}
+\renewcommand{\theta}{\vartheta}
+%\renewcommand{\rho}{\varrho} il rho mi piace nella sua variante normale
+\renewcommand{\phi}{\varphi}
+
+% definizione di valore assoluto e norma, sfruttando mathtool
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+\DeclarePairedDelimiter{\norma}{\lVert}{\rVert}
+\DeclarePairedDelimiter{\order}{\lvert}{\rvert}
+
+% Non Implica (sfrutta il paccheto centernot)
+\newcommand{\notimplies}{\centernot\implies}
+
+% Definizioni per scrittura di Definizioni, Teoremi ed Enunciati.
+\theoremstyle{definition}
+\newtheorem{definizione}{Definizione}[chapter]
+
+\theoremstyle{plain}
+\newtheorem{teorema}{Teorema}[chapter]
+
+\theoremstyle{plain}
+\newtheorem{corollario}[teorema]{Corollario}
+
+\theoremstyle{definition}
+\newtheorem*{esempio}{Esempio}
+%si userà l'ambiente proof per le dimostrazioni
+
+\DeclareMathOperator{\sub}{SUB}

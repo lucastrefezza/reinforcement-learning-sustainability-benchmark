@@ -1,0 +1,80 @@
+\documentclass[12pt,a4paper,oneside,titlepage]{report} 
+\usepackage[T1]{fontenc}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[utf8]{inputenc}
+\usepackage[italian,english]{babel} %vedi arte pag.20 in caso si decida di inserire grossa citazione inglese
+\usepackage[italian]{varioref}		% per riferimenti più completi con \vref
+\usepackage{microtype}				% migliora il riempimento delle righe
+% tramite espansione del font e protrusione
+% dei caratteri (ars pag.49)
+
+\usepackage[autostyle,italian=guillemets]{csquotes}
+
+\usepackage[backend=biber,bibstyle=ieee,citestyle=numeric-comp]{biblatex}
+\addbibresource{bibliography.bib}
+
+\usepackage{quoting}				% per citazione in "quote"
+\quotingsetup{font=small,font=itshape}
+
+%Tabelle
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{caption}
+\captionsetup{tableposition=top,figureposition=bottom,font=small,format=hang,labelfont={sf,bf}}
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+\usepackage{multirow}
+\usepackage{subfig}
+
+\usepackage{fancyhdr}
+
+\usepackage{amsmath}				% AMS = American Mathematical Society
+\usepackage{amssymb}				% per simboli matematici
+\usepackage{mathtools}				% altri tool, basato su amsmath, vedi "definizioni.sty"
+\usepackage{centernot}				% per negare simboli matematici sovrapponendo la barra al centro
+\usepackage{braket}					% utile per gli insiemi, definisce \Set
+\usepackage{amsthm}					% per enunciati e dimostrazioni
+
+\usepackage[output-decimal-marker={.}]{siunitx} % Per le unità di misura 
+% internazionali e la virgola come separatore
+% decimale, contiene \num per scrivere
+% correttamente i numeri (virgola e spazi)
+
+\newcommand{\omissis}{[\textellipsis\unkern]} % definizione del comando per inserire [...]
+\usepackage{eurosym}
+
+\usepackage{definizioni}
+
+\usepackage{hyperref}%[colorlinks,linkcolor=blue]
+\hypersetup{% Esempio di opzioni per hyperref
+	pdfpagemode={UseOutlines},
+	bookmarksopen,
+	pdfstartview={FitH},
+	colorlinks,
+	linkcolor={blue},
+	citecolor={blue},
+	urlcolor={blue}
+}
+% per collegamenti ipertestuali, va caricato
+% per ultimo. Permette collegamenti al web
+% con \href e carica automaticamente anche
+% il pacchetto url (che include \url)
+
+\begin{document}
+	\author{Luca Strefezza}
+	\title{Reinforcement Learning Sustainability Benchmark}
+	%\date{Data da inserire}
+	\maketitle
+	
+	{
+		\hypersetup{linkcolor=black}
+		\tableofcontents
+	}
+	
+%	\input{sections/introduzione}
+%	\input{sections/espressioni_regolari}
+%	\input{sections/espressioni_regolari_pratiche}
+	
+	\printbibliography[heading=bibintoc]
+	
+\end{document}
