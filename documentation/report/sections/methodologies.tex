@@ -1,47 +1,58 @@
 \section{Methodological Steps to Conduct to Address the Goals}
 \label{sec:methodologies}
 
-The methodology used follows from the basic idea of this benchmark: to execute all the algorithms for the same number of environment interactions, so that we can compare the score they achieve and the energy consumption of each one of them. Additionally, a good comparison would be to take the score obtained by the lowest performer in this initial trial and re-train all the algorithms until they reach that score. This would allow us to compare how much time and energy each algorithm requires to achieve the same performance level. Unfortunately, time and resources constraints make retraining all algorithms unfeasible, so we will approximate this second comparison by using the returns from the logging of the training during the first trial. This logging includes the \textit{global\_step}, indicating the environment interaction we are at, and the \textit{episodic\_return}, which is the return of the episode (i.e., the score on which to compare), as well as all performance and power consumption data up to that point. By analyzing these logs, we will estimate how much time and energy each algorithm would take to reach the score obtained by the lowest performer in the initial trial. 
+The methodology used follows from the basic idea of this benchmark: to execute all the algorithms for the same number of environment interactions, so that we can compare the score they achieve and the energy consumption of each one of them. Additionally, a good comparison would be to take the score obtained by the lowest performer in this initial trial and re-train all the algorithms until they reach that score. This would allow us to compare how much time and energy each algorithm requires to achieve the same performance level. Unfortunately, time and resources constraints make retraining all algorithms unfeasible, so we will approximate this second comparison by using the returns from the logging of the training during the first trial. This logging includes the \verb*|global_step|, indicating the environment interaction we are at, and the \verb*|episodic_return|, which is the return of the episode (i.e., the score on which to compare), as well as all performance and power consumption data up to that point. By analyzing these logs, we will estimate how much time and energy each algorithm would take to reach the score obtained by the lowest performer in the initial trial. 
 
 The following sections outline the several key steps involved in the methodology adopted for this project.
 
-\subsection{Algorithm Selection}
+\subsection{Algorithms Selection}
 \label{subsec:algorithm_selection}
+%In our benchmark we will consider, regardind the first category, the DQN, which constitutes the first example of success of deep reinforcement learning (so that we have a sort of baseline), and RAINBOW, a method that involves a lot of the tweaks and improvement made to the original DQN. In addition to these two, we will test various of the single tweaks to assess their individual contribution to energy consumption and performance, and more advanced methods like SPR (Self-Predictive Representations, introduced in the fifth work cited).
+%
+%Regarding policy gradient and actor critic methods, we will start with a basic one like REINFORCE and/or REINFORCE with baseline (chapter 13 of the first cited work) or the very similar Vanilla Policy Gradient (VPG). We will then move on to Proximal Policy Optimization (PPO), Deep Deterministic Policy Gradient (DDPG)  and its evolutions Twin Delayed DDPG (TD3, seventh work cited) and DRQ (Data-regularized Q, fourth cited work).
 
-In our benchmark we will consider, regardind the first cathegory, the DQN, which constitutes the first example of success of deep reinforcement learning (so that we have a sort of baseline), and RAINBOW, a method that involves a lot of the tweaks and improvement made to the original DQN. In addition to these two, we will test various of the single tweaks to assess their individual contribution to energy consumption and performance, and more advanced methods like SPR (Self-Predictive Representations, introduced in the fifth work cited).
+As stated, in our benchmark we will consider both value-based methods and policy gradient methods. The selected algorithms are chosen to represent a wide range of approaches within both categories.
 
-Regarding policy gradient and actor critic methods, we will start with a basic one like REINFORCE and/or REINFORCE with baseline (chapter 13 of the first cited work) or the very similar Vanilla Policy Gradient (VPG). We will then move on to Proximal Policy Optimization (PPO), Deep Deterministic Policy Gradient (DDPG)  and its evolutions Twin Delayed DDPG (TD3, seventh work cited) and DRQ (Data-regularized Q, fourth cited work).
+\subsubsection{Value-Based Methods}
 
-We will benchmark both value-based and policy gradient methods. The selected algorithms are:
-
+Value-based methods are algorithms based on the approximation of a value function. The algorithms we will test in this category are:
 \begin{itemize}
-	\item \textbf{Value-Based Methods:}
+	\item \textbf{Deep Q-Network (DQN):} the first example of success in deep reinforcement learning, will serve as a sort of baseline for our benchmark.
+	\item \textbf{RAINBOW~\cite{hessel:rainbow}:} an advanced method that combines several improvements to the original DQN, that will also be tested individually to assess their individual contributions to energy consumption and performance. These are listed hereafter:
 	\begin{itemize}
-		\item Deep Q-Network (DQN)
-		\item RAINBOW
-		\item Individual tweaks to DQN (Double DQN, Dueling DQN, etc.)
-		\item Self-Predictive Representations (SPR)
+		\item Double Q-Learning (Double DQN)~\cite{van:double_q};
+		\item Prioritized Experience Replay~\cite{schaul:prioritized};
+		\item Dueling Network Architectures~\cite{wang:dueling};
+		\item Multi-step Learning~\cite{peng:incremental};
+		\item Distributional RL~\cite{bellemare:distributional};
+		\item Noisy Nets~\cite{fortunato:noisy};
 	\end{itemize}
-	\item \textbf{Policy Gradient Methods:}
-	\begin{itemize}
-		\item REINFORCE
-		\item Proximal Policy Optimization (PPO)
-		\item Deep Deterministic Policy Gradient (DDPG)
-		\item Twin Delayed DDPG (TD3)
-		\item Data-Regularized Q (DRQ)
-	\end{itemize}
+	\item \textbf{Self-Predictive Representations (SPR)~\cite{schwarzer:spr}:} a more advanced method introduced in recent research, which leverages self-predictive representations to improve efficiency.
 \end{itemize}
+
+\subsubsection{Policy Gradient Methods}
+
+Policy gradient methods approximate the policy directly and include as a special case the actor-critic methods, which simultaneously approximate a policy and a value function. The algorithms we will test in this category are:
+\begin{itemize}
+	\item \textbf{REINFORCE~\cite[Chapter~13]{sutton:rl}:} a basic policy gradient method, or its variant REINFORCE with baseline (also known as Vanilla Policy Gradient, VPG).
+	\item \textbf{Proximal Policy Optimization (PPO)~\cite{schulman:ppo}:} a popular and efficient policy gradient method that uses a clipped objective to improve training stability.
+	\item \textbf{Deep Deterministic Policy Gradient (DDPG)~\cite{lillicrap:ddpg}:} an algorithm that combines policy gradients with deterministic policy updates for continuous action spaces.
+	\item \textbf{Twin Delayed DDPG (TD3)~\cite{fujimoto:td3}:} an improvement over DDPG that addresses function approximation errors through various techniques, such as delayed policy updates and target policy smoothing.
+	\item \textbf{Data-Regularized Q (DRQ)~\cite{kostrikov:drq}:} a method that incorporates data augmentation to regularize the training of Q functions, improving performance and stability.
+\end{itemize}
+
 
 \subsection{Task Selection}
 \label{subsec:task_selection}
 
-%
+Regarding the task on which to compare the algorithms, there were several suitable candidates: Atari 100k, one of the continuous control task of the DeepMind Control Suite, or one of the many other task (besides Atari) included in OpenAI Gymnasium (formerly Gym), and so on. After various tests and research we opted for the Atari 100k, a discrete task that consists of playing one of the Atari games for \num{100000} environment interactions.
 
-Regarding the task on which to compare the algorithms, there are several suitable candidates: Atari 100k, one of the continuous control task of the DeepMind Control Suite, or one of the many other task (besides Atari) included in OpenAI Gymnasium (formerly Gym), and so on. We will probably opt for the Atari 100k, a discrete task that consists of playing one of the Atari games for 100000 interactions. 
-The reason for this choice is that this is a widely used benchmark, well suited for running almost all popular DRL algorithms; however, we reserve the right to change the number of interactions (obviously keeping it consistent for all algorithms) or the task altogether, should hardware and time constraints dictate it.
+The reason for this choice is multifaceted. Atari 100k is a widely used benchmark in the DRL community, the wealth of prior research and baseline results available facilitates a more straightforward validation and comparison of our experimental results with those from other studies and algorithms. It is well suited for evaluating the performance of almost all popular DRL algorithms, ensuring a comprehensive assessment. Additionally, Atari games provide a range of different challenges, including planning, reaction time, and strategy, making it a robust benchmark for assessing general DRL capabilities.
 
-%
-The primary task for benchmarking will be the Atari 100k, which involves training the algorithms to play Atari games for 100,000 interactions. This benchmark is widely used and well-suited for evaluating the performance of popular DRL algorithms. However, we may adjust the number of interactions or select a different task based on hardware and time constraints.
+Moreover, the discrete nature of Atari 100k simplifies the implementation and comparison of algorithms, as continuous control tasks often require additional considerations and modifications. Finally, the \num{100000} interactions limit strikes a balance between providing enough data for meaningful evaluation and being computationally feasible within our resource constraints, especially considering the large number of experiments required for each algorithm, as detailed below.
+
+These factors combined make Atari 100k a practical and effective choice for our benchmark, enabling us to achieve our project goals efficiently.
+
 
 \subsection{Experiment Setup}
 
