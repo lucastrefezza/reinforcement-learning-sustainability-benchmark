@@ -1,0 +1,17 @@
+\section{Context}
+\label{sec:context}
+This project addresses the energy consumption of deep reinforcement learning (DRL) solutions and their impact on the environment and business costs.
+
+Beginning with the resurgence of the field following the development of \textit{Deep Q-Networks} (DQN) by DeepMind in the early 2010s~\cite{mnih:atari}, there have been a number of algorithm proposals over time that with minor modifications to DQN or using a completely different paradigm (such as policy gradient methods) sought to improve the performance achieved by the learning agent.
+
+Although the performance of the various solutions has been extensively studied and tracked, little effort has been directed toward understanding how the tweaks to the DQN introduced to improve performance impacted energy consumption, or what the cost of the alternative approaches developed was, per se and in comparison with previous solutions.
+
+The motivation behind this project is to fill this gap by evaluating the trade-offs between performance and energy consumption for several widely used deep reinforcement learning (DRL) algorithms. Understanding these trade-offs is crucial for businesses and researchers who aim to optimize both performance and sustainability in their applications. This project aims to provide valuable insights into the energy efficiency of different DRL approaches, enabling informed decisions about their use in various contexts.
+
+To reach this goal we train various reinforcement learning algorithms on the same task, the choice of which is discussed in section~\vref{subsec:task_selection}. Section~\vref{subsec:algorithm_selection} describes the selected algorithms, whose choice was made taking into account that DRL algorithms can be devided in two main categories: \textit{value based} (i.e. algorithms based on the approximation of a value function, be it the state-value function or the action-value function) and \textit{policy gradient}. The latter are methods that approximate directly the policy, and includes as a special case the \textit{actor-critic methods}, which approximate simultaneously a policy (said actor) and a value function (said critic). 
+
+%\section{Context of the Project}
+%
+%Reinforcement learning (RL) has witnessed significant advancements since the development of Deep Q-Networks (DQN) by DeepMind in the early 2010s. These advancements have led to various algorithmic proposals aimed at improving the performance of RL agents through either minor modifications to DQN or entirely different paradigms such as policy gradient methods. While the performance of these algorithms has been extensively studied, there has been little focus on their energy consumption and environmental impact.
+%
+%The motivation behind this project is to fill this gap by evaluating the trade-offs between performance and energy consumption for several widely used deep reinforcement learning (DRL) algorithms. Understanding these trade-offs is crucial for businesses and researchers who aim to optimize both performance and sustainability in their applications. This project will provide valuable insights into the energy efficiency of different DRL approaches, enabling informed decisions about their use in various contexts.
