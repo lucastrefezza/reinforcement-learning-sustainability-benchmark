@@ -55,16 +55,37 @@ These factors combined make Atari 100k a practical and effective choice for our 
 
 
 \subsection{Experiment Setup}
+\label{subsec:experiment_setup}
+In this section we will address all the decisions made in the setup of the experiments.
+
+\subsubsection{Number of Runs}
+\label{subsubsec:number_runs}
+
+In determining how many runs to carry out during the experimentation and testing of a reinforcement learning algorithm, at least two fundamental aspects must be taken into account: the high variance of reinforcement learning, and thus its high susceptibility to randomness, and the evaluation of the generality of the algorithm, which must therefore be tested in several different environments in order to actually prove that it is capable of solving multiple problems and not be ultra-specialized on a single use-case.
+
+In addressing the first aspect we can refer to the literature to get an idea of how many runs with different seeds are usually used to alleviate this problem. If in the early days of RL (and not DRL) the number of runs stood at around 100 and in any case did not fall below 30 at least until the introduction of ALE (Arcade Learning Environment)~\cite{bellemare:ale} included, with the advent of DRL the number of runs was consistently reduced to 5 or less because of the high cost in terms of time and resources per run. Although this has been the standard for years, a more recent work~\cite{agarwal:statistical_precipice} has shown that using point estimates of aggregate performance such as mean and median scores across tasks is not the best way to summarize results because it ignores the statistical uncertainty inherent in using only a few runs.
+
+In particular, the study points out that in the case of Atari at least 100 runs per environment are required to obtain robust results, a value that is, however, impractical in reality. In our case we will still be forced to limit ourselves to a maximum of 10 runs per environment, but it should be considered how this is a less significant problem in our case than in other studies, since we are not attempting to advance the state of the art performance of DRL algorithms, but have instead a focus on energy consumption, which should in any case remain constant regardless of the actual learning of the agent, which is instead related to randomness.
+
+Despite this, we will still attempt to use, in addition to the more classic and popular metrics such as the point estimates mentioned above, other metrics suggested in~\cite{agarwal:statistical_precipice}, designed precisely to obtain more efficient and robust estimates and have small uncertainty even with a handful of runs, not being overly affected by outliers.
+%QUI, proseguire con scelta dei giochi/environment
+%poi dovrebbe venire come tracci ed analizzi i dati, sarebbe l'altra sezione praticamente, vedere se incorporarla qui o lasciarla lì, comunque weight and biases e code carbon
+%infine ambiente di sviluppo e implementazione codice, quindi parlare di cleanrl.
+%Given the high variance typical of reinforcement learning, it is essential to conduct multiple experiments with different random seeds to obtain robust results. Therefore, each algorithm will be evaluated on 15 different Atari games, with 10 runs per game using different random seeds. This approach ensures that our results are statistically significant and account for the inherent variability in RL training processes.
+
+The implementation of the experiments will be based on the cleanrl project, which provides a set of high-quality, standardized RL implementations. We will tweak the algorithms already implemented in cleanrl to match our use case and add the missing ones, adhering to the same philosophy and implementation principles to maintain consistency and comparability.
 
 \begin{enumerate}
 	\item \textbf{Environment Setup:} All algorithms will be implemented and run in a controlled environment to ensure consistent comparison.
 	\item \textbf{Training Procedure:} Each algorithm will be trained for the same number of environment interactions to allow for a fair comparison of energy consumption and performance.
 	\item \textbf{Energy Measurement:} The energy consumption of each algorithm will be measured using appropriate tools and methodologies.
 	\item \textbf{Performance Evaluation:} The performance of each algorithm will be evaluated based on the scores achieved in the Atari 100k benchmark.
-	\item \textbf{Additional Benchmark:} As an additional comparison, all algorithms will be re-trained until they reach the score obtained by the lowest performer in the initial benchmark, and their energy consumption and time to achieve this score will be recorded.
+	\item \textbf{Multiple Runs:} Each algorithm will be run 10 times on 15 different games, using different random seeds for each run to ensure robustness of the results.
+	\item \textbf{Additional Benchmark:} As an additional comparison, all algorithms will be re-trained until they reach the score obtained by the lowest performer in the initial benchmark, and their energy consumption and time to achieve this score will be recorded. This will be approximated using the returns from the logging of the training during the first trial.
 \end{enumerate}
 
 \subsection{Data Collection and Analysis}
+\label{subsec:data_collection}
 
 \begin{enumerate}
 	\item Collect data on energy consumption and performance for each algorithm.
