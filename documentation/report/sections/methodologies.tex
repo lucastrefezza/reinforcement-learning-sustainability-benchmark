@@ -101,13 +101,41 @@ Here are the 8 selected games, completed with a rationale for their inclusion:
 %	\item \textit{Montezuma's Revenge} - For testing exploration and sparse rewards.
 %	\item \textit{Private Eye} - For long-term planning and memory.
 %\end{itemize}
-%resoconto finale di number of runs: in definitiva 8 giochi * 4 seed etc.
-%poi dovrebbe venire come tracci ed analizzi i dati, sarebbe l'altra sezione praticamente, vedere se incorporarla qui o lasciarla lì, comunque weight and biases e code carbon
+
+So, to summarize, each algorithm will be evaluated on 8 different Atari games, with 4 runs per game using different random seeds, for a total of 32 trainings. This approach, with appropriate metrics, ensures that our results are statistically significant and account for the inherent variability in RL training processes.
+
+\subsubsection{Data Collection}
+\label{subsubsec:data_collection}
+
+Collecting comprehensive and accurate data is crucial for evaluating both the performance and energy consumption of the algorithms. We will employ several tools and services to ensure robust data collection and analysis.
+
+To track the performance metrics, we will use both online and local tools. The online service \textit{Weights and Biases} will be utilized for real-time monitoring and storage of experimental data. This platform allows for easy sharing and collaboration, as well as providing powerful visualization and analysis tools. Locally, we will use \textit{TensorBoard}, which integrates seamlessly with our training workflows and offers detailed insights into the training process through its rich set of visualizations.
+
+In addition to tracking performance metrics, monitoring energy consumption is a key aspect of this project. We will use \textit{CodeCarbon}, a tool designed to measure the carbon footprint of computing activities. CodeCarbon integrates with our training scripts to provide real-time tracking of energy usage, which will be crucial for comparing the energy efficiency of different algorithms.
+
+The metrics we will collect include:
+\begin{itemize}
+	\item \textit{Global Step:} indicates the number of environment interactions during training.
+	\item \textit{Episodic Return:} the score achieved in each episode, providing a measure of the algorithm's performance.
+	\item \textit{Loss:} tracks the optimization process, giving insight into the learning dynamics of the algorithm.
+	\item \textit{Value Estimates:} such as Q-values or value function estimates, offering insight into the agent's decision-making process.
+	\item \textit{Policy Entropy:} (for certain algorithms) measures the randomness in the policy, useful for understanding exploration behavior.
+	\item \textit{Learning Rate:} the rate at which the model learns, especially if it changes during training.
+	\item \textit{Energy Consumption:} the amount of energy used during training, tracked by CodeCarbon, allowing us to evaluate the energy efficiency of each algorithm.
+\end{itemize}
+
+Weights and Biases will facilitate the aggregation and visualization of these metrics across multiple runs and environments, making it easier to compare results and draw meaningful conclusions. TensorBoard will provide supplementary local visualizations to help diagnose any issues during training and ensure the integrity of the collected data.
+
+By using these tools in tandem, we aim to collect a comprehensive dataset that covers both the performance and energy consumption aspects of the algorithms, ensuring a thorough evaluation aligned with the goals of our project.
+
+\subsubsection{Development and Execution Environment}
+\label{subsubsec:development_execution_environment}
+
 %infine ambiente di sviluppo e implementazione codice, quindi parlare di cleanrl.
-%Given the high variance typical of reinforcement learning, it is essential to conduct multiple experiments with different random seeds to obtain robust results. Therefore, each algorithm will be evaluated on 15 different Atari games, with 4 runs per game using different random seeds. This approach ensures that our results are statistically significant and account for the inherent variability in RL training processes.
+
 
 %in follow up magari si possono aggiungere altri giochi
-The implementation of the experiments will be based on the cleanrl project, which provides a set of high-quality, standardized RL implementations. We will tweak the algorithms already implemented in cleanrl to match our use case and add the missing ones, adhering to the same philosophy and implementation principles to maintain consistency and comparability.
+The implementation of the experiments will be based on the cleanrl project, which provides a set of high-quality, standardized RL implementations. We will tweak the algorithms already implemented in cleanrl to match our use case and add the missing ones, trying to adhere to the same philosophy and implementation principles to maintain consistency and comparability.
 
 \begin{enumerate}
 	\item \textbf{Environment Setup:} All algorithms will be implemented and run in a controlled environment to ensure consistent comparison.
