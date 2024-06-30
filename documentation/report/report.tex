@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper,oneside,titlepage]{scrartcl} 
+\documentclass[12pt,a4paper,oneside,titlepage,abstract]{scrartcl} 
 \usepackage[T1]{fontenc}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -61,10 +61,24 @@
 % il pacchetto url (che include \url)
 
 \begin{document}
-	\author{Luca Strefezza}
+	\titlehead{RLSB}
+	\subject{Software Engineering for Artificial Intelligence}
 	\title{Reinforcement Learning Sustainability Benchmark}
+	\subtitle{Report v1.0}
+	\author{Luca Strefezza\thanks{l.strefezza1@studenti.unisa.it}}
 	%\date{Data da inserire}
 	\maketitle
+	
+\begin{abstract}
+	This project explores the energy consumption of deep reinforcement learning (DRL) algorithms and their impact on the environment and business costs. Beginning with the development of Deep Q-Networks (DQN) by DeepMind, numerous algorithms have been proposed to enhance the performance of DRL agents. However, the energy implications of these improvements have not been extensively studied. This project aims to fill this gap by benchmarking the energy consumption and performance of several widely used DRL algorithms.
+	
+	We train various reinforcement learning algorithms on the same task: Atari 100k, a widely recognized benchmark in the DRL community. The selected algorithms include both value-based methods (such as DQN and RAINBOW) and policy gradient methods (such as REINFORCE with baseline and PPO). Each algorithm is evaluated on 8 different Atari games, with 4 runs per game using different random seeds, to ensure statistically significant results.
+	
+	To track performance and energy consumption, we utilize Weights and Biases, TensorBoard, and CodeCarbon. The development environment is based on CleanRL, a library that provides single-file implementations of some DRL algorithms, ensuring consistency and reproducibility.
+	
+	The preliminary version of this report covers the context, goals, and methodological steps of the project. Future sections will present detailed results and analyses of the trade-offs between performance and energy consumption, contributing to a broader understanding of the sustainability implications of DRL technologies.
+\end{abstract}
+
 	
 	{
 		\hypersetup{linkcolor=black}
