@@ -1,0 +1,94 @@
+\documentclass[12pt,a4paper,oneside,titlepage,abstract]{scrartcl} 
+\usepackage[T1]{fontenc}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[utf8]{inputenc}
+\usepackage[italian,english]{babel} %vedi arte pag.20 in caso si decida di inserire grossa citazione inglese
+\usepackage[italian]{varioref}		% per riferimenti più completi con \vref
+\usepackage{microtype}				% migliora il riempimento delle righe
+% tramite espansione del font e protrusione
+% dei caratteri (ars pag.49)
+
+\usepackage[autostyle,italian=guillemets]{csquotes}
+
+\usepackage[backend=biber,bibstyle=ieee,citestyle=numeric-comp]{biblatex}
+\addbibresource{bibliography.bib}
+
+\usepackage{quoting}				% per citazione in "quote"
+\quotingsetup{font=small,font=itshape}
+
+%Tabelle
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{caption}
+\captionsetup{tableposition=top,figureposition=bottom,font=small,format=hang,labelfont={sf,bf}}
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+\usepackage{multirow}
+\usepackage{subfig}
+
+\usepackage{fancyhdr}
+
+\usepackage{amsmath}				% AMS = American Mathematical Society
+\usepackage{amssymb}				% per simboli matematici
+\usepackage{mathtools}				% altri tool, basato su amsmath, vedi "definizioni.sty"
+\usepackage{centernot}				% per negare simboli matematici sovrapponendo la barra al centro
+\usepackage{braket}					% utile per gli insiemi, definisce \Set
+\usepackage{amsthm}					% per enunciati e dimostrazioni
+
+\usepackage[output-decimal-marker={.}]{siunitx} % Per le unità di misura 
+% internazionali e la virgola come separatore
+% decimale, contiene \num per scrivere
+% correttamente i numeri (virgola e spazi)
+
+\newcommand{\omissis}{[\textellipsis\unkern]} % definizione del comando per inserire [...]
+\usepackage{eurosym}
+
+\usepackage{definizioni}
+
+\usepackage{hyperref}%[colorlinks,linkcolor=blue]
+\hypersetup{% Esempio di opzioni per hyperref
+	pdfpagemode={UseOutlines},
+	bookmarksopen,
+	pdfstartview={FitH},
+	colorlinks,
+	linkcolor={blue},
+	citecolor={blue},
+	urlcolor={blue}
+}
+% per collegamenti ipertestuali, va caricato
+% per ultimo. Permette collegamenti al web
+% con \href e carica automaticamente anche
+% il pacchetto url (che include \url)
+
+\begin{document}
+	\titlehead{RLSB}
+	\subject{Software Engineering for Artificial Intelligence}
+	\title{Reinforcement Learning Sustainability Benchmark}
+	\subtitle{Report v1.0}
+	\author{Luca Strefezza\thanks{l.strefezza1@studenti.unisa.it}}
+	%\date{Data da inserire}
+	\maketitle
+	
+\begin{abstract}
+	This project explores the energy consumption of deep reinforcement learning (DRL) algorithms and their impact on the environment and business costs. Beginning with the development of Deep Q-Networks (DQN) by DeepMind, numerous algorithms have been proposed to enhance the performance of DRL agents. However, the energy implications of these improvements have not been extensively studied. This project aims to fill this gap by benchmarking the energy consumption and performance of several widely used DRL algorithms.
+	
+	We train various reinforcement learning algorithms on the same task: Atari 100k, a widely recognized benchmark in the DRL community. The selected algorithms include both value-based methods (such as DQN and RAINBOW) and policy gradient methods (such as REINFORCE with baseline and PPO). Each algorithm is evaluated on 8 different Atari games, with 4 runs per game using different random seeds, to ensure statistically significant results.
+	
+	To track performance and energy consumption, we utilize Weights and Biases, TensorBoard, and CodeCarbon. The development environment is based on CleanRL, a library that provides single-file implementations of some DRL algorithms, ensuring consistency and reproducibility.
+	
+	The preliminary version of this report covers the context, goals, and methodological steps of the project. Future sections will present detailed results and analyses of the trade-offs between performance and energy consumption, contributing to a broader understanding of the sustainability implications of DRL technologies.
+\end{abstract}
+
+	
+	{
+		\hypersetup{linkcolor=black}
+		\tableofcontents
+	}
+	
+	\input{sections/context}
+	\input{sections/goals}
+	\input{sections/methodologies}
+	
+	\printbibliography[heading=bibintoc]
+	
+\end{document}

@@ -1,0 +1,160 @@
+\section[Methodological Steps]{Methodological Steps}
+\label{sec:methodologies}
+
+The methodology used follows from the basic idea of this benchmark: to execute all the algorithms for the same number of environment interactions, so that we can compare the score they achieve and the energy consumption of each one of them. Additionally, a good comparison would be to take the score obtained by the lowest performer in this initial trial and re-train all the algorithms until they reach that score. This would allow us to compare how much time and energy each algorithm requires to achieve the same performance level. Unfortunately, time and resources constraints make retraining all algorithms unfeasible, so we will approximate this second comparison by using the returns from the logging of the training during the first trial. This logging includes the \verb*|global_step|, indicating the environment interaction we are at, and the \verb*|episodic_return|, which is the return of the episode (i.e., the score on which to compare), as well as all performance and power consumption data up to that point. By analyzing these logs, we will estimate how much time and energy each algorithm would take to reach the score obtained by the lowest performer in the initial trial. 
+
+The following sections outline the several key steps involved in the methodology adopted for this project.
+
+\subsection{Algorithms Selection}
+\label{subsec:algorithm_selection}
+%In our benchmark we will consider, regardind the first category, the DQN, which constitutes the first example of success of deep reinforcement learning (so that we have a sort of baseline), and RAINBOW, a method that involves a lot of the tweaks and improvement made to the original DQN. In addition to these two, we will test various of the single tweaks to assess their individual contribution to energy consumption and performance, and more advanced methods like SPR (Self-Predictive Representations, introduced in the fifth work cited).
+%
+%Regarding policy gradient and actor critic methods, we will start with a basic one like REINFORCE and/or REINFORCE with baseline (chapter 13 of the first cited work) or the very similar Vanilla Policy Gradient (VPG). We will then move on to Proximal Policy Optimization (PPO), Deep Deterministic Policy Gradient (DDPG)  and its evolutions Twin Delayed DDPG (TD3, seventh work cited) and DRQ (Data-regularized Q, fourth cited work).
+
+As stated, in our benchmark we consider both value-based methods and policy gradient methods. The selected algorithms are chosen to represent a wide range of approaches within both categories.
+
+\subsubsection{Value-Based Methods}
+
+Value-based methods are algorithms based on the approximation of a value function. The algorithms we will test in this category are:
+\begin{itemize}
+	\item \textit{Deep Q-Network (DQN)}: the first example of success in deep reinforcement learning, will serve as a sort of baseline for our benchmark.
+	\item \textit{RAINBOW}~\cite{hessel:rainbow}: an advanced method that combines several improvements to the original DQN, that will also be tested individually to assess their individual contributions to energy consumption and performance. These are listed hereafter:
+	\begin{itemize}
+		\item Double Q-Learning (Double DQN)~\cite{van:double_q};
+		\item Prioritized Experience Replay~\cite{schaul:prioritized};
+		\item Dueling Network Architectures~\cite{wang:dueling};
+		\item Multi-step Learning~\cite{peng:incremental};
+		\item Distributional RL~\cite{bellemare:distributional};
+		\item Noisy Nets~\cite{fortunato:noisy};
+	\end{itemize}
+	\item \textit{Self-Predictive Representations (SPR)}~\cite{schwarzer:spr}: a more advanced method introduced in recent research, which leverages self-predictive representations to improve efficiency.
+\end{itemize}
+
+\subsubsection{Policy Gradient Methods}
+
+Policy gradient methods approximate the policy directly and include as a special case the actor-critic methods, which simultaneously approximate a policy and a value function. The algorithms we will test in this category are:
+\begin{itemize}
+	\item \textit{REINFORCE}~\cite[Chapter~13]{sutton:rl}: a basic policy gradient method, or its variant REINFORCE with baseline (also known as Vanilla Policy Gradient, VPG).
+	\item \textit{Proximal Policy Optimization (PPO)}~\cite{schulman:ppo}: a popular and efficient policy gradient method that uses a clipped objective to improve training stability.
+	\item \textit{Deep Deterministic Policy Gradient (DDPG)}~\cite{lillicrap:ddpg}: an algorithm that combines policy gradients with deterministic policy updates for continuous action spaces.
+	\item \textit{Twin Delayed DDPG (TD3)~}\cite{fujimoto:td3}: an improvement over DDPG that addresses function approximation errors through various techniques, such as delayed policy updates and target policy smoothing.
+	\item \textit{Data-Regularized Q (DRQ)}~\cite{kostrikov:drq}: a method that incorporates data augmentation to regularize the training of Q functions, improving performance and stability.
+\end{itemize}
+
+
+\subsection{Task Selection}
+\label{subsec:task_selection}
+
+Regarding the task on which to compare the algorithms, there were several suitable candidates: Atari 100k~\cite{kaiser:atari100k}, one of the continuous control task of the DeepMind Control Suite, or one of the many other task (besides Atari) included in OpenAI Gymnasium (formerly Gym), and so on. After various tests and research we opted for the Atari 100k benchmark, a discrete task that consists of playing selected Atari games for only \num{100000} environment interactions.
+
+The reason for this choice is multifaceted. Atari 100k is a widely used benchmark in the DRL community, the wealth of prior research and baseline results available facilitates a more straightforward validation and comparison of our experimental results with those from other studies and algorithms. It is also well suited for evaluating the performance of almost all popular DRL algorithms, ensuring a comprehensive assessment. Additionally, Atari games provide a range of different challenges, including planning, reaction time, and strategy, making it a robust benchmark for assessing general DRL capabilities.
+
+Moreover, the discrete nature of Atari 100k simplifies the implementation and comparison of algorithms, as continuous control tasks often require additional considerations and modifications. Finally, the \num{100000} interactions limit strikes a balance between providing enough data for meaningful evaluation and being computationally feasible within our resource constraints, especially considering the large number of experiments required for each algorithm, as detailed in section~\vref{subsubsec:number_runs}.
+
+These factors combined make Atari 100k a practical and effective choice for our benchmark, enabling us to achieve our project goals efficiently.
+
+
+\subsection{Experiment Setup}
+\label{subsec:experiment_setup}
+In this section we will address all the decisions made in the setup of the experiments.
+
+\subsubsection{Number of Runs}
+\label{subsubsec:number_runs}
+
+In determining how many runs to carry out during the experimentation and testing of a reinforcement learning algorithm, at least two fundamental aspects must be taken into account: the high variance of reinforcement learning, and thus its high susceptibility to randomness, and the evaluation of the generality of the algorithm, which must therefore be tested in several different environments in order to actually prove that it is capable of solving multiple problems and not just be ultra-specialized on a single use-case.
+
+In addressing the first aspect we can refer to the literature to get an idea of how many runs with different seeds are usually performed to alleviate this problem. If in the early days of RL (and not DRL) the number of runs stood at around 100 and in any case did not fall below 30, at least until the introduction of ALE (Arcade Learning Environment)~\cite{bellemare:ale} included, with the advent of DRL the number of runs was consistently reduced to 5 or less because of the high cost in terms of time and resources per run. Although this has been the standard for years, a more recent work~\cite{agarwal:statistical_precipice} has shown that this is the source of a problem. Practitioners use point estimates such as mean and median to aggregate performances  scores across tasks to summarize the results of the various runs, but this metrics are not the best way to do so because they ignore the statistical uncertainty inherent in performing only a few runs.
+
+In particular, the study points out that in the case of Atari at least 100 runs per environment are required to obtain robust results, a value that is, however, impractical in reality. In our case we will be forced to limit ourselves to 4 runs per environment, but it should be noted that this is a less significant problem for us, since we are not attempting to advance the state of the art performance of DRL algorithms, but have instead a focus on energy consumption, which should in any case remain constant regardless of the actual learning of the agent, which is instead related to randomness.
+
+Despite this, we will still attempt to use, in addition to the more classic and popular metrics such as the point estimates mentioned above, other metrics suggested in~\cite{agarwal:statistical_precipice} (like the \textit{interquartile mean}), designed precisely to obtain more efficient and robust estimates and have small uncertainty even with a handful of runs, since they are not overly affected by outliers like the point estimates.
+
+With regard to the second aspect, namely, testing the algorithms on a variety of environments to evaluate their generality, Atari 100k once again comes to our aid, being constituted by 26 games. Moreover, the Arcade Learning Environment, built on top of the Atari 2600 emulator Stella and used by gymnasium, includes over 55 games. Unfortunately, again, we do not have the time and/or computational resources to test on all the Atari \num{100}k's 26 games or all the ones available in ALE, so we selected for the benchmark a representative subset of 8 Atari games, trying to choose games that cover a range of difficulties and styles. Obviously, with so few games because of the constraints just mentioned, an exhaustive selection is difficult, but we nonetheless tried to provide a balanced benchmark, ensuring that the selected games cover a range of challenges to effectively evaluate different algorithms, while still not being excessively difficult. This last requirement is due to basic DQN and its more simple extensions, which have some limitations in only 100k interactions (the team that introduced the DQNs trained its model on 2 million interactions to achieve interesting results).
+
+Here are the 8 selected games, completed with a rationale for their inclusion:
+\begin{itemize}
+	\item \textit{Alien} - moderate difficulty, good for testing exploration and strategy;
+	\item \textit{Amidar} - requires planning and quick decision-making;
+	\item \textit{Assault} - tests reflexes and targeting accuracy;
+	\item \textit{Boxing} - simple but requires precise control and timing;
+	\item \textit{Breakout} - classic game, good for testing control;
+	\item \textit{Freeway} - simple yet tests quick decision-making under pressure;
+	\item \textit{Ms. Pac-Man} - classic maze game, tests navigation and evasion;
+	\item \textit{Pong} - simple and well-understood, great for baseline comparisons.
+\end{itemize}
+%\begin{itemize}
+%	\item \textit{Alien} - Moderate difficulty, good for testing exploration and strategy.
+%	\item \textit{Amidar} - Requires planning and quick decision-making.
+%	\item \textit{Assault} - Tests reflexes and targeting accuracy.
+%	\item \textit{Asterix} - High-paced, tests navigation and reaction time.
+%	\item \textit{Boxing} - Simple but requires precise control and timing.
+%	\item \textit{Breakout} - Classic game, good for testing continuous control.
+%	\item \textit{Chopper Command} - Involves shooting and evading, good for action-oriented strategies.
+%	\item \textit{Demon Attack} - High intensity, tests reaction and aiming skills.
+%	\item \textit{Freeway} - Simple yet tests quick decision-making under pressure.
+%	\item \textit{Hero} - Complex game, requires planning and adaptability.
+%	\item \textit{Krull} - Tests both navigation and strategic planning.
+%	\item \textit{Ms. Pac-Man} - Classic maze game, tests navigation and evasion.
+%	\item \textit{Pong} - Simple and well-understood, great for baseline comparisons.
+%	\item \textit{Q*bert} - Tests navigation and planning in a constrained environment.
+%	\item \textit{Seaquest} - Involves navigation, shooting, and resource management.
+%	\item \textit{Montezuma's Revenge} - For testing exploration and sparse rewards.
+%	\item \textit{Private Eye} - For long-term planning and memory.
+%\end{itemize}
+
+So, to summarize, each algorithm will be evaluated on 8 different Atari games, with 4 runs per game using different random seeds, for a total of 32 trainings per algorithm. This approach, with appropriate metrics, ensures that our results are statistically significant and account for the inherent variability in RL training processes.
+
+\subsubsection{Data Collection}
+\label{subsubsec:data_collection}
+
+Collecting comprehensive and accurate data is crucial for evaluating both the performance and energy consumption of the algorithms. We employ several tools and services to ensure robust data collection and analysis.
+
+To track the performance metrics, we use both online and local tools. The online service \textit{Weights and Biases} is used for real-time monitoring and storage of experimental data. This platform allows for easy sharing and collaboration, as well as providing powerful visualization and analysis tools. Locally, we use \textit{TensorBoard}, which integrates seamlessly with our training workflows and offers detailed insights into the training process through its rich set of visualizations.
+
+In addition to tracking performance metrics, monitoring energy consumption is the key aspect of the project. For this we use \textit{CodeCarbon}, a tool designed to measure the carbon footprint of computing activities. CodeCarbon is integrated in our training scripts to provide real-time tracking of energy usage, a crucial metric for comparing the energy efficiency of the different algorithms.
+
+The metrics we collect include:
+\begin{itemize}
+	\item \textit{Global Step:} indicates the number of environment interactions during training.
+	\item \textit{Episodic Return:} the score achieved in each episode, providing a measure of the algorithm's performance.
+	\item \textit{Loss:} tracks the optimization process, giving insight into the learning dynamics of the algorithm.
+	\item \textit{Value Estimates:} such as Q-values or value function estimates, offering insight into the agent's decision-making process.
+	\item \textit{Policy Entropy:} measures the randomness in the policy and how much it differs from the previous one, useful for understanding exploration behavior and how much room for improvement is still left.
+	\item \textit{Learning Rate:} the rate at which the model learns, especially if it changes during training.
+	\item \textit{Energy Consumption:} the amount of energy used during training, tracked by CodeCarbon, allowing us to evaluate the energy efficiency of each algorithm.
+\end{itemize}
+
+Weights and Biases facilitates the aggregation and visualization of these metrics across multiple runs and environments, making it easier to compare results and draw meaningful conclusions. TensorBoard provide supplementary local visualizations to help diagnose any issues during training and ensure the integrity of the collected data.
+
+By using these tools in tandem, we aim to collect a comprehensive dataset that covers both the performance and energy consumption aspects of the algorithms, ensuring a thorough evaluation aligned with the goals of our project.
+
+\subsubsection{Development and Execution Environment}
+\label{subsubsec:development_execution_environment}
+
+The development and execution environment for the project involves both hardware and software. The hardware used for training the algorithms is constituted by the processor \textit{11th Gen Intel(R) Core(TM) i5-11400F @ 2.60GHz}, the graphic card \textit{NVIDIA GeForce GTX 1050 Ti}, and \textit{16GB} of RAM.
+
+On the software side, after careful considerations and some testing with other alternatives like OpenAI's \textit{Spinning Up}, we chose to base the implementation of the project on \textit{CleanRL}~\cite{huang:cleanrl}. As the authors states, CleanRL is an open-source library that provides high-quality single-file implementations of Deep Reinforcement Learning algorithms. It provides an environment already complete with most dependencies a project like ours might need (like Gymnasium), has a straightforward codebase, and already integrates tools like Weights and Biases and TensorBoard, that help log metrics, hyperparameters, videos of an agent's gameplay, dependencies, and more.
+
+The single-file implementation philosophy of CleanRL aims to make reinforcement learning research more accessible and reproducible and make the performance-relevant details easier to recognize. By consolidating every algorithm codebase into single files, it simplifies the understanding and modification of algorithms, which is particularly beneficial for both educational purposes and rapid prototyping, even though it comes at the cost of losing modularity and duplicating some code.
+
+We leverage CleanRL's existing implementations where available, tweaking them to meet the specific requirements of our benchmarks. When an implementation for a particular algorithm is not available, we develop it from scratch, trying to adhere to CleanRL's philosophy and implementation principles. This approach ensures consistency and comparability across all tested algorithms.
+
+In the end, the environment for our experiments should be efficient and easily reproducible, facilitating the accurate evaluation of both performance and energy consumption of various deep reinforcement learning algorithms.
+%
+%\begin{enumerate}
+%	\item \textbf{Environment Setup:} All algorithms will be implemented and run in a controlled environment to ensure consistent comparison.
+%	\item \textbf{Training Procedure:} Each algorithm will be trained for the same number of environment interactions to allow for a fair comparison of energy consumption and performance.
+%	\item \textbf{Energy Measurement:} The energy consumption of each algorithm will be measured using appropriate tools and methodologies.
+%	\item \textbf{Performance Evaluation:} The performance of each algorithm will be evaluated based on the scores achieved in the Atari 100k benchmark.
+%	\item \textbf{Multiple Runs:} Each algorithm will be run 4 times on 8 different games, using different random seeds for each run to ensure robustness of the results.
+%	\item \textbf{Additional Benchmark:} As an additional comparison, all algorithms will be re-trained until they reach the score obtained by the lowest performer in the initial benchmark, and their energy consumption and time to achieve this score will be recorded. This will be approximated using the returns from the logging of the training during the first trial.
+%\end{enumerate}
+%
+%\subsection{Data Collection and Analysis}
+%\label{subsec:data_collection}
+%
+%\begin{enumerate}
+%	\item Collect data on energy consumption and performance for each algorithm.
+%	\item Analyze the data to identify trade-offs between performance and energy consumption.
+%	\item Generate visualizations and statistical analyses to present the findings.
+%\end{enumerate}
