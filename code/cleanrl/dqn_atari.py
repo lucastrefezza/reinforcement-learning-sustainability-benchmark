@@ -21,6 +21,8 @@ from stable_baselines3.common.atari_wrappers import (
 from stable_baselines3.common.buffers import ReplayBuffer
 from torch.utils.tensorboard import SummaryWriter
 
+from codecarbon import EmissionsTracker
+
 
 @dataclass
 class Args:
@@ -34,9 +36,9 @@ class Args:
     """if toggled, cuda will be enabled by default"""
     track: bool = False
     """if toggled, this experiment will be tracked with Weights and Biases"""
-    wandb_project_name: str = "cleanRL"
+    wandb_project_name: str = "rlsb"
     """the wandb's project name"""
-    wandb_entity: str = None
+    wandb_entity: str = "rlsb"
     """the entity (team) of wandb's project"""
     capture_video: bool = False
     """whether to capture videos of the agent performances (check out `videos` folder)"""
@@ -141,7 +143,10 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
         )
     args = tyro.cli(Args)
     assert args.num_envs == 1, "vectorized envs are not supported at the moment"
-    run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
+    date_time = time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime(int(time.time())))
+    run_name = f"{args.exp_name}__{args.env_id}__{args.seed}__{date_time}"
+    # run_name = f"{args.exp_name}__{args.env_id}__{args.seed}__{int(time.time())}"
+    # run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
     if args.track:
         import wandb
 
@@ -189,6 +194,17 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
     )
     start_time = time.time()
 
+    # Code Carbon tracking
+    tracker = EmissionsTracker(
+        project_name="rlsb",
+        experiment_id=run_name,
+        tracking_mode="process",
+        log_level="warning",
+        output_dir="emissions",
+    )
+    total_emissions = 0
+
+
     # TRY NOT TO MODIFY: start the game
     obs, _ = envs.reset(seed=args.seed)
     for global_step in range(args.total_timesteps):
@@ -224,6 +240,7 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
         # ALGO LOGIC: training.
         if global_step > args.learning_starts:
             if global_step % args.train_frequency == 0:
+                tracker.start()
                 data = rb.sample(args.batch_size)
                 with torch.no_grad():
                     target_max, _ = target_network(data.next_observations).max(dim=1)
@@ -241,6 +258,12 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
+
+                emissions = tracker.stop()
+                total_emissions += emissions
+                # wandb.log({"emissions": emissions, "total_emissions": total_emissions, "global_step": global_step})
+                writer.add_scalar("emissions/emissions", emissions, global_step)
+                writer.add_scalar("emissions/total_emissions", total_emissions, global_step)
 
             # update target network
             if global_step % args.target_network_frequency == 0:
@@ -263,7 +286,7 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
             run_name=f"{run_name}-eval",
             Model=QNetwork,
             device=device,
-            epsilon=0.05,
+            epsilon=0.00,  # was 0.05, but we don't want exploration during evaluation
         )
         for idx, episodic_return in enumerate(episodic_returns):
             writer.add_scalar("eval/episodic_return", episodic_return, idx)

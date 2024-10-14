@@ -55,6 +55,7 @@ optax = {version = "0.1.4", optional = true}
 chex = {version = "0.1.5", optional = true}
 numpy = ">=1.21.6"
 
+codecarbon = "^2.7.1"
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^2.20.0"
 
