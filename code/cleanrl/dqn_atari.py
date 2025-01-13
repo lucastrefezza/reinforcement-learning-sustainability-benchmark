@@ -197,12 +197,18 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
     # Code Carbon tracking
     tracker = EmissionsTracker(
         project_name="rlsb",
+        output_dir="emissions",
+        output_file=f"{run_name}.csv",
         experiment_id=run_name,
+        experiment_name=run_name,
         tracking_mode="process",
         log_level="warning",
-        output_dir="emissions",
+        on_csv_write="append",
     )
+
     total_emissions = 0
+
+    tracker.start()
 
 
     # TRY NOT TO MODIFY: start the game
@@ -240,7 +246,7 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
         # ALGO LOGIC: training.
         if global_step > args.learning_starts:
             if global_step % args.train_frequency == 0:
-                tracker.start()
+                # tracker.start()
                 data = rb.sample(args.batch_size)
                 with torch.no_grad():
                     target_max, _ = target_network(data.next_observations).max(dim=1)
@@ -259,7 +265,7 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
                 loss.backward()
                 optimizer.step()
 
-                emissions = tracker.stop()
+                emissions = tracker.flush()
                 total_emissions += emissions
                 # wandb.log({"emissions": emissions, "total_emissions": total_emissions, "global_step": global_step})
                 writer.add_scalar("emissions/emissions", emissions, global_step)
@@ -297,6 +303,10 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
             repo_name = f"{args.env_id}-{args.exp_name}-seed{args.seed}"
             repo_id = f"{args.hf_entity}/{repo_name}" if args.hf_entity else repo_name
             push_to_hub(args, episodic_returns, repo_id, "DQN", f"runs/{run_name}", f"videos/{run_name}-eval")
+
+    emissions = tracker.stop()
+    total_emissions += emissions
+    writer.add_scalar("emissions/total_emissions", total_emissions, args.total_timesteps)
 
     envs.close()
     writer.close()
