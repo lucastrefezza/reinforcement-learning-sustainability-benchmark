@@ -43,7 +43,7 @@ def run_experiment(command: str):
     # Use subprocess.PIPE to capture the output
     fd = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, errors = fd.communicate()
-
+    
     return_code = fd.returncode
     assert return_code == 0, f"Command failed with error: {errors.decode('utf-8')}"
 
