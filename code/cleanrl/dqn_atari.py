@@ -195,10 +195,12 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
     start_time = time.time()
 
     # Code Carbon tracking
-    tracker = EmissionsTracker(
+    # auto explanatory parameters:
+    # save_to_file=False,
+    # output_file=f"{run_name}.csv",
+    tracker = EmissionsTracker( #
         project_name="rlsb",
         output_dir="emissions",
-        output_file=f"{run_name}.csv",
         experiment_id=run_name,
         experiment_name=run_name,
         tracking_mode="process",
@@ -265,11 +267,6 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
                 loss.backward()
                 optimizer.step()
 
-                emissions = tracker.flush()
-                total_emissions += emissions
-                # wandb.log({"emissions": emissions, "total_emissions": total_emissions, "global_step": global_step})
-                writer.add_scalar("emissions/emissions", emissions, global_step)
-                writer.add_scalar("emissions/total_emissions", total_emissions, global_step)
 
             # update target network
             if global_step % args.target_network_frequency == 0:
@@ -305,8 +302,7 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
             push_to_hub(args, episodic_returns, repo_id, "DQN", f"runs/{run_name}", f"videos/{run_name}-eval")
 
     emissions = tracker.stop()
-    total_emissions += emissions
-    writer.add_scalar("emissions/total_emissions", total_emissions, args.total_timesteps)
+    writer.add_scalar("emissions", emissions, args.total_timesteps)
 
     envs.close()
     writer.close()
