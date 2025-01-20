@@ -208,8 +208,6 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
         on_csv_write="append",
     )
 
-    total_emissions = 0
-
     tracker.start()
 
 
