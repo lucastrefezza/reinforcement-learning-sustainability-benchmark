@@ -1,4 +1,3 @@
-# docs and experiment results can be found at https://docs.cleanrl.dev/rl-algorithms/dqn/#dqn_ataripy
 import os
 import random
 import time
@@ -18,7 +17,7 @@ from stable_baselines3.common.atari_wrappers import (
     MaxAndSkipEnv,
     NoopResetEnv,
 )
-from stable_baselines3.common.buffers import ReplayBuffer
+from utils.prioritized_replay_buffer import PrioritizedReplayBuffer
 from torch.utils.tensorboard import SummaryWriter
 
 from codecarbon import EmissionsTracker
@@ -183,20 +182,18 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
     target_network = QNetwork(envs).to(device)
     target_network.load_state_dict(q_network.state_dict())
 
-    rb = ReplayBuffer(
-        args.buffer_size,
-        envs.single_observation_space,
-        envs.single_action_space,
-        device,
-        optimize_memory_usage=True,
-        handle_timeout_termination=False,
+
+    rb = PrioritizedReplayBuffer(
+        buffer_size=args.buffer_size,
+        state_size=envs.single_observation_space.shape,
+        action_size=1,
+        device=device,
+        alpha=0.7,
+        beta=0.4,
     )
     start_time = time.time()
 
     # Code Carbon tracking
-    # auto explanatory parameters:
-    # save_to_file=False,
-    # output_file=f"{run_name}.csv",
     tracker = EmissionsTracker(
         project_name="rlsb",
         output_dir="emissions",
@@ -237,7 +234,7 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
         for idx, trunc in enumerate(truncations):
             if trunc:
                 real_next_obs[idx] = infos["final_observation"][idx]
-        rb.add(obs, real_next_obs, actions, rewards, terminations, infos)
+        rb.add((obs, actions, rewards, real_next_obs, terminations))
 
         # TRY NOT TO MODIFY: CRUCIAL step easy to overlook
         obs = next_obs
@@ -245,13 +242,18 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
         # ALGO LOGIC: training.
         if global_step > args.learning_starts:
             if global_step % args.train_frequency == 0:
-                # tracker.start()
-                data = rb.sample(args.batch_size)
+                data, weights, tree_idxs = rb.sample(args.batch_size)
+                observations, actions, rewards, next_observations, dones = data
+                rewards = rewards.unsqueeze(1)
+                actions = actions.long()
                 with torch.no_grad():
-                    target_max, _ = target_network(data.next_observations).max(dim=1)
-                    td_target = data.rewards.flatten() + args.gamma * target_max * (1 - data.dones.flatten())
-                old_val = q_network(data.observations).gather(1, data.actions).squeeze()
-                loss = F.mse_loss(td_target, old_val)
+                    target_max, _ = target_network(next_observations).max(dim=1)
+                    td_target = rewards.flatten() + args.gamma * target_max * (1 - dones.flatten())
+                old_val = q_network(observations).gather(1, actions).squeeze()
+                loss = torch.mean(F.mse_loss(td_target, old_val, reduction='none') * weights)
+
+                td_error = torch.abs(old_val - td_target).detach()
+                rb.update_priorities(tree_idxs, td_error.cpu().numpy())
 
                 if global_step % 100 == 0:
                     writer.add_scalar("losses/td_loss", loss, global_step)
