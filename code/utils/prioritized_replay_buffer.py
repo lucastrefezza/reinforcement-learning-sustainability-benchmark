@@ -1,3 +1,5 @@
+# Source: https://github.com/Howuhh/prioritized_experience_replay/blob/main/memory/buffer.py
+
 import torch
 import random
 import numpy as np
@@ -7,7 +9,7 @@ from utils.sum_tree import SumTree
 
 class PrioritizedReplayBuffer:
     def __init__(self, state_size, action_size, buffer_size, eps=1e-2, alpha=0.1, beta=0.1, device='cuda'):
-        self.tree = SumTree(size=buffer_size)
+        self.tree = SumTree(capacity=buffer_size)
 
         # PER params
         self.eps = eps  # minimal priority, prevents zero probabilities
@@ -60,7 +62,7 @@ class PrioritizedReplayBuffer:
 
             cumsum = random.uniform(a, b)
             # sample_idx is a sample index in buffer, needed further to sample actual transitions
-            # tree_idx is a index of a sample in the tree, needed further to update priorities
+            # tree_idx is an index of a sample in the tree, needed further to update priorities
             tree_idx, priority, sample_idx = self.tree.get(cumsum)
 
             priorities[i] = priority
