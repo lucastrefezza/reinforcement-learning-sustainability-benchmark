@@ -31,3 +31,14 @@ python -m cleanrl_utils.benchmark \
     --no-auto-tag
 
 python -m cleanrl_utils.benchmark --env-ids AlienNoFrameskip-v4 AmidarNoFrameskip-v4 AssaultNoFrameskip-v4 BoxingNoFrameskip-v4 BreakoutNoFrameskip-v4 FreewayNoFrameskip-v4 MsPacmanNoFrameskip-v4 PongNoFrameskip-v4 --command "poetry run python cleanrl/ddqn_atari.py --track --save-model --total-timesteps 100000 --buffer-size 10000 --learning-starts 1000" --num-seeds 4 --workers 1 --no-auto-tag
+
+-PER Atari
+
+python -m cleanrl_utils.benchmark \
+    --env-ids AlienNoFrameskip-v4 AmidarNoFrameskip-v4 AssaultNoFrameskip-v4 BoxingNoFrameskip-v4 BreakoutNoFrameskip-v4 FreewayNoFrameskip-v4 MsPacmanNoFrameskip-v4 PongNoFrameskip-v4 \
+    --command "poetry run python cleanrl/per_atari.py --track --save-model --total-timesteps 100000 --buffer-size 10000 --learning-starts 1000" \
+    --num-seeds 4 \
+    --workers 1 \
+    --no-auto-tag
+
+python -m cleanrl_utils.benchmark --env-ids AlienNoFrameskip-v4 AmidarNoFrameskip-v4 AssaultNoFrameskip-v4 BoxingNoFrameskip-v4 BreakoutNoFrameskip-v4 FreewayNoFrameskip-v4 MsPacmanNoFrameskip-v4 PongNoFrameskip-v4 --command "poetry run python cleanrl/per_atari.py --track --save-model --total-timesteps 100000 --buffer-size 10000 --learning-starts 1000" --num-seeds 4 --workers 1 --no-auto-tag
