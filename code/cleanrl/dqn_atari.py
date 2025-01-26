@@ -206,9 +206,7 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
         log_level="warning",
         on_csv_write="append",
     )
-
     tracker.start()
-
 
     # TRY NOT TO MODIFY: start the game
     obs, _ = envs.reset(seed=args.seed)
