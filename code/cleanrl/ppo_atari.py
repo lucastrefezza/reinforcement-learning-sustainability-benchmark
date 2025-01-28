@@ -198,7 +198,7 @@ if __name__ == "__main__":
     values = torch.zeros((args.num_steps, args.num_envs)).to(device)
 
     # Code Carbon tracking
-    tracker = EmissionsTracker( #
+    tracker = EmissionsTracker(
         project_name="rlsb",
         output_dir="emissions",
         experiment_id=run_name,
