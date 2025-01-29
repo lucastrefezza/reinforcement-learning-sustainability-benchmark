@@ -41,13 +41,15 @@ class Args:
     """the entity (team) of wandb's project"""
     capture_video: bool = False
     """whether to capture videos of the agent performances (check out `videos` folder)"""
+    save_model: bool = False
+    """whether to save model into the `runs/{run_name}` folder"""
 
     # Algorithm specific arguments
     env_id: str = "BreakoutNoFrameskip-v4"
     """the id of the environment"""
     total_timesteps: int = 10000000
     """total timesteps of the experiments"""
-    learning_rate: float = 1e-4 # ppo default: 2.5e-4, but uses annealing
+    learning_rate: float = 2.5e-4
     """the learning rate of the optimizer"""
     num_envs: int = 1
     """the number of parallel game environments"""
@@ -66,15 +68,17 @@ def make_env(env_id, idx, capture_video, run_name):
         else:
             env = gym.make(env_id)
         env = gym.wrappers.RecordEpisodeStatistics(env)
+
         env = NoopResetEnv(env, noop_max=30)
         env = MaxAndSkipEnv(env, skip=4)
         env = EpisodicLifeEnv(env)
         if "FIRE" in env.unwrapped.get_action_meanings():
             env = FireResetEnv(env)
-        # env = ClipRewardEnv(env) used in DQN to stabilize the updates,
+        env = ClipRewardEnv(env) # used in DQN to stabilize the updates,
         env = gym.wrappers.ResizeObservation(env, (84, 84))
         env = gym.wrappers.GrayScaleObservation(env)
         env = gym.wrappers.FrameStack(env, 4)
+
         return env
 
     return thunk
@@ -161,19 +165,21 @@ if __name__ == "__main__":
     policy = PolicyNetwork(envs).to(device)
     # eps for stability since we use gradients from a stochastic policy, value from literature
     optimizer = optim.Adam(policy.parameters(), lr=args.learning_rate, eps=1e-5)
-
+    scheduler = torch.optim.lr_scheduler.LambdaLR(
+        optimizer, lr_lambda=lambda step: 1.0 - step / args.total_timesteps
+    )
 
     # Code Carbon tracking
-    # tracker = EmissionsTracker(
-    #     project_name="rlsb",
-    #     output_dir="emissions",
-    #     experiment_id=run_name,
-    #     experiment_name=run_name,
-    #     tracking_mode="process",
-    #     log_level="warning",
-    #     on_csv_write="append",
-    # )
-    # tracker.start()
+    tracker = EmissionsTracker(
+        project_name="rlsb",
+        output_dir="emissions",
+        experiment_id=run_name,
+        experiment_name=run_name,
+        tracking_mode="process",
+        log_level="warning",
+        on_csv_write="append",
+    )
+    tracker.start()
 
     # TRY NOT TO MODIFY: start the game
     start_time = time.time()
@@ -219,17 +225,36 @@ if __name__ == "__main__":
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        scheduler.step()
 
         done = False
 
         # TRY NOT TO MODIFY: record rewards for plotting purposes
-        writer.add_scalar("charts/learning_rate", optimizer.param_groups[0]["lr"], global_step)
+        writer.add_scalar("charts/learning_rate", scheduler.get_last_lr()[0], global_step)
         writer.add_scalar("losses/policy_loss", loss.item(), global_step)
         print("SPS:", int(global_step / (time.time() - start_time)))
         writer.add_scalar("charts/SPS", int(global_step / (time.time() - start_time)), global_step)
 
-    # emissions = tracker.stop()
-    # writer.add_scalar("emissions", emissions, args.total_timesteps)
+    if args.save_model:
+        model_path = f"runs/{run_name}/{args.exp_name}.cleanrl_model"
+        torch.save(policy.state_dict(), model_path)
+        print(f"model saved to {model_path}")
+        from cleanrl_utils.evals.reinforce_eval import evaluate
+
+        episodic_returns = evaluate(
+            model_path,
+            make_env,
+            args.env_id,
+            eval_episodes=10,
+            run_name=f"{run_name}-eval",
+            Model=PolicyNetwork,
+            device=device,
+        )
+        for idx, episodic_return in enumerate(episodic_returns):
+            writer.add_scalar("eval/episodic_return", episodic_return, idx)
+
+    emissions = tracker.stop()
+    writer.add_scalar("emissions", emissions, args.total_timesteps)
 
     envs.close()
     writer.close()
