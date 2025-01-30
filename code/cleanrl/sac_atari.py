@@ -22,6 +22,7 @@ from stable_baselines3.common.buffers import ReplayBuffer
 from torch.distributions.categorical import Categorical
 from torch.utils.tensorboard import SummaryWriter
 
+from codecarbon import EmissionsTracker
 
 @dataclass
 class Args:
@@ -41,6 +42,8 @@ class Args:
     """the entity (team) of wandb's project"""
     capture_video: bool = False
     """whether to capture videos of the agent performances (check out `videos` folder)"""
+    save_model: bool = False
+    """whether to save model into the `runs/{run_name}` folder"""
 
     # Algorithm specific arguments
     env_id: str = "BeamRiderNoFrameskip-v4"
@@ -181,7 +184,9 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
 """
         )
     args = tyro.cli(Args)
-    run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
+    date_time = time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime(int(time.time())))
+    run_name = f"{args.exp_name}__{args.env_id}__{args.seed}__{date_time}"
+
     if args.track:
         import wandb
 
@@ -240,6 +245,18 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
         handle_timeout_termination=False,
     )
     start_time = time.time()
+
+    # Code Carbon tracking
+    tracker = EmissionsTracker(
+        project_name="rlsb",
+        output_dir="emissions",
+        experiment_id=run_name,
+        experiment_name=run_name,
+        tracking_mode="process",
+        log_level="warning",
+        on_csv_write="append",
+    )
+    tracker.start()
 
     # TRY NOT TO MODIFY: start the game
     obs, _ = envs.reset(seed=args.seed)
@@ -346,6 +363,27 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
                 writer.add_scalar("charts/SPS", int(global_step / (time.time() - start_time)), global_step)
                 if args.autotune:
                     writer.add_scalar("losses/alpha_loss", alpha_loss.item(), global_step)
+
+    if args.save_model:
+        model_path = f"runs/{run_name}/{args.exp_name}.cleanrl_model"
+        torch.save((actor.state_dict(), qf1.state_dict(), qf2.state_dict()), model_path)
+        print(f"model saved to {model_path}")
+        from cleanrl_utils.evals.sac_eval import evaluate
+
+        episodic_returns = evaluate(
+            model_path,
+            make_env,
+            args.env_id,
+            eval_episodes=10,
+            run_name=f"{run_name}-eval",
+            Model=(Actor, SoftQNetwork),
+            device=device,
+        )
+        for idx, episodic_return in enumerate(episodic_returns):
+            writer.add_scalar("eval/episodic_return", episodic_return, idx)
+
+    emissions = tracker.stop()
+    writer.add_scalar("emissions", emissions, args.total_timesteps)
 
     envs.close()
     writer.close()
