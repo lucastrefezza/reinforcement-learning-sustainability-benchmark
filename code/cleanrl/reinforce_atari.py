@@ -55,9 +55,6 @@ class Args:
     """the number of parallel game environments"""
     gamma: float = 0.99
     """the discount factor gamma"""
-    # keep it for now
-    anneal_lr: bool = True
-    """Toggle learning rate annealing for policy and value networks"""
 
 
 def make_env(env_id, idx, capture_video, run_name):
@@ -231,7 +228,7 @@ if __name__ == "__main__":
 
         # TRY NOT TO MODIFY: record rewards for plotting purposes
         writer.add_scalar("charts/learning_rate", scheduler.get_last_lr()[0], global_step)
-        writer.add_scalar("losses/policy_loss", loss.item(), global_step)
+        writer.add_scalar("losses/loss", loss.item(), global_step)
         print("SPS:", int(global_step / (time.time() - start_time)))
         writer.add_scalar("charts/SPS", int(global_step / (time.time() - start_time)), global_step)
 
