@@ -65,7 +65,7 @@ python -m cleanrl_utils.benchmark \
 
 python -m cleanrl_utils.benchmark --env-ids AlienNoFrameskip-v4 AmidarNoFrameskip-v4 AssaultNoFrameskip-v4 BoxingNoFrameskip-v4 BreakoutNoFrameskip-v4 FreewayNoFrameskip-v4 MsPacmanNoFrameskip-v4 PongNoFrameskip-v4 --command "poetry run python cleanrl/c51_atari.py --track --save-model --total-timesteps 100000 --buffer-size 10000 --learning-starts 1000 --target-network-frequency 1000" --num-seeds 4 --workers 1 --no-auto-tag
 
---Reinforce Atari
+-Reinforce Atari
 
 python -m cleanrl_utils.benchmark \
     --env-ids AlienNoFrameskip-v4 AmidarNoFrameskip-v4 AssaultNoFrameskip-v4 BoxingNoFrameskip-v4 BreakoutNoFrameskip-v4 FreewayNoFrameskip-v4 MsPacmanNoFrameskip-v4 PongNoFrameskip-v4 \
@@ -76,3 +76,13 @@ python -m cleanrl_utils.benchmark \
 
 python -m cleanrl_utils.benchmark --env-ids AlienNoFrameskip-v4 AmidarNoFrameskip-v4 AssaultNoFrameskip-v4 BoxingNoFrameskip-v4 BreakoutNoFrameskip-v4 FreewayNoFrameskip-v4 MsPacmanNoFrameskip-v4 PongNoFrameskip-v4 --command "poetry run python cleanrl/reinforce_atari.py --track --save-model --total-timesteps 100000" --num-seeds 4 --workers 1 --no-auto-tag
 
+-SAC Atari
+
+python -m cleanrl_utils.benchmark \
+    --env-ids AlienNoFrameskip-v4 AmidarNoFrameskip-v4 AssaultNoFrameskip-v4 BoxingNoFrameskip-v4 BreakoutNoFrameskip-v4 FreewayNoFrameskip-v4 MsPacmanNoFrameskip-v4 PongNoFrameskip-v4 \
+    --command "poetry run python cleanrl/sac_atari.py --track --save-model --total-timesteps 100000 --buffer-size 20000 --learning-starts 1000 --target-network-frequency 1000" \
+    --num-seeds 4 \
+    --workers 1 \
+    --no-auto-tag
+
+python -m cleanrl_utils.benchmark --env-ids AlienNoFrameskip-v4 AmidarNoFrameskip-v4 AssaultNoFrameskip-v4 BoxingNoFrameskip-v4 BreakoutNoFrameskip-v4 FreewayNoFrameskip-v4 MsPacmanNoFrameskip-v4 PongNoFrameskip-v4 --command "poetry run python cleanrl/sac_atari.py --track --save-model --total-timesteps 100000 --buffer-size 20000 --learning-starts 1000 --target-network-frequency 1000" --num-seeds 4 --workers 1 --no-auto-tag

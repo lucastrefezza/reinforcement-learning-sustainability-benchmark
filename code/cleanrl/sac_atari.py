@@ -249,16 +249,16 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
     start_time = time.time()
 
     # Code Carbon tracking
-    # tracker = EmissionsTracker(
-    #     project_name="rlsb",
-    #     output_dir="emissions",
-    #     experiment_id=run_name,
-    #     experiment_name=run_name,
-    #     tracking_mode="process",
-    #     log_level="warning",
-    #     on_csv_write="append",
-    # )
-    # tracker.start()
+    tracker = EmissionsTracker(
+        project_name="rlsb",
+        output_dir="emissions",
+        experiment_id=run_name,
+        experiment_name=run_name,
+        tracking_mode="process",
+        log_level="warning",
+        on_csv_write="append",
+    )
+    tracker.start()
 
     # TRY NOT TO MODIFY: start the game
     obs, _ = envs.reset(seed=args.seed)
@@ -384,8 +384,8 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
         for idx, episodic_return in enumerate(episodic_returns):
             writer.add_scalar("eval/episodic_return", episodic_return, idx)
 
-    # emissions = tracker.stop()
-    # writer.add_scalar("emissions", emissions, args.total_timesteps)
+    emissions = tracker.stop()
+    writer.add_scalar("emissions", emissions, args.total_timesteps)
 
     envs.close()
     writer.close()
