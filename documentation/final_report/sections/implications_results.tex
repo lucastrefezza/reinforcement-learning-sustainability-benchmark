@@ -1,0 +1,69 @@
+\section{Implications of the Results}
+\label{sec:implications_results}
+This section interprets the findings from the previous section and discusses their broader implications.
+
+This section is more interpretative and application-focused—it explains why the results matter.
+
+
+\subsection{General Observations}
+\begin{itemize}
+	\item What trends emerged from the results?
+	\item Were any algorithms unexpectedly energy-efficient?
+	\item Did any algorithm perform significantly worse than expected in terms of energy usage?	
+\end{itemize}
+What were the most notable trends in the results?
+Any surprising findings? (e.g., did a simpler method turn out to be more efficient than an advanced one?).
+
+\subsection{Energy Efficiency vs. Performance Trade-Off}
+\begin{itemize}
+	\item Which algorithms achieved the best performance at low energy costs?
+	\item Are high-performance methods necessarily more energy-intensive?
+	\item Is there a clear "sweet spot" balancing energy and reward?
+	\item Are there diminishing returns for performance improvements vs. energy consumption?
+\end{itemize}
+Which algorithms performed well at low energy costs?
+Which algorithms achieved the best performance but at high energy costs?
+Is there a clear “sweet spot” algorithm?
+
+\subsection{Practical Implications for AI Sustainability}
+\begin{itemize}
+	\item If a company prioritizes high performance, which algorithm should they use?
+	\item If low energy consumption is the main concern, what is the best choice?
+	\item How can reinforcement learning be made more sustainable?
+\end{itemize}
+If companies want maximum performance, which algorithm should they choose?
+If a low-carbon footprint is the priority, what’s the best option?
+What does this study suggest about future AI energy efficiency research?
+Seconda versione, dopo aver fatto notare della sezione conclusioni:
+\begin{itemize}
+	\item Which algorithms should be prioritized in resource-limited environments?
+	\item If reinforcement learning is applied in an industry setting, which method should be chosen for:
+	\begin{itemize}
+		\item Maximum efficiency?
+		\item Best performance at a reasonable cost?
+		\item Low-carbon AI initiatives?
+	\end{itemize}
+	\item How could energy-efficient reinforcement learning impact research and business decisions?
+\end{itemize}
+---------
+ricorda video su "deepseek clone at 30\$", dice tipo che quale algo usi sembra non fare differenza, quindi si potrebbe optare a prescindere per il più green, o soft spot tra reinforce e ppo per dire, magari reinforce with baseline e migliori batch.
+
+\subsection{Limitations and Future Work}
+(dopo lo slash la versione aggiornata dopo aver fatto notare che c'è la sezione conclusioni, la versione aggiornata delle direzioni future è semplicemente azzeccata dopo quella originale, nel senso primi due item sono vecchi, altri 3 nuovi)
+\begin{itemize}
+	\item \textbf{CodeCarbon limitations:} Real-time tracking slowed down experiments. / Real-time tracking was too slow, limiting fine-grained energy measurements.
+	\item \textbf{Hardware constraints:} Would stronger GPUs reduce energy costs through faster convergence? / The computational budget influenced the choice of tested methods.
+	\item \textbf{Future directions:}
+	\begin{itemize}
+		\item Development of energy-efficient RL architectures.
+		\item Methods for optimizing training without excessive power use.
+		\item Can reinforcement learning frameworks be modified to prioritize energy-efficient training?
+		\item How does energy consumption vary with different hardware architectures?
+		\item Investigating potential trade-offs between batch size, learning rate, and energy efficiency.
+	\end{itemize}
+\end{itemize}
+CodeCarbon limitations: Not tracking step-by-step emissions limited insights into fine-grained energy consumption patterns.
+Hardware constraints: Would more powerful GPUs reduce energy costs through faster convergence?
+Future Research Directions:
+Could energy-efficient architectures be developed?
+Should reinforcement learning algorithms be adapted for lower energy consumption?

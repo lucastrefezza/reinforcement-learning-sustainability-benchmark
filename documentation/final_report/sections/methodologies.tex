@@ -7,9 +7,6 @@ The following sections outline the several key steps involved in the methodology
 
 \subsection{Algorithms Selection}
 \label{subsec:algorithm_selection}
-%In our benchmark we will consider, regardind the first category, the DQN, which constitutes the first example of success of deep reinforcement learning (so that we have a sort of baseline), and RAINBOW, a method that involves a lot of the tweaks and improvement made to the original DQN. In addition to these two, we will test various of the single tweaks to assess their individual contribution to energy consumption and performance, and more advanced methods like SPR (Self-Predictive Representations, introduced in the fifth work cited).
-%
-%Regarding policy gradient and actor critic methods, we will start with a basic one like REINFORCE and/or REINFORCE with baseline (chapter 13 of the first cited work) or the very similar Vanilla Policy Gradient (VPG). We will then move on to Proximal Policy Optimization (PPO), Deep Deterministic Policy Gradient (DDPG)  and its evolutions Twin Delayed DDPG (TD3, seventh work cited) and DRQ (Data-regularized Q, fourth cited work).
 
 As stated, in our benchmark we consider both value-based methods and policy gradient methods. The selected algorithms are chosen to represent a wide range of approaches within both categories.
 
@@ -71,19 +68,20 @@ In particular, the study points out that in the case of Atari at least 100 runs 
 
 In our case we will be forced to limit ourselves to 4 runs per environment, so we will use, in addition to the more classic and popular metrics such as the point estimates mentioned above, the other metrics suggested in~\cite{agarwal:statistical_precipice}.  It should anyway be noted that a low number of runs is a less significant problem for us, since we are not attempting to advance the state of the art performance of DRL algorithms, but have instead a focus on energy consumption and emissions, which should in any case remain constant regardless of the actual learning of the agent, which is instead related to randomness.
 
-With regard to the second aspect, namely, testing the algorithms on a variety of environments to evaluate their generality, Atari 100k once again comes to our aid, being constituted by 26 games. Moreover, the Arcade Learning Environment, built on top of the Atari 2600 emulator Stella and used by gymnasium, includes over 55 games. Unfortunately, again, we do not have the time and/or computational resources to test on all the Atari \num{100}k's 26 games or all the ones available in ALE, so we selected for the benchmark a representative subset of 8 Atari games, trying to choose games that cover a range of difficulties and styles. Obviously, with so few games because of the constraints just mentioned, an exhaustive selection is difficult, but we nonetheless tried to provide a balanced benchmark, ensuring that the selected games cover a range of challenges to effectively evaluate different algorithms, while still not being excessively difficult. This last requirement is due to basic DQN and its more simple extensions, which have some limitations in only 100k interactions (the team that introduced the DQNs trained its model on 2 million interactions to achieve interesting results).
+With regard to the second aspect, namely, testing the algorithms on a variety of environments to evaluate their generality, Atari 100k once again comes to our aid, being constituted by 26 games. Moreover, the Arcade Learning Environment, built on top of the Atari 2600 emulator Stella and used by gymnasium, includes over 55 games. Unfortunately, again, we do not have the time and/or computational resources to test on all the Atari \num{100}k's 26 games or all the ones available in ALE, so we selected for the benchmark a representative subset of 8 Atari games, trying to choose games that cover a range of difficulties and styles. Obviously, with so few games because of the constraints just mentioned, an exhaustive selection is difficult, but we nonetheless tried to provide a balanced benchmark, ensuring that the selected games cover a range of challenges to effectively evaluate different algorithms, while still not being excessively difficult. This last requirement is due to basic DQN and its more simple extensions, which have some limitations in only 100k interactions (the team that introduced the DQNs trained its model on millions of interactions to achieve interesting results).
 
-Here are the 8 selected games, completed with a rationale for their inclusion:
+Here are the 8 selected games, along with a rationale for their inclusion:
 \begin{itemize}
-	\item \textit{Alien} - moderate difficulty, good for testing exploration and strategy;
-	\item \textit{Amidar} - requires planning and quick decision-making;
-	\item \textit{Assault} - tests reflexes and targeting accuracy;
-	\item \textit{Boxing} - simple but requires precise control and timing;
-	\item \textit{Breakout} - classic game, good for testing control;
-	\item \textit{Freeway} - simple yet tests quick decision-making under pressure;
-	\item \textit{Ms. Pac-Man} - classic maze game, tests navigation and evasion;
-	\item \textit{Pong} - simple and well-understood, great for baseline comparisons.
+	\item \textit{Alien} - involves exploration and strategic movement;
+	\item \textit{Amidar} - requires precise movement, quick decision-making and long-term planning;
+	\item \textit{Assault} - a fast-paced shooter testing reflexes and targeting accuracy;
+	\item \textit{Boxing} - visually simple yet requires precise timing and positioning;
+	\item \textit{Breakout} - a control-based game widely studied in RL;
+	\item \textit{Freeway} - simple ruleset, tests quick decision-making and reaction time;
+	\item \textit{Ms. Pac-Man} - emphasizes navigation, evasion, and planning;
+	\item \textit{Pong} - minimalistic, simple and well-understood game used as an RL baseline.
 \end{itemize}
+
 Although Alien and Ms. Pac-Man may appear similar in terms of overall theme, we decided to keep both in our selection due to their differing action space structures. Alien has a more complex movement and shooting action space, while Ms. Pac-Man involves navigation-based control with a different interaction model. Including both allows us to evaluate how reinforcement learning algorithms adapt to environments with distinct control dynamics, rather than just variations in visual style or game mechanics.
 
 So, to summarize, each algorithm will be evaluated on 8 different Atari games, with 4 runs per game using different random seeds, for a total of 32 trainings per algorithm. This approach, with appropriate metrics, ensures that our results are statistically significant and account for the inherent variability in RL training processes.
@@ -93,19 +91,19 @@ So, to summarize, each algorithm will be evaluated on 8 different Atari games, w
 
 Collecting comprehensive and accurate data is crucial for evaluating both the performance and energy consumption of the algorithms. We employ several tools and services to ensure robust data collection and analysis.
 
-To track the performance metrics, we use both online and local tools. The online service \textit{Weights and Biases} is used for real-time monitoring and storage of experimental data. This platform allows for easy sharing and collaboration, as well as providing powerful visualization and analysis tools. Locally, we use \textit{TensorBoard}, which integrates seamlessly with our training workflows and offers detailed insights into the training process through its rich set of visualizations.
+To track the performance metrics, we use both online and local tools. The online service \textit{Weights and Biases} (wandb) is used for real-time monitoring and storage of experimental data. This platform allows for easy sharing and collaboration, as well as providing powerful visualization and analysis tools. Locally, we use \textit{TensorBoard}, which integrates seamlessly with our training workflows and offers detailed insights into the training process through its rich set of visualizations.
 
-In addition to tracking performance metrics, monitoring energy consumption is the key aspect of the project. For this we use \textit{CodeCarbon}~\cite{benoit:code_carbon}, a tool designed to measure the carbon footprint of computing activities. CodeCarbon is integrated in our training scripts to provide real-time tracking of energy usage, a crucial metric for comparing the energy efficiency of the different algorithms.
+In addition to tracking performance metrics, monitoring energy consumption and emissions is the key aspect of the project. For this we use \textit{CodeCarbon}, a tool designed to measure the carbon footprint of computing activities. As stated in their documentation, this package enables developers to track emissions, measured as kilograms of \mbox{$\text{CO}_2$-equivalents} ($\text{CO}_2$eq) in order to estimate the carbon footprint of their work. \mbox{$CO_2$-eq} is a standardized measure used to express the global warming potential of various greenhouse gases: the amount of $\text{CO}_2$ that would have the equivalent global warming impact. For computing, which emits $\text{CO}_2$ via the electricity it is consuming, carbon emissions are measured in kilograms of $\text{CO}_2$-equivalent per kilowatt-hour~\cite{benoit:code_carbon}. See \href{https://mlco2.github.io/codecarbon/methodology.html}{this} page and section \ref{subsec:exp_setup_adjustments} for more information on their methodology.
 
-The metrics we collect include:
+Explained the tools, the metrics we collect through them include:
 \begin{itemize}
 	\item \textit{Global Step:} indicates the number of environment interactions during training.
 	\item \textit{Episodic Return:} the score achieved in each episode, providing a measure of the algorithm's performance.
-	\item \textit{Loss:} tracks the optimization process, giving insight into the learning dynamics of the algorithm.
+	\item \textit{Loss(es):} track the optimization process, giving insight into the learning dynamics of the algorithm.
 	\item \textit{Value Estimates:} such as Q-values or value function estimates, offering insight into the agent's decision-making process.
 	\item \textit{Policy Entropy:} measures the randomness in the policy and how much it differs from the previous one, useful for understanding exploration behavior and how much room for improvement is still left.
 	\item \textit{Learning Rate:} the rate at which the model learns, especially if it changes during training.
-	\item \textit{Emissions:} the amount of CO2 emitted during training, tracked by CodeCarbon, allowing us to evaluate the energy efficiency of each algorithm.
+	\item \textit{Emissions:} the amount of $CO_2$-eq emitted during training, tracked by CodeCarbon.
 \end{itemize}
 
 Weights and Biases facilitates a coarse aggregation and visualization of these metrics across multiple runs and environments, making it easier to compare results at a first glance and draw some first insights. TensorBoard provide supplementary local visualizations to help diagnose any issues during training and ensure the integrity of the collected data.
@@ -130,8 +128,7 @@ However, due to CodeCarbon's lack of support for the GTX 1050 Ti in tracking GPU
 	\item \textbf{GPU}: NVIDIA RTX A5000
 	\item \textbf{RAM}: 64GB
 \end{itemize}
-
-This switch was necessary to ensure accurate measurement of energy consumption and carbon emissions for reinforcement learning training. While the first machine was sufficient for setting up the environment and running initial fine-tuning, the A5000 GPU in the second setup provided both better computational efficiency and full compatibility with CodeCarbon, ensuring reliable energy tracking during experimentation.
+While the first machine was sufficient for setting up the environment and running initial fine-tuning, this switch to the A5000 GPU in the second setup was necessary to ensure full compatibility with CodeCarbon and reliable, accurate measurement of energy consumption and carbon emissions during experimentation.
 
 On the software side, after careful considerations and some testing with other alternatives like OpenAI's \textit{Spinning Up}, we chose to base the implementation of the project on \textit{CleanRL}~\cite{huang:cleanrl}. As the authors states, CleanRL is an open-source library that provides high-quality single-file implementations of Deep Reinforcement Learning algorithms. It provides an environment already complete with most dependencies a project like ours might need (like Gymnasium), has a straightforward codebase, and already integrates tools like Weights and Biases and TensorBoard, that help log metrics, hyperparameters, videos of an agent's gameplay, dependencies, and more.
 
@@ -147,36 +144,31 @@ In the end, the environment for our experiments should be efficient and easily r
 The Atari environment setup follows best practices outlined in \cite{machado:revisiting_ale} for training and evaluating agents in the Arcade Learning Environment (ALE). These decisions were made to ensure a standardized, reproducible, and robust experimental setting. Additionally, we incorporate relevant insights from the ALE documentation to refine our environment configuration. Many of these choices also align with those made in the first works on Deep Q-Networks (DQN), ensuring comparability with early research efforts.
 
 \paragraph{Preprocessing and Standardization}
-The preprocessing pipeline ensures consistent input representations across different Atari games, avoiding confounding factors that could skew results. The following steps are implemented:
-
-\begin{itemize}
-	\item \textbf{Frame Skipping:} We use \texttt{MaxAndSkipEnv(skip=4)}, ensuring that actions are repeated for four frames and the maximum pixel values of consecutive frames are used. This stabilizes the input representation and allows agents to process meaningful changes in the game environment while reducing computational load \cite{machado:revisiting_ale}.
-	\item \textbf{Random No-op Initialization:} At the beginning of each episode, a random number (up to 30) of "do nothing" actions are executed (\texttt{NoopResetEnv(noop\_max=30)}). This prevents deterministic policies from exploiting fixed starting conditions, improving generalization \cite{machado:revisiting_ale}.
-	\item \textbf{Episodic Life and Fire Reset:} 
+The preprocessing pipeline ensures consistent input representations across different Atari games, avoiding confounding factors that could skew results. Through the use of appropriate atari wrappers of Stable Baselines~v3, the following steps are implemented:
+\begin{description}
+	\item[Frame skipping:] we use \verb|MaxAndSkipEnv(skip=4)|, ensuring that actions are repeated for four frames and the maximum pixel values of consecutive frames are used. This stabilizes the input representation and allows agents to process meaningful changes in the game environment while reducing computational load.
+	\item[Random no-op initialization:] at the beginning of each episode, a random number (up to 30) of "do nothing" actions are executed (\verb|NoopResetEnv(noop_max=30)|). This prevents deterministic policies from exploiting fixed starting conditions, improving generalization.
+	\item[Episodic life and fire reset:]\
+	\begin{description}
+		\item[\texttt{EpisodicLifeEnv}:] is used to reset the environment after each lost life instead of at the end of the full game. This makes training more efficient by exposing the agent to more starting states per episode.
+		\item[\texttt{FireResetEnv}:] is applied in games where a "FIRE" action is required to start (e.g., Breakout), ensuring proper initialization.
+	\end{description}
+	\item[Observation preprocessing:]\
 	\begin{itemize}
-		\item \texttt{EpisodicLifeEnv} is used to reset the environment after each lost life instead of at the end of the full game. This makes training more efficient by exposing the agent to more starting states per episode.
-		\item \texttt{FireResetEnv} is applied in games where a "FIRE" action is required to start (e.g., Breakout), ensuring proper initialization.
+		\item raw RGB images are converted to grayscale and resized to 84×84 pixels (\verb|GrayScaleObservation| and \verb|ResizeObservation|).
+		\item a history of the last four frames is stacked (\verb|FrameStack(4)|) to provide temporal context, compensating for the lack of explicit memory.
 	\end{itemize}
-	\item \textbf{Observation Preprocessing:}
-	\begin{itemize}
-		\item Raw RGB images are converted to grayscale (\texttt{GrayScaleObservation}) and resized to 84×84 pixels (\texttt{ResizeObservation}).
-		\item A history of the last four frames is stacked (\texttt{FrameStack(4)}) to provide temporal context, compensating for the lack of explicit memory.
-	\end{itemize}
-	\item \textbf{Reward Clipping:} Rewards are clipped between -1 and 1 (\texttt{ClipRewardEnv}) to standardize their scale across different games. This makes the algorithms able to work with all games without needing refinements to adapt to particularly high- or low-reward games, while stabilizing training.
-\end{itemize}
+	\item[Reward clipping:] rewards are clipped between -1 and 1 (\verb|ClipRewardEnv|) to standardize their scale across different games. This makes the algorithms able to work with all games without needing refinements to adapt to particularly high- or low-reward games, while stabilizing training.
+\end{description}
 
-\paragraph{Choice of NoFrameskip-v4 Environments}
-In this study, we opted to use the \textbf{NoFrameskip-v4} versions of the Atari environments~\cite{farama:ale}. The rationale behind this choice includes:
+\paragraph{Choice of the Environments Version}
+The Arcade Learning Environment (ALE)~\cite{bellemare:ale} provides multiple versions of Atari environments~\cite{farama:ale} to address different research requirements and needs. These environments versions encapsulate the preprocessing steps we talked about, each one setting a different default value for them and some other aspects of the games. Two of the most widely used versions are \textit{NoFrameskip-v4} and \textit{v5}. The main distinction between these is the inclusion of \textit{sticky actions} in \textit{v5}, as recommended in~\cite{machado:revisiting_ale}. Sticky actions introduce a 25\% probability of repeating the previous action, adding stochasticity to the environment to prevent overfitting when training deterministic policies. 
 
-\begin{itemize}
-	\item \textbf{Deterministic Execution for Reproducibility:} The \texttt{v4} version does not introduce stochastic frame skipping, ensuring that each run is fully deterministic given a fixed random seed. This is crucial for benchmarking energy consumption and algorithmic efficiency without introducing additional variance from the environment itself.
-	\item \textbf{Explicit Frame Skipping Control:} Rather than relying on ALE's internal frame skipping, we apply \texttt{MaxAndSkipEnv(skip=4)}, allowing direct control over action repeat frequency. This ensures consistency across all environments and aligns with best practices recommended in \cite{machado:revisiting_ale}.
-	\item \textbf{Alignment with Prior Research:} Many deep reinforcement learning studies, including those evaluating sample efficiency in Atari benchmarks, use NoFrameskip-v4 environments (or equivalent at the time) to ensure fair comparisons and avoid unintended interactions between stochastic skips and algorithm behavior. Our setup is almost identical to the v5 version of the environments, which includes all the best practices in~\cite{machado:revisiting_ale}, except that we do not use sticky actions (\texttt{repeat\_action\_probability=0.25}).
-	\item \textbf{Impact of Sticky Actions in Short-Horizon Training:} Sticky actions introduce a 25\% probability of repeating the last action, adding stochasticity to the environment. While this can improve generalization in long training runs (millions of steps), in our case—where only 100k iterations are allowed—removing sticky actions is not only not problematic, but almost mandatory. The added stochasticity would significantly degrade performance in such a short training horizon, leading to instability and inefficient learning. Our approach prioritizes stability and faster convergence, which is even more crucial in low-resource settings. Moreover, their usage is not ubiquitous in the literature as the other options we discussed.
-\end{itemize}
+In this study, we use the \textit{NoFrameskip-v4} environments~\cite{farama:ale}. This choice is motivated by several factors. First, \textit{NoFrameskip-v4} ensures fully deterministic execution when a fixed random seed is used, which is crucial for the reproducibility of our experiments. This determinism allows us to conduct controlled comparisons of different algorithms while minimizing the influence of environment stochasticity on performance evaluation. Additionally, since our preprocessing pipeline explicitly applies \verb|MaxAndSkipEnv(skip=4)| to handle frame skipping in a standardized way (as discussed in the previous section), the built-in frame skipping behavior of other environment versions is unnecessary and would introduce redundant processing.
 
-\paragraph{Conclusion}
-By structuring our preprocessing pipeline around the NoFrameskip-v4 environments and following the best practices from \cite{machado:revisiting_ale}, we ensure that our experimental results are robust, reproducible, and comparable to prior research. The preprocessing steps applied in our implementation are widely used in reinforcement learning studies and enable fair performance evaluations across different Atari games. Furthermore, the decision to exclude sticky actions aligns with the constraints of our 100k iteration limit, ensuring meaningful training without excessive randomness hindering learning progress.
+The primary difference between our setup and the \textit{v5} environments is the exclusion of sticky actions. While sticky actions can enhance generalization in long training regimes by preventing the agent from overfitting to deterministic game mechanics, their benefits are less relevant in our setting, where each run is limited to only 100k interactions. Under such a short training horizon, the additional stochasticity introduced by sticky actions would significantly degrade training stability and learning efficiency, leading to noisier performance estimates thus removing them is not only not problematic, but almost mandatory. Furthermore, the use of sticky actions is not as ubiquitous in the reinforcement learning literature as other preprocessing steps, making their exclusion a reasonable choice also for comparability with prior work.
+
+By structuring our preprocessing pipeline around the NoFrameskip-v4 environments and following the best practices from \cite{machado:revisiting_ale}, we ensure that our experimental results are robust, reproducible, and comparable to the large body of prior deep reinforcement learning research. The preprocessing steps applied in our implementation are widely used in reinforcement learning studies and enable fair performance evaluations across different Atari games. Furthermore, the decision to exclude sticky actions aligns with the constraints of our 100k iteration limit, ensuring meaningful training without excessive randomness hindering learning progress.
 
 \begin{table}[h]
 	\centering
@@ -205,6 +197,43 @@ By structuring our preprocessing pipeline around the NoFrameskip-v4 environments
 	\label{tab:ale_comparison}
 \end{table}
 
+\subsubsection{(Hyper)Parameter Configurations}
+
+We discuss in this section a set of parameters that influence the experiment setup but not directly the optimization process like hyperparameters do. Regarding the latter, we do discuss here our general approach in their initial setting and optimization, but we delay to section \ref{sec:preliminary_results}, in which we dedicate a section to every algorithm, the details regarding their fine tuning, so to have a more cohesive and complete presentation.
+
+\paragraph{Parameters}
+\begin{description}
+	\item[Tracking and Logging:] the flag \verb*|--track| ensures that training metrics are logged in \verb*|wandb|. The project name is set through the flag \verb*|--wandb-project-name| (in our case \texttt{rlsb}). The tracking in tensorboard is always enabled.
+    \item[Device Usage:] \verb|--cuda| enables training on GPU, if this option is available.
+	\item[Random Seed:] the \verb|--seed| value to use for this run.
+	\item[Video Capture:] the \verb|--capture-video| flag is used to record the gameplay of the agent. We set it to \verb|False|, indicating that video recording of agent behavior is not performed during training, but we enable it during evaluation.
+	\item[Model Saving:] the \verb|--save-model| flag is set to \verb|True|, this also automatically starts the evaluation process right after the model is saved.
+\end{description}
+
+\paragraph{Hyperparameters}
+The hyperparameter selection for all implemented algorithms was primarily based on the configurations used in the original papers introducing each method and, when available, those from the CleanRL implementation. A key consideration across all algorithms was the adaptation of the hyperparameters strictly connected to the number of environment interactions. Since deep reinforcement learning algorithms are typically trained for 5 to 10 million interactions, whereas our study was constrained to \num{100000} interactions, certain hyperparameters, such as \texttt{learning\_starts} and \texttt{buffer\_size}, required adjustment to ensure appropriate behavior in this limited training setting.
+
+For the baseline Deep Q-Network, the hyperparameters closely matched those from~\cite{mnih:human} and the CleanRL repository, as both sources used highly similar settings. The main focus of the tuning was the aforementioned adaptation to a reduced number of interactions with the environment.
+
+For the various DQN variants tested, the hyperparameters were initialized using the same configuration employed for the base DQN implementation. The tuning process primarily involved modifying parameters directly associated with the respective architectural or algorithmic tweak while keeping the overall structure as consistent as possible with standard DQN. This approach aligns with the methodology commonly adopted in prior research introducing these modifications, ensuring a fair and controlled comparison. By maintaining a shared foundation across variants, we were able to isolate the impact of each specific enhancement in terms of performance improvements and emissions cost.
+
+\subsubsection{Evaluation}
+
+After completing the training phase, we evaluate the agent by executing \num{10} episodes in the target environment. During these episodes, we collect the \textit{episodic returns}, which serve as the primary metric for performance assessment.
+
+The evaluation of the DQN-based methods is conducted with a fully deterministic policy, setting $\epsilon = 0.00$ to disable exploration, ensuring that the agent exploits its learned policy without stochasticity. This allows for a clear assessment of how well the trained model generalizes to unseen episodes. The same is true for SAC (see also the discussion in \ref{subsubsec:sac}), while Reinforce and PPO, being on-policy algorithm that optimize a stochastic policy, are evaluated on it, meaning actions are sampled from the learned distribution.
+
+While, to avoid interference with the training process, we disable video recording during it, we enable it during evaluation by setting \texttt{capture\_video=True}. This provides visual insight into the agent's behavior without incurring the computational overhead during learning.
+
+The collected episodic returns undergo statistical analysis following the methods described in \nameref{subsec:data_analysis}. Specifically:
+\begin{itemize}
+	\item We apply normalization to the collected data, both \textbf{human normalization} and \textbf{min-max normalization}, as detailed in \ref{subsubsec:normalization}.
+	\item Basic statistics are computed on the normalized data, including mean, standard deviation, and median.
+	\item The \textbf{interquartile mean (IQM)} is used as a robust estimator, as suggested in prior research.
+
+\end{itemize}
+
+The evaluation script loads the trained model, initializes a synchronized evaluation environment, and runs the agent for the specified number of episodes. It follows the same preprocessing pipeline used in training, ensuring consistency in observation space and action execution.
 
 \subsection{Data Analysis and Visualization}
 \label{subsec:data_analysis}
@@ -215,6 +244,7 @@ A critical part of this project involved consolidating and analyzing the trainin
 We collected detailed logs for each run: TensorBoard event files (containing metrics such as episodic returns, steps per second, losses, etc.) and W\&B logs, which contains all the data of the TensorBoard logs (extrapolated from the uploaded TensorBoard logs), plus some other system related metrics. To work on this data in Python with its scientific tools we employed the \texttt{tbparse} library to parse the TensorBoard logs, making modifications to the library where necessary to handle deprecated NumPy types. These parsed logs resulted in two CSV files, one with all the metrics for all the runs, the other containing additional information about hyperparameters (e.g., learning rate, buffer size, and so forth) from the experimental configuration. We then merged the two files into a single, larger CSV dataset containing all runs from all algorithms.
 
 \subsubsection{Normalization of Returns}
+\label{subsubsec:normalization}
 Since the raw episodic returns for Atari games vary widely in scale, a fair and not skewd comparison needed a normalization step. This is one of the reasons that prevented us from directly using tensorboard and wandb plots. We performed two distinct normalization procedures:
 \begin{itemize}
 	\item \textbf{Human-Normalized Returns.} In this approach, for each game, we subtract the score of a random agent and divide by the difference between the human baseline and the random baseline. This is a standard practice in Atari benchmarks to contextualize performance relative to human play.
@@ -244,3 +274,54 @@ Overall, this approach provided:
 \end{itemize}
 By integrating custom plotting and data analysis with the logs from W\&B and TensorBoard, we ensure reproducibility and enable deeper insights into the trade-offs between performance and energy consumption across all tested algorithms.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%The training procedures for reinforcement learning experiments require careful tuning of hyperparameters to ensure stability and performance across different environments and algorithms. In this section, we provide an overview of the hyperparameters used across all experimental runs and discuss general trends in their configurations. We also highlight parameters included in the training setup that, while not hyperparameters in the traditional sense, influence the experimental procedure.
+%
+%\paragraph{General Hyperparameter Settings}
+%Across all experiments, we observe a set of common hyperparameter choices that are consistent with best practices in reinforcement learning literature. These include:
+%
+%\begin{itemize}
+%	\item \textbf{Total Timesteps:} All experiments are conducted over $100,000$ timesteps, ensuring uniform evaluation across different algorithms and environments.
+%	\item \textbf{Learning Rate:} A low learning rate is used, with values ranging from $0.0001$ (for DQN-based methods) to $0.00025$ or $0.0003$ (for policy-based methods like PPO and SAC). These values are chosen to balance stability and convergence speed.
+%	\item \textbf{Discount Factor $\gamma$:} Set to $0.99$ across all experiments, ensuring that the agent prioritizes long-term rewards.
+%	\item \textbf{Exploration Strategy:} For value-based methods, an $\epsilon$-greedy approach is used, starting at $\epsilon = 1$ and decaying to $\epsilon = 0.01$ over $10\%$ of training timesteps.
+%	\item \textbf{Batch Size:} Typically set to $32$ for DQN-based methods, while PPO and SAC use larger values such as $256$ or $1024$, reflecting their different training dynamics.
+%	\item \textbf{Target Network Update Frequency:} Set to $1000$ for methods utilizing a target network (e.g., DQN, SAC).
+%	\item \textbf{Replay Buffer Size:} Fixed at $10,000$ for DQN-based methods, and increased to $20,000$ for SAC.
+%	\item \textbf{Number of Environments:} While DQN and Reinforce use a single environment, PPO employs $8$ parallel environments to improve data efficiency.
+%\end{itemize}
+%
+%These hyperparameter values reflect common heuristics for stable reinforcement learning training, ensuring fair comparisons across algorithms.
+%
+%
+%\paragraph{Algorithm-Specific Considerations}
+%Each reinforcement learning algorithm has unique hyperparameter requirements and training considerations. Below, we highlight key aspects for each:
+%
+%\paragraph{Dueling DQN}
+%\begin{itemize}
+%	\item Uses a \textbf{target network update frequency} of $1000$ steps to stabilize training.
+%	\item Implements an \textbf{$\epsilon$-greedy exploration strategy} with a decay schedule.
+%\end{itemize}
+%
+%\paragraph{PPO (Proximal Policy Optimization)}
+%\begin{itemize}
+%	\item Utilizes \textbf{multiple epochs per update} (4) and \textbf{minibatches} (4) to process data efficiently.
+%	\item Uses \textbf{entropy regularization} ($0.01$) and \textbf{value function coefficient} ($0.5$) to balance exploration and stability.
+%	\item Implements \textbf{learning rate annealing} to improve convergence.
+%\end{itemize}
+%
+%\paragraph{SAC (Soft Actor-Critic)}
+%\begin{itemize}
+%	\item Uses \textbf{automatic entropy tuning} with a target entropy scale of $0.89$.
+%	\item Employs a \textbf{separate learning rate for policy and Q-networks} ($0.0003$).
+%	\item A larger \textbf{buffer size} ($20,000$) is used to improve sample efficiency.
+%\end{itemize}
+%
+%\paragraph{Reinforce}
+%\begin{itemize}
+%	\item Uses a simple \textbf{monte-carlo update} approach without replay buffers.
+%	\item Employs a \textbf{fixed learning rate} ($0.00025$) with no adaptive mechanisms.
+%\end{itemize}
+%
+%These details are expanded upon in the methodology sections dedicated to each algorithm.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
