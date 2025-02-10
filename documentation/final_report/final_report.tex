@@ -21,12 +21,21 @@
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{caption}
-\captionsetup{tableposition=top,figureposition=bottom,font=small,format=hang,labelfont={sf,bf}}
+\captionsetup{position=above, font=small, format=hang, labelfont={sf,bf}} % versione adattata a komascript
+%\captionsetup{tableposition=top,figureposition=bottom,font=small,format=hang,labelfont={sf,bf}} versione generica/precedente
+\setkomafont{captionlabel}{\sffamily\bfseries}
+\setkomafont{caption}{\small}
+\captionsetup[table]{position=top}
+\captionsetup[figure]{position=bottom}
+
+%\setkomafont{caption}{\itshape\sffamily}
+%\setkomafont{captionlabel}{\upshape\bfseries\sffamily}
+
 \newcolumntype{Y}{>{\centering\arraybackslash}X}
 \usepackage{multirow}
 \usepackage{subfig}
 
-\usepackage{fancyhdr}
+%\usepackage{fancyhdr}
 
 \usepackage{amsmath}				% AMS = American Mathematical Society
 \usepackage{amssymb}				% per simboli matematici
