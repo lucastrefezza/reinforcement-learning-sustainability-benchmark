@@ -28,99 +28,364 @@ Additionally, Weights \& Biases collects system data during training, and while 
 
 \subsection{DQN-Based Algorithms}
 We present results for five different DQN-based algorithms, including baseline DQN and its extensions. Each algorithm is analyzed individually before an overall comparison.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Deep Q-Network (DQN Baseline)}
+\label{subsubsec:dqn_baseline}
 
-\subsubsection{DQN (Baseline)}
-\label{subsubsec:dqn}
+\paragraph{(Hyper)Parameters.}
+Table~\ref{tab:dqn_hyperparams} summarizes the main hyperparameters used for our DQN baseline.  
+\texttt{env\_id} and \texttt{seed} varied across runs (eight Atari games $\times$ four seeds), 
+while the rest remained unchanged. Note in particular that \texttt{buffer\_size} and 
+\texttt{learning\_starts} have been reduced relative to their usual million-step values to 
+accommodate the shorter 100k-step regime.
 
-In our benchmark, \emph{Deep Q-Network (DQN)} serves as the baseline algorithm against which we compare more advanced DQN variants and policy gradient methods. We trained DQN on the selected eight Atari games, running four distinct seeds per game for a total of 32 runs. Table~\ref{tab:dqn-hyperparams} summarizes the main hyperparameters used; the total number of training steps was \num{100000} in each run.
-
-\paragraph{Hyperparameters.}
-\begin{table}[htb]
+\begin{table}[htbp]
 	\centering
-	\begin{tabular}{l l}
+	\begin{tabular}{ll}
 		\toprule
 		\textbf{Parameter} & \textbf{Value} \\
 		\midrule
-		\texttt{learning\_rate} & \num{1e-4} \\
-		\texttt{buffer\_size} & \num{10000} \\
-		\texttt{batch\_size} & \num{32} \\
-		\texttt{target\_network\_frequency} & \num{1000} \\
-		\texttt{exploration\_fraction} & \num{0.1} \\
-		\texttt{start\_e}, \texttt{end\_e} & \num{1.0} $\to$ \num{0.01} \\
-		\texttt{learning\_starts} & \num{1000} \\
-		\texttt{train\_frequency} & \num{4} \\
+		\texttt{exp\_name}                & dqn\_atari \\
+		\texttt{seed}                     & 1..4 \\
+		\texttt{torch\_deterministic}     & True \\
+		\texttt{cuda}                     & True \\
+		\texttt{track}                    & True \\
+		\texttt{wandb\_project\_name}     & rlsb \\
+		\texttt{capture\_video}           & False \\
+		\texttt{save\_model}              & True \\
+		\texttt{upload\_model}            & False \\
+		\texttt{env\_id}                  & e.g.\ AlienNoFrameskip-v4 \\
+		\texttt{total\_timesteps}         & 100000 \\
+		\texttt{learning\_rate}           & 0.0001 \\
+		\texttt{num\_envs}                & 1 \\
+		\texttt{buffer\_size}             & 10000 \\
+		\texttt{gamma}                    & 0.99 \\
+		\texttt{tau}                      & 1.0 \\
+		\texttt{target\_network\_frequency} & 1000 \\
+		\texttt{batch\_size}             & 32 \\
+		\texttt{start\_e}, \texttt{end\_e} & 1.0 $\to$ 0.01 \\
+		\texttt{exploration\_fraction}    & 0.1 \\
+		\texttt{learning\_starts}         & 1000 \\
+		\texttt{train\_frequency}         & 4 \\
 		\bottomrule
 	\end{tabular}
-	\caption{Key hyperparameters for the DQN baseline. 
-		All runs used a discount factor $\gamma = 0.99$,
-		one environment (\texttt{num\_envs}=1), 
-		and \texttt{cuda} enabled.}
-	\label{tab:dqn-hyperparams}
+	\caption{Key hyperparameters for the DQN baseline. Only \texttt{env\_id} and 
+		\texttt{seed} change across runs.}
+	\label{tab:dqn_hyperparams}
 \end{table}
 
-\paragraph{Training Dynamics.}
-Figure~\ref{fig:dqn_episodic_length} shows the \emph{episodic length} during training, aggregated over the 32 runs via linear interpolation onto a common step axis. We observe that the \emph{mean} episode length hovers around 3500--4000 steps for most of training, with substantial variability among runs (up to 8000 steps in the most extreme cases). In some runs, episodes became quite short, indicating early terminations and resulting in the large min--max envelope.
+\paragraph{Hyperparameter Tuning Approach.}
+We began with the \emph{CleanRL} defaults (similar to Mnih~et~al.’s original DQN) and
+scaled down parameters tied to large training budgets. For instance,
+\texttt{buffer\_size} was tested at \{10k, 20k\}, and \texttt{learning\_starts} 
+at \{800, 1000, 2000, 5000\}. Empirically, a buffer of 10k 
+and \texttt{learning\_starts} of 1000 provided the best trade-off between stability 
+and performance in the 100k-step setting.
 
-Figure~\ref{fig:dqn_episodic_return} presents the \emph{episodic return} curves. The mean performance remains slightly below zero for most of the training, reflecting the difficulty of some games given only \num{100000} steps of interaction. In a few runs, we observe short-lived spikes in performance, but overall there is high variance (the min--max band ranges from about $-10$ to $+4$). These preliminary results suggest that DQN can struggle to achieve consistently positive returns in the chosen set of Atari games within 100k steps.
-
-\paragraph{Loss and Value Estimates.}
-To further diagnose training behavior, Figure~\ref{fig:dqn_q_values} shows the evolution of the estimated \emph{Q-values} over training. Notably, the mean $Q$ grows from near zero to around $4$ or $5$ by step \num{100000}, but with large min--max variability (some runs estimate $Q$-values above $10$, while others stay near $0$). Meanwhile, the \emph{TD loss} (Figure~\ref{fig:dqn_td_loss}) starts near zero and steadily increases in many runs, peaking in some seeds above $1.0$ or even $3.0$ toward the end of training. These indicators suggest that DQN’s learning process under these hyperparameters and time horizons remains quite unstable, highlighting the challenges of sample efficiency in a short \num{100000}-step regime.
-
-\paragraph{Energy Consumption.}
-Table~\ref{tab:dqn-emissions} shows the average carbon emissions for DQN over the eight games (four seeds each). On average, \textbf{0.00647 kg} of CO\textsubscript{2} was emitted per run (with a standard deviation of $0.00026$).%
-\footnote{Exact units can vary depending on CodeCarbon’s tracking settings; here we report total kg CO\textsubscript{2} equivalent for each run.}
-While this raw number is relatively small, it is still a meaningful measurement in comparing algorithms’ resource usage—particularly if scaled up to longer training horizons or larger runs.
-
-\begin{table}[htb]
-	\centering
-	\begin{tabular}{lcccccccc}
-		\toprule
-		\textbf{Algorithm} & \textbf{mean} & \textbf{std} & \textbf{median} & \textbf{q25} & \textbf{q75} & \textbf{min} & \textbf{max} & \textbf{iqmean}\\
-		\midrule
-		DQN & 0.00647 & 0.00026 & 0.00634 & 0.00630 & 0.00658 & 0.00616 & 0.00699 & 0.00637 \\
-		\bottomrule
-	\end{tabular}
-	\caption{Carbon emissions for DQN (\emph{kg CO\textsubscript{2} eq.}) aggregated across 32 runs.}
-	\label{tab:dqn-emissions}
-\end{table}
-
-\paragraph{Observations}
-Overall, DQN shows moderate performance with high variance and relatively low returns within the \num{100000}-step constraint. The Q-values and TD loss reveal ongoing instability, suggesting that more advanced extensions or longer training might be necessary to achieve robust performance on these Atari tasks. In terms of energy footprint, DQN remains relatively lightweight in absolute terms, though differences may become more pronounced when compared with other algorithms (Section~\ref{subsubsec:ddqn} and beyond) or when scaled to larger training budgets.
+\paragraph{Training Dynamics (Aggregated Over 32 Runs).}
 
 \begin{figure}[htbp]
 	\centering
-	% Replace with your actual figure command or path:
-	\includegraphics[width=0.6\textwidth]{figures/charts_episodic_length_dqn_atari.png}
-	\caption{DQN episodic length (\texttt{charts/episodic\_length}), showing mean (line) and min--max band (shaded).}
+	\includegraphics[width=0.6\textwidth]{figures/dqn/charts_episodic_length_dqn_atari.png}
+	\caption{Aggregated episodic length for DQN over 100k steps 
+		(interpolation across 32 runs). 
+		The mean hovers around 3500--4000 steps, 
+		while the min--max envelope extends from near 0 to over 8000.}
 	\label{fig:dqn_episodic_length}
 \end{figure}
 
 \begin{figure}[htbp]
 	\centering
-	% Replace with your actual figure command or path:
-	\includegraphics[width=0.6\textwidth]{figures/charts_episodic_return_dqn_atari.png}
-	\caption{DQN episodic return (\texttt{charts/episodic\_return}), showing mean (line) and min--max band (shaded).}
-	\label{fig:dqn_episodic_return}
+	\includegraphics[width=0.6\textwidth]{figures/dqn/charts_SPS_dqn_atari.png}
+	\caption{Steps per second (SPS) for DQN. After an initial ramp-up, 
+		the mean SPS stabilizes around 170--180, 
+		with some runs dipping as low as 20 or spiking above 200.}
+	\label{fig:dqn_sps}
 \end{figure}
+
+Figure~\ref{fig:dqn_episodic_length} shows that episodes usually last in the 3000--4000 step range, 
+but certain runs or environments have early terminations (very short episodes) or extremely long ones (around 8000 steps).  
+Figure~\ref{fig:dqn_sps} indicates that, computationally, training stabilizes at a solid 
+\(\sim\)170 steps per second on average, though hardware and environment differences 
+introduce notable variance.
+
+\paragraph{Q-Values and TD Loss.}
+Figures~\ref{fig:dqn_q_values} and \ref{fig:dqn_td_loss} show \texttt{losses/q\_values} and 
+\texttt{losses/td\_loss}, respectively, across all runs.
 
 \begin{figure}[htbp]
 	\centering
-	% Replace with your actual figure command or path:
-	\includegraphics[width=0.6\textwidth]{figures/losses_q_values_dqn_atari.png}
-	\caption{Estimated Q-values (\texttt{losses/q\_values}) for DQN, showing mean and min--max across runs.}
+	\includegraphics[width=0.6\textwidth]{figures/dqn/losses_q_values_dqn_atari.png}
+	\caption{Estimated Q-values (\texttt{losses/q\_values}) for DQN 
+		(aggregated over 32 runs). 
+		The mean Q-value climbs from near 0 up to \(\sim\)4--5, 
+		while some runs exceed 10.}
 	\label{fig:dqn_q_values}
 \end{figure}
 
 \begin{figure}[htbp]
 	\centering
-	% Replace with your actual figure command or path:
-	\includegraphics[width=0.6\textwidth]{figures/losses_td_loss_dqn_atari.png}
-	\caption{TD loss (\texttt{losses/td\_loss}) for DQN, illustrating the growing variance across runs.}
+	\includegraphics[width=0.6\textwidth]{figures/dqn/losses_td_loss_dqn_atari.png}
+	\caption{TD loss (\texttt{losses/td\_loss}) for DQN. 
+		Losses grow with training, reaching above 3.0 in some runs, 
+		reflecting substantial variance near the final stages.}
 	\label{fig:dqn_td_loss}
 \end{figure}
 
-\noindent In the following subsections, we examine how enhancements such as Double DQN and Prioritized Experience Replay improve upon this baseline in terms of both performance and energy consumption.
+On average, Q-values increase steadily, suggesting the network’s estimates 
+of future returns keep growing with experience. However, 
+the broad min--max band indicates some seeds or games diverge or plateau differently. 
+The TD loss remains small in early training but spikes in certain runs, 
+possibly due to volatile updates from the replay buffer once it’s partially filled.
 
+\paragraph{Episodic Return (Human vs.\ Min--Max Normalized).}
+We collected episodic returns in two normalization schemes:
+
+\begin{itemize}
+	\item \textbf{Human-Normalized:} Subtract a random agent’s score, 
+	then divide by (human--random).
+	\item \textbf{Min--Max:} Scaled per game from 0 (min observed) to 1 (max observed).
+\end{itemize}
+
+Figures~\ref{fig:dqn_return_human} and \ref{fig:dqn_return_minmax} aggregate 
+these returns across all 32 runs, while 
+Figures~\ref{fig:dqn_return_pergame_human} and \ref{fig:dqn_return_pergame_minmax} 
+show per-game curves.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.6\textwidth]{figures/dqn/charts_episodic_return_human_dqn_atari.png}
+	\caption{Aggregated DQN episodic return (human-normalized) 
+		over 100k steps. The shaded region represents min--max variation.}
+	\label{fig:dqn_return_human}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.6\textwidth]{figures/dqn/charts_episodic_return_minmax_dqn_atari.png}
+	\caption{Aggregated DQN episodic return (min--max normalized).}
+	\label{fig:dqn_return_minmax}
+\end{figure}
+
+In the human-normalized plot, the mean hovers near zero, 
+occasionally dipping negative due to poor performance on certain games. 
+In the min--max plot, the average climbs from near 0.2 to around 0.4--0.5 by the end, 
+indicating moderate relative progress.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.6\textwidth]{figures/dqn/charts_episodic_return_per_game_human_dqn_atari.png}
+	\caption{DQN returns (human-normalized) by game. Each line aggregates 
+		four seeds for that specific environment.}
+	\label{fig:dqn_return_pergame_human}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.6\textwidth]{figures/dqn/charts_episodic_return_per_game_minmax_dqn_atari.png}
+	\caption{DQN returns (min--max normalized) by game.}
+	\label{fig:dqn_return_pergame_minmax}
+\end{figure}
+
+Different environments see dramatically different results: 
+\emph{Freeway} often approaches high normalized scores, while 
+\emph{Pong} and \emph{MsPacman} remain relatively low 
+(especially in the human-normalized scale).
+
+\paragraph{Emissions.}
+Table~\ref{tab:dqn_emissions} presents the aggregated CO\textsubscript{2}-eq for DQN 
+(over all 32 runs). The mean is about \(\textbf{0.00647 kg}\), 
+with a minimum of 0.00616 and a maximum near 0.0070.
+
+\begin{table}[htbp]
+	\centering
+	\begin{tabular}{lcccccccc}
+		\toprule
+		\textbf{Algorithm} & \textbf{mean} & \textbf{std} & \textbf{median} & 
+		\textbf{q25} & \textbf{q75} & \textbf{min} & \textbf{max} & \textbf{iqmean} \\
+		\midrule
+		DQN & 0.006469 & 0.0002609 & 0.006342 & 0.006296 & 0.006578 & 0.006162 & 0.006997 & 0.006369 \\
+		\bottomrule
+	\end{tabular}
+	\caption{Carbon emissions (kg\,CO\textsubscript{2}eq) for DQN across 32 runs.}
+	\label{tab:dqn_emissions}
+\end{table}
+
+\paragraph{Evaluation Results.}
+Table~\ref{tab:dqn_eval_overall} aggregates final human-/min--max-normalized 
+returns \emph{over all 32 runs}. A game-by-game breakdown 
+(Table~\ref{tab:dqn_eval_gamewise}) highlights large variability: 
+\emph{Freeway} can exceed 0.7 (human norm) or 0.75 (min--max), 
+while \emph{Boxing} sees a wide range from $-5$ to nearly $+5$ in human norm.
+
+\begin{table}[htbp]
+	\centering
+	\begin{tabular}{lcccccccc}
+		\toprule
+		\textbf{Normalization} & \textbf{mean} & \textbf{std} & \textbf{median} & 
+		\textbf{q25} & \textbf{q75} & \textbf{min} & \textbf{max} & \textbf{iqmean} \\
+		\midrule
+		\textbf{Human} & 0.1353 & 0.7541 & 0.0338 & 0.00072 & 0.398 & -5.024 & 4.738 & 0.1137 \\
+		\textbf{Min--Max} & 0.3802 & 0.3099 & 0.2899 & 0.0969 & 0.7143 & 0.0 & 0.9881 & 0.3426 \\
+		\bottomrule
+	\end{tabular}
+	\caption{Overall final evaluation (10 episodes each) for DQN across all runs.}
+	\label{tab:dqn_eval_overall}
+\end{table}
+
+\begin{table}[htbp]
+	\centering
+	\begin{tabular}{llcccc}
+		\toprule
+		\textbf{Game} & \textbf{Norm} & \textbf{mean} & \textbf{std} & \textbf{min} & \textbf{max}\\
+		\midrule
+		Alien    & Human   & 0.0624 & 0.0752 & 0.0048 & 0.2636 \\
+		Alien    & Min--Max & 0.1607 & 0.1250 & 0.0650 & 0.4950 \\
+		\cmidrule{1-6}
+		Amidar   & Human   & 0.0226 & 0.0138 & 0.00072 & 0.0450 \\
+		Amidar   & Min--Max & 0.2005 & 0.1065 & 0.0323 & 0.3733 \\
+		\cmidrule{1-6}
+		Assault  & Human   & 0.3167 & 0.1120 & -0.0262 & 0.4920 \\
+		Assault  & Min--Max & 0.7216 & 0.1703 & 0.2005 & 0.9881 \\
+		\cmidrule{1-6}
+		Boxing   & Human   & -0.4167 & 1.9504 & -5.0238 & 4.7381 \\
+		Boxing   & Min--Max & 0.7469 & 0.0635 & 0.5969 & 0.9147 \\
+		\cmidrule{1-6}
+		Breakout & Human   & 0.3796 & 0.1246 & 0.1096 & 0.6080 \\
+		Breakout & Min--Max & 0.3454 & 0.0987 & 0.1316 & 0.5263 \\
+		\cmidrule{1-6}
+		Freeway  & Human   & 0.7162 & 0.0589 & 0.6419 & 0.8784 \\
+		Freeway  & Min--Max & 0.7571 & 0.0622 & 0.6786 & 0.9286 \\
+		\cmidrule{1-6}
+		MsPacman & Human   & 0.0099 & 0.0120 & -0.0076 & 0.0262 \\
+		MsPacman & Min--Max & 0.1047 & 0.0484 & 0.0340 & 0.1702 \\
+		\cmidrule{1-6}
+		Pong     & Human   & -0.0083 & 0.0074 & -0.01 & 0.0233 \\
+		Pong     & Min--Max & 0.0050 & 0.0221 & 0.0 & 0.1 \\
+		\bottomrule
+	\end{tabular}
+	\caption{Per-game final evaluation for DQN (human- vs.\ min--max normalized). 
+		Each cell aggregates 10 episodes $\times$ 4 seeds = 40 total episodes in that game.}
+	\label{tab:dqn_eval_gamewise}
+\end{table}
+
+\paragraph{Observations.}
+In summary:
+\begin{itemize}
+	\item \textbf{Episodic length} stabilizes around 3500--4000 steps on average, 
+	with some extreme runs either terminating quickly or persisting up to 8000 steps.
+	\item \textbf{SPS} quickly rises to around 170--180, illustrating the efficiency 
+	of the implementation (though some runs are slower).
+	\item \textbf{Q-values and TD loss} both exhibit broad variability. On average, 
+	Q-values climb steadily to 4--5, but certain runs exceed 10. The TD loss 
+	can spike above 3 for some seeds, indicating unstable updates.
+	\item \textbf{Returns} show moderate success on easier tasks like \textit{Freeway} 
+	and \textit{Boxing}, but remain low in \textit{Pong} or \textit{MsPacman}. Overall, 
+	min--max mean is about 0.38, whereas human-normalized is only 0.14 (due in part 
+	to highly negative outliers on certain seeds).
+	\item \textbf{Emissions} remain modest, at about 0.00647\,kg CO\textsubscript{2}-eq 
+	per run. This is unsurprising for a 100k-step budget, but still notable for 
+	comparing across algorithms in subsequent sections.
+\end{itemize}
+
+DQN thus provides a baseline—relatively simple and lightweight—to which we will 
+compare Double DQN, Prioritized Experience Replay, Dueling DQN, and C51 
+in the next subsections, evaluating whether each extension justifies 
+its additional complexity and energy usage.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsection{DQN (Baseline)}
+%\label{subsubsec:dqn}
+%
+%In our benchmark, \emph{Deep Q-Network (DQN)} serves as the baseline algorithm against which we compare more advanced DQN variants and policy gradient methods. We trained DQN on the selected eight Atari games, running four distinct seeds per game for a total of 32 runs. Table~\ref{tab:dqn-hyperparams} summarizes the main hyperparameters used; the total number of training steps was \num{100000} in each run.
+%
+%\paragraph{Hyperparameters.}
+%\begin{table}[htb]
+%	\centering
+%	\begin{tabular}{l l}
+%		\toprule
+%		\textbf{Parameter} & \textbf{Value} \\
+%		\midrule
+%		\texttt{learning\_rate} & \num{1e-4} \\
+%		\texttt{buffer\_size} & \num{10000} \\
+%		\texttt{batch\_size} & \num{32} \\
+%		\texttt{target\_network\_frequency} & \num{1000} \\
+%		\texttt{exploration\_fraction} & \num{0.1} \\
+%		\texttt{start\_e}, \texttt{end\_e} & \num{1.0} $\to$ \num{0.01} \\
+%		\texttt{learning\_starts} & \num{1000} \\
+%		\texttt{train\_frequency} & \num{4} \\
+%		\bottomrule
+%	\end{tabular}
+%	\caption{Key hyperparameters for the DQN baseline. 
+%		All runs used a discount factor $\gamma = 0.99$,
+%		one environment (\texttt{num\_envs}=1), 
+%		and \texttt{cuda} enabled.}
+%	\label{tab:dqn-hyperparams}
+%\end{table}
+%
+%\paragraph{Training Dynamics.}
+%Figure~\ref{fig:dqn_episodic_length} shows the \emph{episodic length} during training, aggregated over the 32 runs via linear interpolation onto a common step axis. We observe that the \emph{mean} episode length hovers around 3500--4000 steps for most of training, with substantial variability among runs (up to 8000 steps in the most extreme cases). In some runs, episodes became quite short, indicating early terminations and resulting in the large min--max envelope.
+%
+%Figure~\ref{fig:dqn_episodic_return} presents the \emph{episodic return} curves. The mean performance remains slightly below zero for most of the training, reflecting the difficulty of some games given only \num{100000} steps of interaction. In a few runs, we observe short-lived spikes in performance, but overall there is high variance (the min--max band ranges from about $-10$ to $+4$). These preliminary results suggest that DQN can struggle to achieve consistently positive returns in the chosen set of Atari games within 100k steps.
+%
+%\paragraph{Loss and Value Estimates.}
+%To further diagnose training behavior, Figure~\ref{fig:dqn_q_values} shows the evolution of the estimated \emph{Q-values} over training. Notably, the mean $Q$ grows from near zero to around $4$ or $5$ by step \num{100000}, but with large min--max variability (some runs estimate $Q$-values above $10$, while others stay near $0$). Meanwhile, the \emph{TD loss} (Figure~\ref{fig:dqn_td_loss}) starts near zero and steadily increases in many runs, peaking in some seeds above $1.0$ or even $3.0$ toward the end of training. These indicators suggest that DQN’s learning process under these hyperparameters and time horizons remains quite unstable, highlighting the challenges of sample efficiency in a short \num{100000}-step regime.
+%
+%\paragraph{Energy Consumption.}
+%Table~\ref{tab:dqn-emissions} shows the average carbon emissions for DQN over the eight games (four seeds each). On average, \textbf{0.00647 kg} of CO\textsubscript{2} was emitted per run (with a standard deviation of $0.00026$).%
+%\footnote{Exact units can vary depending on CodeCarbon’s tracking settings; here we report total kg CO\textsubscript{2} equivalent for each run.}
+%While this raw number is relatively small, it is still a meaningful measurement in comparing algorithms’ resource usage—particularly if scaled up to longer training horizons or larger runs.
+%
+%\begin{table}[htb]
+%	\centering
+%	\begin{tabular}{lcccccccc}
+%		\toprule
+%		\textbf{Algorithm} & \textbf{mean} & \textbf{std} & \textbf{median} & \textbf{q25} & \textbf{q75} & \textbf{min} & \textbf{max} & \textbf{iqmean}\\
+%		\midrule
+%		DQN & 0.00647 & 0.00026 & 0.00634 & 0.00630 & 0.00658 & 0.00616 & 0.00699 & 0.00637 \\
+%		\bottomrule
+%	\end{tabular}
+%	\caption{Carbon emissions for DQN (\emph{kg CO\textsubscript{2} eq.}) aggregated across 32 runs.}
+%	\label{tab:dqn-emissions}
+%\end{table}
+%
+%\paragraph{Observations}
+%Overall, DQN shows moderate performance with high variance and relatively low returns within the \num{100000}-step constraint. The Q-values and TD loss reveal ongoing instability, suggesting that more advanced extensions or longer training might be necessary to achieve robust performance on these Atari tasks. In terms of energy footprint, DQN remains relatively lightweight in absolute terms, though differences may become more pronounced when compared with other algorithms (Section~\ref{subsubsec:ddqn} and beyond) or when scaled to larger training budgets.
+%
+%\begin{figure}[htbp]
+%	\centering
+%	% Replace with your actual figure command or path:
+%	\includegraphics[width=0.6\textwidth]{figures/dqn/charts_episodic_length_dqn_atari.png}
+%	\caption{DQN episodic length (\texttt{charts/episodic\_length}), showing mean (line) and min--max band (shaded).}
+%	\label{fig:dqn_episodic_length}
+%\end{figure}
+%
+%\begin{figure}[htbp]
+%	\centering
+%	% Replace with your actual figure command or path:
+%	\includegraphics[width=0.6\textwidth]{figures/charts_episodic_return_dqn_atari.png}
+%	\caption{DQN episodic return (\texttt{charts/episodic\_return}), showing mean (line) and min--max band (shaded).}
+%	\label{fig:dqn_episodic_return}
+%\end{figure}
+%
+%\begin{figure}[htbp]
+%	\centering
+%	% Replace with your actual figure command or path:
+%	\includegraphics[width=0.6\textwidth]{figures/losses_q_values_dqn_atari.png}
+%	\caption{Estimated Q-values (\texttt{losses/q\_values}) for DQN, showing mean and min--max across runs.}
+%	\label{fig:dqn_q_values}
+%\end{figure}
+%
+%\begin{figure}[htbp]
+%	\centering
+%	% Replace with your actual figure command or path:
+%	\includegraphics[width=0.6\textwidth]{figures/losses_td_loss_dqn_atari.png}
+%	\caption{TD loss (\texttt{losses/td\_loss}) for DQN, illustrating the growing variance across runs.}
+%	\label{fig:dqn_td_loss}
+%\end{figure}
+%
+%\noindent In the following subsections, we examine how enhancements such as Double DQN and Prioritized Experience Replay improve upon this baseline in terms of both performance and energy consumption.
+%
 
 \subsubsection{Double DQN}
 \label{subsubsec:ddqn}
