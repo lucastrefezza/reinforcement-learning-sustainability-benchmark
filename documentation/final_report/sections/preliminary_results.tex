@@ -32,14 +32,14 @@ We present the results for the five different DQN-based algorithms. Each algorit
 \subsubsection{Deep Q-Network (DQN Baseline)}
 \label{subsubsec:dqn_baseline}
 
-\paragraph{(Hyper)Parameters.}
+\paragraph{(Hyper)Parameters}
 Table~\ref{tab:dqn_hyperparams} summarizes the main hyperparameters used for our DQN baseline.  
 \texttt{env\_id} and \texttt{seed} varied across runs (eight Atari games $\times$ four seeds), 
 while the rest remained unchanged. Note in particular that \texttt{buffer\_size} and 
 \texttt{learning\_starts} have been reduced relative to their usual millions-step values to 
 accommodate the shorter 100k-step regime.
 
-\begin{table}%[htbp]
+\begin{table}
 	\caption{Key hyperparameters for the DQN baseline. Only \texttt{env\_id} and \texttt{seed} change across runs.}
 	\label{tab:dqn_hyperparams}
 	\centering
@@ -155,7 +155,7 @@ introduce notable variance.
 %	\label{fig:dqn_td_loss}
 %\end{figure}
 
-\paragraph{Q-Values and TD Loss.}
+\paragraph{Q-Values and TD Loss}
 Figures~\ref{fig:dqn_q_values} and \ref{fig:dqn_td_loss} show \texttt{losses/q\_values} and 
 \texttt{losses/td\_loss}, respectively, across all runs.
 On average, Q-values increase steadily, suggesting the network’s estimates 
@@ -164,7 +164,7 @@ the broad min--max band indicates some seeds or games diverge or plateau differe
 The TD loss remains small in early training but spikes in certain runs, 
 possibly due to volatile updates from the replay buffer once it’s partially filled.
 
-\paragraph{Episodic Return (Human vs.\ Min--Max Normalized).}
+\paragraph{Episodic Return (Human vs.\ Min--Max Normalized)}
 We analyzed the collected episodic returns applying both the human normalization and min--max normalization schemes, as explained in section~\vref{subsubsec:normalization}.
 Figures~\ref{fig:dqn_return_human} and \ref{fig:dqn_return_minmax} aggregate 
 these returns across all 32 runs, while 
@@ -290,7 +290,7 @@ while \emph{Boxing} sees a wide range from $-5$ to nearly $+5$ in human norm.
 	\end{tabular}
 \end{table}
 
-\paragraph{Observations.}
+\paragraph{Observations}
 In summary:
 \begin{itemize}
 	\item \textbf{Episodic length} stabilizes around 3500--4000 steps on average, 
@@ -318,7 +318,7 @@ its additional complexity and energy usage.
 \subsubsection{Double DQN}
 \label{subsubsec:double_dqn}
 
-\paragraph{(Hyper)Parameters.}
+\paragraph{(Hyper)Parameters}
 Table~\ref{tab:ddqn_hyperparams} shows the main hyperparameters used in our Double DQN implementation.  
 As with the baseline DQN (Section~\ref{subsubsec:dqn_baseline}), \texttt{env\_id} and \texttt{seed} vary across the 32 runs (eight Atari games $\times$ four seeds), while the rest remain unchanged. In particular, we again set \texttt{buffer\_size}=10k and \texttt{learning\_starts}=1000. 
 The Double DQN update rule differs from standard DQN by separately selecting the action and evaluating its value, aiming to reduce the maximization bias that arises from using the same values to both choose and evaluate an action.
@@ -357,11 +357,11 @@ The Double DQN update rule differs from standard DQN by separately selecting the
 	\end{tabular}
 \end{table}
 
-\paragraph{Hyperparameter Tuning.}
+\paragraph{Hyperparameter Tuning}
 To isolate the effect of Double DQN, we kept all settings identical to the baseline DQN, simply enabling the Double DQN update scheme. 
-Following \cite{van:double_q}, we tested a higher \texttt{target\_network\_frequency} (e.g.\ 3000, scaled from the 10k--20k range in the original paper), but at 100k steps, performance was comparable or slightly better with 1000, so we retained the lower frequency. 
+Following~\cite{van:double_q}, we tested a higher \texttt{target\_network\_frequency} (e.g.\ 3000, scaled from the 10k--20k range in the original paper), but at 100k steps, performance was comparable or slightly better with 1000, so we retained the lower frequency. 
 
-\paragraph{Training Dynamics (Aggregated Over 32 Runs).}
+\paragraph{Training Dynamics (Aggregated Over 32 Runs)}
 Figure~\ref{fig:ddqn_subfigs} presents key metrics—episodic length, steps per second (SPS), estimated Q-values, and TD loss—aggregated across 32 runs (eight games, four seeds each). 
 
 \begin{figure}
@@ -400,7 +400,7 @@ Meanwhile, the mean Q-values grow more modestly than DQN’s (which often exceed
 Double DQN’s approach does mitigate overestimation somewhat. 
 TD loss remains low overall, though some runs spike above 2.0 near late training.
 
-\paragraph{Episodic Return (Human vs.\ Min--Max Normalized).}
+\paragraph{Episodic Return (Human vs.\ Min--Max Normalized)}
 Figures~\ref{fig:ddqn_return_human} and \ref{fig:ddqn_return_minmax} show Double DQN’s aggregated episodic returns (human- and min--max-normalized, respectively). 
 Figures~\ref{fig:ddqn_return_pergame_human} and \ref{fig:ddqn_return_pergame_minmax} break these results down by game.
 
@@ -439,7 +439,7 @@ while \emph{Boxing} causes occasional highly negative runs.
 Min--max normalized returns rise from $\sim 0.2$ to $\sim 0.4$, 
 similar to DQN’s overall trajectory.
 
-\paragraph{Emissions.}
+\paragraph{Emissions}
 Table~\ref{tab:ddqn_emissions} summarizes Double DQN’s CO\textsubscript{2}-eq emissions across 32 runs. 
 The mean is about \textbf{0.00667\,kg}, slightly above DQN’s \(\sim 0.00647\).
 
@@ -460,7 +460,7 @@ The mean is about \textbf{0.00667\,kg}, slightly above DQN’s \(\sim 0.00647\).
 	}
 \end{table}
 
-\paragraph{Evaluation Results.}
+\paragraph{Evaluation Results}
 Table~\ref{tab:ddqn_eval_overall} compiles final returns (human-/min--max normalization) aggregated over the 32 runs. 
 Compared to DQN’s \(\sim\!0.135\) (human) and \(\sim\!0.380\) (min--max), Double DQN attains 0.023 (human) and 0.374 (min--max). 
 While the min--max average is comparable, the human-normalized mean is noticeably lower due to substantial negative outliers (again, notably \emph{Boxing}).
@@ -520,7 +520,7 @@ Table~\ref{tab:ddqn_eval_gamewise} shows the game-by-game breakdown, indicating 
 	\end{tabular}
 \end{table}
 
-\paragraph{Comparison with Baseline DQN.}
+\paragraph{Comparison with Baseline DQN}
 Beyond the final statistics, we can compare Q-values and TD loss directly via overlapping curves. Figure~\vref{fig:dqn_vs_ddqn_qvalues} shows the \texttt{losses/q\_values} for both algorithms, with \texttt{ddqn\_atari} in red and \texttt{dqn\_atari} in gold; Double DQN’s mean Q-values grow more slowly, suggesting less overestimation. Figure~\vref{fig:dqn_vs_ddqn_td_loss} indicates TD loss remains similarly small for both, though DQN occasionally spikes higher. The barplot in figure~\ref{fig:emissions_dqn_ddqn} shows the mean emissions side-by-side.
 
 \begin{figure}
@@ -550,7 +550,7 @@ Overall, Double DQN indeed moderates Q-value inflation compared to standard DQN,
 but under the 100k-step constraint, this reduction in overestimation does not strongly translate 
 into consistently higher final returns.
 
-\paragraph{Observations.}
+\paragraph{Observations}
 \begin{itemize}
 	\item \textbf{Q-values and Losses:} Double DQN’s Q-values peak lower than DQN’s (about 2--3 vs.\ 4--5), aligning with the bias-reduction theory. TD losses remain small for both algorithms, with occasional spikes.
 	\item \textbf{Performance:} The min--max normalized mean (0.374) is nearly the same as DQN’s (0.380), while human-normalized is actually lower (0.023 vs.\ 0.135) due to certain highly negative runs, especially in \emph{Boxing}.
@@ -563,13 +563,227 @@ or additional refinements may be needed to reap its potential performance gains.
 
 
 \subsubsection{Prioritized Experience Replay}
+\label{subsubsec:per}
+
+\paragraph{(Hyper)Parameters}
+
+\begin{table}
+	\caption{Key hyperparameters for Prioritized Experience Replay (PER). Only \texttt{env\_id} and \texttt{seed} vary across runs.}
+	\label{tab:per_hyperparams}
+	\centering
+	\begin{tabular}{ll}
+		\toprule
+		\textbf{Parameter} & \textbf{Value} \\
+		\midrule
+		\texttt{exp\_name}                & per\_atari \\
+		\texttt{seed}                     & 1..4 \\
+		\texttt{torch\_deterministic}     & True \\
+		\texttt{cuda}                     & True \\
+		\texttt{track}                    & True \\
+		\texttt{wandb\_project\_name}     & rlsb \\
+		\texttt{capture\_video}           & False \\
+		\texttt{save\_model}              & True \\
+		\texttt{upload\_model}            & False \\
+		\texttt{env\_id}                  & e.g.\ AmidarNoFrameskip-v4 \\
+		\texttt{total\_timesteps}         & 100000 \\
+		\texttt{learning\_rate}           & 0.0001 \\
+		\texttt{num\_envs}                & 1 \\
+		\texttt{buffer\_size}             & 10000 \\
+		\texttt{gamma}                    & 0.99 \\
+		\texttt{tau}                      & 1.0 \\
+		\texttt{target\_network\_frequency} & 1000 \\
+		\texttt{batch\_size}             & 32 \\
+		\texttt{start\_e}, \texttt{end\_e} & 1.0 $\to$ 0.01 \\
+		\texttt{exploration\_fraction}    & 0.1 \\
+		\texttt{learning\_starts}         & 1000 \\
+		\texttt{train\_frequency}         & 4 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\paragraph{Hyperparameter Tuning}
+We retained the same settings as baseline DQN (Section~\ref{subsubsec:dqn_baseline}) to highlight PER’s impact alone. Although \cite{schaul:prioritized} suggests lowering the learning rate by a factor of four, our tests at 100k steps showed $1\times10^{-4}$ worked better. Figure~\ref{fig:per_lr_comparison} compares these rates on \emph{Breakout}, indicating faster convergence at $1\times10^{-4}$.  
+
+We also explored two implementations of the PER replay buffer—a \texttt{numpy}-based priority queue (for consistency) and a \texttt{torch}-based version. The \texttt{numpy} approach proved much slower, so we used the \texttt{torch} buffer in the final runs. Although the other DQN variants employ somewhat different replay optimizations (some from Stable Baselines), these differences did not appear to invalidate direct comparisons.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.55\textwidth]{figures/per/per_lr_charts_episodic_return.jpeg}
+	\caption{Comparison of learning rates for PER on \emph{Breakout}. 
+		Orange curve: $1\times10^{-4}$ (our final choice). 
+		Gray curve: $\tfrac{1}{4}\times10^{-4}$ (as per \cite{schaul:prioritized}).}
+	\label{fig:per_lr_comparison}
+\end{figure}
+
+\paragraph{Training Dynamics}
+Figure~\ref{fig:per_training_metrics} aggregates four key metrics (episodic length, steps per second, Q-values, and TD loss) over 32 runs (eight games, four seeds each):
+
+\begin{figure}
+	\centering
+	\subfloat[][Episodic length (\texttt{charts\_episodic\_length}). 
+	The mean hovers around 3500--4000, and min--max runs from near 0 up to 8000.]{
+		\includegraphics[width=.45\textwidth]{figures/per/charts_episodic_length_per_atari.png}
+		\label{fig:per_episodic_length}
+	}
+	\quad
+	\subfloat[][Steps per second (SPS). 
+	The mean peaks above 170, then gradually declines to ~150--160.]{
+		\includegraphics[width=.45\textwidth]{figures/per/charts_SPS_per_atari.png}
+		\label{fig:per_sps}
+	}
+	\\[1em]
+	\subfloat[][Q-values (\texttt{losses/q\_values}). 
+	The mean eventually surpasses 4--5, with outliers above 14.]{
+		\includegraphics[width=.45\textwidth]{figures/per/losses_q_values_per_atari.png}
+		\label{fig:per_q_values}
+	}
+	\quad
+	\subfloat[][TD loss (\texttt{losses/td\_loss}). 
+	Some runs spike above 3--4, showing instability in late training.]{
+		\includegraphics[width=.45\textwidth]{figures/per/losses_td_loss_per_atari.png}
+		\label{fig:per_td_loss}
+	}
+	\caption{PER training metrics over 100k steps, interpolated across 32 runs.}
+	\label{fig:per_training_metrics}
+\end{figure}
+
+PER shows Q-values approaching or exceeding those of baseline DQN (which typically topped at 4--5). The TD loss is small on average but spikes in certain runs, suggesting that prioritizing high-error samples can exacerbate updates in some episodes.
+
+\paragraph{Episodic Return (Aggregated)}
+Figures~\ref{fig:per_return_human} (human-normalized) and \ref{fig:per_return_minmax} (min--max) show PER’s aggregated episodic returns. The mean in human-normalized scale oscillates around zero, occasionally dipping below $-2$ or $-3$ in some seeds.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.6\textwidth]{figures/per/charts_episodic_return_human_per_atari.png}
+	\caption{PER episodic return (human-normalized), aggregated over 32 runs. 
+		Negative outliers appear for certain seeds/environments.}
+	\label{fig:per_return_human}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.6\textwidth]{figures/per/charts_episodic_return_minmax_per_atari.png}
+	\caption{PER episodic return (min--max normalized), aggregated over 32 runs.}
+	\label{fig:per_return_minmax}
+\end{figure}
+
+\paragraph{Per-Game Returns}
+Figures~\ref{fig:per_return_pergame_human} and \ref{fig:per_return_pergame_minmax} break down the performance by each Atari game (human vs. min--max normalization). We see, for instance, \emph{Freeway} (orange line in min--max) steadily climbing to around 0.7--0.8, while \emph{Alien} can drop below $-3$ in human scale. 
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.6\textwidth]{figures/per/charts_episodic_return_per_game_human_per_atari.png}
+	\caption{PER returns per game (human-normalized). 
+		\emph{Alien} (orange) exhibits deep negative dips, 
+		while \emph{Freeway}, \emph{Assault}, and \emph{Breakout} stay near or above zero.}
+	\label{fig:per_return_pergame_human}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.6\textwidth]{figures/per/charts_episodic_return_per_game_minmax_per_atari.png}
+	\caption{PER returns per game (min--max normalized). 
+		\emph{Freeway} (gold line) and \emph{Assault} (green) reach 0.7--0.8 near 100k steps.}
+	\label{fig:per_return_pergame_minmax}
+\end{figure}
+
+\paragraph{Emissions.}
+
+\begin{table}
+	\caption{Carbon emissions (kg\,CO\textsubscript{2}eq) for PER across 32 runs.}
+	\label{tab:per_emissions}
+	\centering
+	\makebox[\textwidth]{%
+	\begin{tabularx}{1.1\textwidth}{lXXXXXXXX}
+		\toprule
+		\textbf{Algorithm} & \textbf{mean} & \textbf{std} & \textbf{median} & \textbf{q25} & \textbf{q75} & \textbf{min} & \textbf{max} & \textbf{iqmean} \\
+		\midrule
+		PER & 0.007254 & 0.000263 & 0.007146 & 0.007074 & 0.007354 & 0.006935 & 0.007819 & 0.007157 \\
+		\bottomrule
+	\end{tabularx}
+	}
+\end{table}
+
+Figure~\ref{fig:per_vs_dqn_emissions} shows a barplot comparing PER’s mean emissions (\(\approx 0.00725\,\mathrm{kg}\)) to DQN’s (\(\approx0.00647\,\mathrm{kg}\)). The overhead of prioritized sampling may partly account for this higher footprint.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.55\textwidth]{figures/per/emissions_dqn_per.png}
+	\caption{Mean emissions comparison: PER (green) at $\sim0.00725$\,kg vs.\ DQN (gold) at $\sim0.00647$\,kg.}
+	\label{fig:per_vs_dqn_emissions}
+\end{figure}
+
+\begin{table}
+	\caption{Overall final evaluation (10 episodes each) for PER across 32 runs.}
+	\label{tab:per_eval_overall}
+	\centering
+	\begin{tabular}{lcccccccc}
+		\toprule
+		\textbf{Normalization} & \textbf{mean} & \textbf{std} & \textbf{median} & 
+		\textbf{q25} & \textbf{q75} & \textbf{min} & \textbf{max} & \textbf{iqmean} \\
+		\midrule
+		\textbf{Human}   & 0.0607 & 1.0170 & 0.0539 & 0.0175 & 0.2541 & -10.2619 & 6.8809 & 0.0813 \\
+		\textbf{Min--Max}& 0.3533 & 0.2695 & 0.2583 & 0.1499 & 0.6265 & 0.0 & 0.9845 & 0.3087 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\begin{table}
+	\caption{Per-game final evaluation for PER (human- vs.\ min--max normalized). Each row aggregates 10 episodes $\times$ 4 seeds per environment.}
+	\label{tab:per_eval_gamewise}
+	\centering
+	\begin{tabular}{llcccc}
+		\toprule
+		\textbf{Game} & \textbf{Norm} & \textbf{mean} & \textbf{std} & \textbf{min} & \textbf{max}\\
+		\midrule
+		Alien     & Human    & 0.0246 & 0.0315 & -0.0147 & 0.0996 \\
+		& Min--Max & 0.0978 & 0.0523 & 0.0325  & 0.2225 \\
+		\cmidrule{1-6}
+		Amidar    & Human    & 0.0263 & 0.0220 & -0.0029 & 0.0809 \\
+		& Min--Max & 0.2288 & 0.1693 & 0.0046  & 0.6498 \\
+		\cmidrule{1-6}
+		Assault   & Human    & 0.2135 & 0.0974 & 0.0232  & 0.3860 \\
+		& Min--Max & 0.5648 & 0.1480 & 0.2757  & 0.8270 \\
+		\cmidrule{1-6}
+		Boxing    & Human    & -0.6667 & 2.7351 & -10.2619 & 6.8809 \\
+		& Min--Max & 0.7388  & 0.0890 & 0.4264    & 0.9845 \\
+		\cmidrule{1-6}
+		Breakout  & Human    & 0.3854 & 0.2204 & 0.00997 & 0.9070 \\
+		& Min--Max & 0.3500 & 0.1746 & 0.0526  & 0.7632 \\
+		\cmidrule{1-6}
+		Freeway   & Human    & 0.4071 & 0.3381 & 0.0     & 0.8446 \\
+		& Min--Max & 0.4304 & 0.3574 & 0.0     & 0.8929 \\
+		\cmidrule{1-6}
+		MsPacman  & Human    & 0.0338 & 0.0111 & 0.0119 & 0.0515 \\
+		& Min--Max & 0.2008 & 0.0446 & 0.1126 & 0.2723 \\
+		\cmidrule{1-6}
+		Pong      & Human    & 0.0617 & 0.0682 & -0.01 & 0.2233 \\
+		& Min--Max & 0.2150 & 0.2045 & 0.0   & 0.7000 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\paragraph{Comparison with Baseline DQN.}
+By final evaluation, PER’s overall human-norm mean (0.0607) is lower than DQN’s (0.135), and its min--max mean (0.353) lags behind DQN’s 0.380.  
+Figure~\ref{fig:per_vs_dqn_emissions} further shows PER’s emissions exceed DQN’s by $\sim0.0008$\,kg CO\textsubscript{2}-eq on average—likely due to the overhead from prioritized sampling and somewhat longer average episodes.
+
+\paragraph{Observations.}
 \begin{itemize}
-	\item How prioritization improved learning efficiency.
-	\item Energy-performance trade-off compared to DQN and Double DQN.
+	\item \textbf{Implementation Details:} 
+	We used a \texttt{torch}-based PER buffer to avoid severe slowdowns in the \texttt{numpy} version.
+	\item \textbf{Learning Rate:} 
+	$\tfrac{1}{4}\times10^{-4}$, as suggested in \cite{schaul:prioritized}, underperformed at 100k steps 
+	compared to $1\times10^{-4}$ (Figure~\ref{fig:per_lr_comparison}).
+	\item \textbf{Performance:} 
+	PER did not consistently outperform baseline DQN within 100k steps: 
+	human-norm mean is 0.0607 vs.\ DQN’s 0.135. 
+	\item \textbf{Emissions:} 
+	PER’s overhead leads to slightly higher energy usage (0.00725\,kg CO\textsubscript{2}-eq) than DQN’s 0.00647\,kg.
 \end{itemize}
-Comparison with DQN and Double DQN.
-Did it lead to better sample efficiency?
-Energy consumption comparison.
+
+In summary, while prioritizing high-error samples can yield benefits in longer training runs, 
+our 100k-step Atari benchmark does not showcase a strong advantage. 
+Further hyperparameter tuning or more extended runs might better reveal PER’s strengths.
 
 
 \subsubsection{Dueling DQN}
