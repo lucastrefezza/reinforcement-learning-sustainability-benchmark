@@ -1547,25 +1547,449 @@ of the average emissions (with error bars for standard deviation) for the five m
 This section presents results for the three policy gradient methods.
 
 \subsubsection{REINFORCE}
+\label{subsubsec:reinforce}
+
+\paragraph{(Hyper)Parameters}
+
+\begin{table}[htbp]
+	\caption{Key hyperparameters for the REINFORCE algorithm. Only \texttt{env\_id} and \texttt{seed} vary across runs.}
+	\label{tab:reinforce_hyperparams}
+	\centering
+	\begin{tabular}{ll}
+		\toprule
+		\textbf{Parameter} & \textbf{Value} \\
+		\midrule
+		\texttt{exp\_name}            & reinforce\_atari \\
+		\texttt{seed}                 & 1..4 \\
+		\texttt{torch\_deterministic} & True \\
+		\texttt{cuda}                 & True \\
+		\texttt{track}                & True \\
+		\texttt{wandb\_project\_name} & rlsb \\
+		\texttt{capture\_video}       & False \\
+		\texttt{save\_model}          & True \\
+		\texttt{env\_id}              & e.g.\ AmidarNoFrameskip-v4 \\
+		\texttt{total\_timesteps}     & 100000 \\
+		\texttt{learning\_rate}       & 0.00025 \\
+		\texttt{num\_envs}            & 1 \\
+		\texttt{gamma}                & 0.99 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\paragraph{Learning‐Rate Tuning}
+We tested two primary learning rates ($1\times10^{-4}$ vs.\ $2.5\times10^{-4}$), each with a slight annealing schedule over the 100k steps. 
+Ultimately, $2.5\times10^{-4}$ converged more reliably in short‐run experiments, as illustrated in Figure~\ref{fig:reinforce_lr_tuning}. 
+Removing reward clipping made no difference, likely because we already normalize returns. 
+However, even the better LR sees limited improvements in just 100k steps, reflecting the high variance of REINFORCE.
+
+\begin{figure}[htbp]
+	\centering
+	\subfloat[][Episodic Return (Raw) for Two LRs]{
+		\includegraphics[width=.45\textwidth]{figures/reinforce/reinforce_lr_tuning_episodic_return.jpeg}
+		\label{fig:reinforce_lr_tuning_return}
+	}
+	\quad
+	\subfloat[][Learning Rate Schedules]{
+		\includegraphics[width=.45\textwidth]{figures/reinforce/reinforce_lr_tuning_learning_rate.jpeg}
+		\label{fig:reinforce_lr_tuning_lr}
+	}
+	\caption{\textbf{REINFORCE LR Tuning.} Two learning rates ($1\times10^{-4}$ in red, $2.5\times10^{-4}$ in blue) 
+		both with minimal decay. The higher LR eventually performed better, although volatility remained high.}
+	\label{fig:reinforce_lr_tuning}
+\end{figure}
+
+\paragraph{Aggregated Returns}
+Figures~\ref{fig:reinforce_returns_agg} show the aggregated episodic returns (mean $\pm$ min–max envelope) 
+for \emph{human‐normalized} and \emph{min--max normalized} scales:
 \begin{itemize}
-	\item Training execution and stability.
-	\item Performance scores and energy consumption.
+	\item \textbf{Human norm} typically hovers around zero—some seeds spike up to +4 or +5, others dip to -2 or -3.
+	\item \textbf{Min--max norm} plateaus around 0.15--0.20, but occasionally climbs near 0.8 in certain runs.
 \end{itemize}
-Training execution.
-Stability of policy gradient training.
-Final scores and emissions.
 
+\begin{figure}[htbp]
+	\centering
+	\subfloat[][Human‐Normalized Returns (Aggregated)]{
+		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_episodic_return_human_reinforce_atari.png}
+		\label{fig:reinforce_return_human_agg}
+	}
+	\quad
+	\subfloat[][Min--Max Returns (Aggregated)]{
+		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_episodic_return_minmax_reinforce_atari.png}
+		\label{fig:reinforce_return_minmax_agg}
+	}
+	\caption{\textbf{REINFORCE: Aggregated Episodic Returns.} 
+		Strong variance across seeds/games yields a wide min--max band in both normalizations. 
+		Mean in human norm often oscillates near zero, while min--max hovers around 0.15--0.20.}
+	\label{fig:reinforce_returns_agg}
+\end{figure}
 
-\subsubsection{PPO (Proximal Policy Optimization)}
+\paragraph{Per‐Game Breakdown}
+Figure~\ref{fig:reinforce_pergame_return} displays the same returns (human \& min--max) 
+but \emph{separated by environment}:
 \begin{itemize}
-	\item Effect of clipping on training stability.
-	\item Performance vs. REINFORCE.
+	\item \textbf{Boxing} can show positive or negative extremes in human‐norm,
+	while \textbf{Freeway} remains almost trivial (zero or near zero).
+	\item \textbf{Assault} (green in min--max) can reach $\sim0.4$ in certain seeds,
+	outpacing many other tasks.
 \end{itemize}
-Did clipping help stabilize training?
-Efficiency compared to REINFORCE.
+
+\begin{figure}[htbp]
+	\centering
+	\subfloat[][Per‐Game: Human Norm]{
+		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_episodic_return_per_game_human_reinforce_atari.png}
+		\label{fig:reinforce_return_pergame_human}
+	}
+	\quad
+	\subfloat[][Per‐Game: Min--Max Norm]{
+		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_episodic_return_per_game_minmax_reinforce_atari.png}
+		\label{fig:reinforce_return_pergame_minmax}
+	}
+	\caption{\textbf{REINFORCE: Returns by Environment.} 
+		Some runs on \emph{Boxing} or \emph{Assault} achieve higher peaks, 
+		while \emph{Freeway} is essentially flat. 
+		Variance remains high across multiple seeds.}
+	\label{fig:reinforce_pergame_return}
+\end{figure}
+
+\paragraph{Training Metrics}
+We log additional metrics in Figures~\ref{fig:reinforce_trainmetrics1}--\ref{fig:reinforce_trainmetrics2}. 
+The steps per second (SPS) quickly rises above 150, the episodic length averages around 3500–4000 steps,
+and the \texttt{losses\_loss} curve fluctuates significantly from positive to negative. 
+The learning rate chart verifies the slight linear decay from $2.5\times10^{-4}$ to roughly $2.4\times10^{-4}$ by 100k steps.
+
+\begin{figure}[htbp]
+	\centering
+	\subfloat[][Episode Length]{
+		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_episodic_length_reinforce_atari.png}
+		\label{fig:reinforce_epilen}
+	}
+	\quad
+	\subfloat[][Steps Per Second (SPS)]{
+		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_SPS_reinforce_atari.png}
+		\label{fig:reinforce_sps}
+	}
+	\caption{\textbf{REINFORCE: Episode Length and Throughput.} 
+		The average length stabilizes near 3800–4000 steps; 
+		min–max can exceed 7000–8000 in some seeds. 
+		SPS plateaus around 150–170.}
+	\label{fig:reinforce_trainmetrics1}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\subfloat[][Policy Loss (raw)]{
+		\includegraphics[width=.45\textwidth]{figures/reinforce/losses_loss_reinforce_atari.png}
+		\label{fig:reinforce_loss}
+	}
+	\quad
+	\subfloat[][Learning Rate (Minimal Decay)]{
+		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_learning_rate_reinforce_atari.png}
+		\label{fig:reinforce_lr}
+	}
+	\caption{\textbf{REINFORCE: Loss and Learning‐Rate Curves.} 
+		The loss exhibits large swings across runs due to high‐variance returns, 
+		while the LR only drifts from $2.5\times10^{-4}$ down to $\sim2.4\times10^{-4}$.}
+	\label{fig:reinforce_trainmetrics2}
+\end{figure}
+
+\paragraph{Evaluation and Emissions}
+Table~\ref{tab:reinforce_evalstats} consolidates final performance 
+and emissions across 32 runs (8 Atari games $\times$ 4 seeds). 
+Mean human‐norm returns are about $0.026$ (with large variance), 
+and min–max is $\sim0.154$. 
+Energy usage is $0.00676$\,kg\,CO\textsubscript{2} on average, 
+slightly above baseline DQN ($0.00647$).
+
+\begin{table}[htbp]
+	\caption{REINFORCE: Final Evaluation and Emissions (Means and Ranges). 
+		High variance is evident in the negative minimum (Boxing) and moderate positive maximum (2.83).}
+	\label{tab:reinforce_evalstats}
+	\centering
+	\begin{tabular}{lcccc}
+		\toprule
+		& \textbf{Human Norm} & \textbf{Min--Max} & \textbf{Emissions} \\
+		\midrule
+		Mean & 0.0259 & 0.1544 & 0.00676 \\
+		Std  & 0.3549 & 0.2515 & 0.00056 \\
+		Min  & -2.4048 & 0.0    & 0.00614 \\
+		Max  & 2.8333 & 0.8527 & 0.00760 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\paragraph{Discussion}
+\begin{itemize}
+	\item \textbf{Pure Policy Gradient Variance:} 
+	Without baselines or actor‐critic structure, REINFORCE’s updates rely entirely on full returns. 
+	In just 100k steps, this approach shows wide fluctuations, as seen in the loss and returns.
+	\item \textbf{LR Choice:} 
+	$2.5\times10^{-4}$ is preferable to $1\times10^{-4}$ within these short runs, 
+	but neither rate fully stabilizes the performance. 
+	\item \textbf{Emissions and Overhead:} 
+	REINFORCE’s simpler forward pass keeps emissions at $0.00676$\,kg, 
+	somewhat above the $0.00647$\,kg for DQN but below distributional or PER methods ($\sim0.0072$--$0.0078$).
+	\item \textbf{Longer‐Horizon Potential:} 
+	Theoretical convergence may require millions of steps. 
+	Practical setups usually adopt actor‐critic or baseline modifications to reduce variance 
+	and accelerate learning in fewer steps.
+\end{itemize}
 
 
-\subsubsection{SAC (Soft Actor-Critic)}
+\subsubsection{Proximal Policy Optimization (PPO)}
+\label{subsubsec:ppo}
+
+\paragraph{(Hyper)Parameters}
+
+\begin{table}[htbp]
+	\caption{Key hyperparameters for PPO. Only \texttt{env\_id} and \texttt{seed} vary across runs. 
+		Note that \texttt{num\_envs}=8 collects experience from 8 parallel environments each rollout.}
+	\label{tab:ppo_hyperparams}
+	\centering
+	\begin{tabular}{ll}
+		\toprule
+		\textbf{Parameter} & \textbf{Value} \\
+		\midrule
+		\texttt{exp\_name}            & ppo\_atari \\
+		\texttt{seed}                 & 1..4 \\
+		\texttt{torch\_deterministic} & True \\
+		\texttt{cuda}                 & True \\
+		\texttt{track}                & True \\
+		\texttt{wandb\_project\_name} & rlsb \\
+		\texttt{capture\_video}       & False \\
+		\texttt{save\_model}          & True \\
+		\texttt{env\_id}              & e.g.\ AlienNoFrameskip-v4 \\
+		\texttt{total\_timesteps}     & 100000 \\
+		\texttt{learning\_rate}       & 0.00025 \\
+		\texttt{num\_envs}            & 8 \\
+		\texttt{num\_steps}           & 128 \\
+		\texttt{anneal\_lr}           & True \\
+		\texttt{gamma}                & 0.99 \\
+		\texttt{gae\_lambda}          & 0.95 \\
+		\texttt{num\_minibatches}     & 4 \\
+		\texttt{update\_epochs}       & 4 \\
+		\texttt{norm\_adv}            & True \\
+		\texttt{clip\_coef}           & 0.1 \\
+		\texttt{clip\_vloss}          & True \\
+		\texttt{ent\_coef}            & 0.01 \\
+		\texttt{vf\_coef}             & 0.5 \\
+		\texttt{max\_grad\_norm}      & 0.5 \\
+		\texttt{target\_kl}           & None \\
+		\texttt{batch\_size}          & 1024 \\
+		\texttt{minibatch\_size}      & 256 \\
+		\texttt{num\_iterations}      & 97 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\paragraph{Overview and Settings}
+We follow the default \emph{CleanRL}~\cite{huang:cleanrl} PPO hyperparameters, 
+with \(\texttt{clip\_coef}=0.1\) (a bit lower than the usual 0.2). 
+Each iteration processes $8\times128=1024$ steps, giving $\sim97$ updates across 100k total steps. 
+We keep standard GAE~\cite{schulman:gae} for advantage estimation. 
+Importantly, \texttt{anneal\_lr=True} implements a **substantial** linear decay 
+of the learning rate from $2.5\times 10^{-4}$ down toward zero by the end of training, 
+as seen in Figure~\ref{fig:ppo_lr}.
+
+\paragraph{Aggregated Returns}
+Figures~\ref{fig:ppo_returns_agg} depict the episodic returns (mean $\pm$ min--max) 
+for both **human** and **min--max** normalization across 32 total runs (8 games, 4 seeds each):
+\begin{itemize}
+	\item \textbf{Human norm} 
+	(Fig.~\ref{fig:ppo_returns_human}): The average meanders near zero, with large 
+	negative dips (below $-2$) and a few positive spikes (above $+4$).
+	\item \textbf{Min--max norm}
+	(Fig.~\ref{fig:ppo_returns_minmax}): The mean gradually hovers around $0.2$--$0.3$, 
+	with some seeds spiking up to $0.8$ or higher.
+\end{itemize}
+
+\begin{figure}[htbp]
+	\centering
+	\subfloat[][Human‐Normalized (Aggregated)]{
+		\includegraphics[width=.45\textwidth]{figures/ppo/charts_episodic_return_human_ppo_atari.png}
+		\label{fig:ppo_returns_human}
+	}
+	\quad
+	\subfloat[][Min--Max Normalized (Aggregated)]{
+		\includegraphics[width=.45\textwidth]{figures/ppo/charts_episodic_return_minmax_ppo_atari.png}
+		\label{fig:ppo_returns_minmax}
+	}
+	\caption{\textbf{PPO: Aggregated Episodic Returns.} 
+		The broad shaded area shows high variance among runs/games. 
+		The mean remains around zero in human norm but reaches 0.2--0.3 in min--max.}
+	\label{fig:ppo_returns_agg}
+\end{figure}
+
+\paragraph{Per‐Game Returns}
+Figure~\ref{fig:ppo_returns_pergame} shows these returns for each environment:
+\begin{itemize}
+	\item \textbf{Boxing} (orange) occasionally leaps above +1 or below -1 in human norm,
+	with big shifts in min--max as well.
+	\item \textbf{Assault} (green) can exceed 0.4 in min--max.
+	\item Some runs in \textbf{Breakout} or \textbf{Freeway} remain near zero.
+\end{itemize}
+
+\begin{figure}[htbp]
+	\centering
+	\subfloat[][Per‐Game: Human Norm]{
+		\includegraphics[width=.45\textwidth]{figures/ppo/charts_episodic_return_per_game_human_ppo_atari.png}
+		\label{fig:ppo_return_pergame_human}
+	}
+	\quad
+	\subfloat[][Per‐Game: Min--Max Norm]{
+		\includegraphics[width=.45\textwidth]{figures/ppo/charts_episodic_return_per_game_minmax_ppo_atari.png}
+		\label{fig:ppo_return_pergame_minmax}
+	}
+	\caption{\textbf{PPO: Returns by Environment.} 
+		Notable extreme spikes/dips appear in \emph{Boxing} (orange) 
+		and occasionally \emph{Assault} or \emph{Breakout}.}
+	\label{fig:ppo_returns_pergame}
+\end{figure}
+
+\paragraph{Additional Training Metrics}
+Alongside returns, we log episode length, throughput (SPS), learning rate, KL divergences, and further diagnostic losses:
+
+\begin{figure}[htbp]
+	\centering
+	\subfloat[][Episode Length]{
+		\includegraphics[width=.45\textwidth]{figures/ppo/charts_episodic_length_ppo_atari.png}
+		\label{fig:ppo_epilen}
+	}
+	\quad
+	\subfloat[][Steps per Second (SPS)]{
+		\includegraphics[width=.45\textwidth]{figures/ppo/charts_SPS_ppo_atari.png}
+		\label{fig:ppo_sps}
+	}
+	\caption{\textbf{PPO: Episode Length \& Throughput.}
+		The mean ep‐length hovers near 3500--4000 steps, 
+		with some runs dropping below 1000 or spiking above 7000. 
+		Meanwhile, parallel envs let SPS exceed 400 or 500.}
+	\label{fig:ppo_epilen_sps}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=.5\textwidth]{figures/ppo/charts_learning_rate_ppo_atari.png}
+	\caption{\textbf{PPO: Learning Rate Decay.}
+		The LR anneals linearly from $2.5\times10^{-4}$ down to near $0$ 
+		over \num{100000} steps, a steep slope that can reduce update magnitudes near the end.}
+	\label{fig:ppo_lr}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\subfloat[\textbf{Approx KL}]{
+		\includegraphics[width=.45\textwidth]{figures/ppo/losses_approx_kl_ppo_atari.png}
+		\label{fig:ppo_approxkl}
+	}
+	\quad
+	\subfloat[\textbf{Old Approx KL}]{
+		\includegraphics[width=.45\textwidth]{figures/ppo/losses_old_approx_kl_ppo_atari.png}
+		\label{fig:ppo_oldapproxkl}
+	}
+	\caption{\textbf{PPO: KL Divergences vs.\ Training Steps.}
+		Both metrics hover near 0.001--0.003 for most of training, 
+		though spikes appear. The old KL is centered around 0 but can jump above +0.02 or dip below -0.01.}
+	\label{fig:ppo_bothkl}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\subfloat[\textbf{Clip Fraction}]{
+		\includegraphics[width=.32\textwidth]{figures/ppo/losses_clipfrac_ppo_atari.png}
+		\label{fig:ppo_clipfrac}
+	}
+	\subfloat[\textbf{Entropy}]{
+		\includegraphics[width=.32\textwidth]{figures/ppo/losses_entropy_ppo_atari.png}
+		\label{fig:ppo_entropy}
+	}
+	\subfloat[\textbf{Explained Variance}]{
+		\includegraphics[width=.32\textwidth]{figures/ppo/losses_explained_variance_ppo_atari.png}
+		\label{fig:ppo_explvar}
+	}
+	\caption{\textbf{PPO: Additional Diagnostics (ClipFrac, Entropy, Explained Variance).}
+		(a) Clip fraction often spikes above 0.1 early, then drops under 0.01 by 100k steps.
+		(b) Entropy declines from about 2.0 to below 1.5 in some runs, 
+		indicating the policy becomes more deterministic.
+		(c) Explained variance remains near or below 0 for many runs, 
+		suggesting the value function struggles to capture returns in some seeds.}
+	\label{fig:ppo_additional_losses}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\subfloat[\textbf{Policy Loss}]{
+		\includegraphics[width=.45\textwidth]{figures/ppo/losses_policy_loss_ppo_atari.png}
+		\label{fig:ppo_pol_loss}
+	}
+	\quad
+	\subfloat[\textbf{Value Loss}]{
+		\includegraphics[width=.45\textwidth]{figures/ppo/losses_value_loss_ppo_atari.png}
+		\label{fig:ppo_val_loss}
+	}
+	\caption{\textbf{PPO: Policy and Value Losses.}
+		\textbf{(a)} The policy loss fluctuates around slightly negative values 
+		(often between $-0.01$ and $0.0$), with occasional positive spikes up to $\sim0.005$. 
+		\textbf{(b)} The value loss remains around $0.1$--$0.3$ on average but can exceed $1.0$ in some runs 
+		(max reaching over $1.5$). This large min--max spread indicates variability across seeds and environments, 
+		while the mean stays comparatively stable.}
+	\label{fig:ppo_pol_val_losses}
+\end{figure}
+
+\paragraph{Evaluation and Emissions}
+Table~\ref{tab:ppo_eval} summarizes PPO’s final returns (human/min--max) and mean CO\textsubscript{2} usage. 
+Interestingly, PPO emits only $\sim0.00288$\,kg CO\textsubscript{2} on average—significantly lower than 
+the typical 0.006--0.007 range of DQN-based runs. 
+Parallel sampling and shorter GPU usage per environment step likely contribute to this efficiency.
+
+\begin{table}[htbp]
+	\caption{PPO: Final Evaluation (Mean) \& Emissions. Negative dips mainly from \emph{Boxing} or \emph{Breakout}.}
+	\label{tab:ppo_eval}
+	\centering
+	\begin{tabular}{lccc}
+		\toprule
+		\textbf{Metric} & \textbf{Mean} & \textbf{Std} & \textbf{Min / Max}\\
+		\midrule
+		Human‐Norm Return & 0.077 & 0.563 & (-5.02 / 3.31)\\
+		Min--Max Return   & 0.248 & 0.271 & (0.0 / 0.9643)\\
+		Emissions (kg\,CO\textsubscript{2}) & 0.00288 & 0.00039 & (0.00244 / 0.00369)\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\paragraph{Discussion}
+\begin{itemize}
+	\item \textbf{Performance Variability:} 
+	Some runs stay near zero, while others occasionally spike above +1 or +2 in human norm. 
+	The min--max scale averages around 0.25, but can exceed 0.8 in certain seeds/games.
+	\item \textbf{Low Emissions:} 
+	PPO’s parallel rollout approach (8 envs) plus relatively fast updates 
+	yield the lowest carbon footprint among tested algorithms so far.
+	\item \textbf{Clipping Coef = 0.1:} 
+	A smaller clipping range might limit the policy’s rate of change, 
+	which, combined with the large LR anneal, can hamper final performance in only 100k steps.
+	\item \textbf{KL Divergence and LR Decay:} 
+	As \texttt{learning\_rate} decays to near zero, 
+	the approximate KL metrics (Fig.~\ref{fig:ppo_bothkl}) 
+	and clip fraction (Fig.~\ref{fig:ppo_additional_losses}(a)) both trend downward, 
+	suggesting slower policy updates and fewer ratio violations.
+	\item \textbf{Policy / Value Losses:} 
+	The policy loss typically hovers around slight negative values (Fig.~\ref{fig:ppo_pol_loss}), 
+	reflecting how PPO’s objective is calculated relative to advantage. 
+	Value loss (Fig.~\ref{fig:ppo_val_loss}) shows moderate means but large max spikes, 
+	implying some seeds or games exhibit abrupt divergences in state-value estimation.
+	\item \textbf{Entropy Decline and Value Modeling:} 
+	Steady entropy decay (Fig.~\ref{fig:ppo_additional_losses}(b)) shows the agent becomes more selective, 
+	while negative dips in explained variance (Fig.~\ref{fig:ppo_additional_losses}(c)) 
+	indicate the baseline network sometimes fails to track returns accurately, 
+	perhaps due to limited training steps or high variability.
+\end{itemize}
+
+Overall, PPO in 100k-step Atari remains highly variable, but it demonstrates 
+notably \emph{lower emissions} than the DQN-based methods, 
+albeit with modest average returns in this short training regime.
+
+
+\subsubsection{Soft Actor-Critic (SAC)}
 \label{subsubsec:sac}
 \begin{itemize}
 	\item Impact of entropy regularization.
