@@ -146,7 +146,7 @@ The Atari environment setup follows best practices outlined in \cite{machado:rev
 \paragraph{Preprocessing and Standardization}
 The preprocessing pipeline ensures consistent input representations across different Atari games, avoiding confounding factors that could skew results. Through the use of appropriate atari wrappers of Stable Baselines~v3, the following steps are implemented:
 \begin{description}
-	\item[Frame skipping:] we use \verb|MaxAndSkipEnv(skip=4)|, ensuring that actions are repeated for four frames and the maximum pixel values of consecutive frames are used. This stabilizes the input representation and allows agents to process meaningful changes in the game environment while reducing computational load.
+	\item[Frame skipping:] we use \verb|MaxAndSkipEnv(skip=4)|, ensuring that actions are repeated for four frames and the maximum pixel values of consecutive frames are used. This stabilizes the input representation and allows agents to process meaningful changes in the game environment while reducing computational load (the agent can  play roughly 4 times more games without significantly increasing the runtime).
 	\item[Random no-op initialization:] at the beginning of each episode, a random number (up to 30) of "do nothing" actions are executed (\verb|NoopResetEnv(noop_max=30)|). This prevents deterministic policies from exploiting fixed starting conditions, improving generalization.
 	\item[Episodic life and fire reset:]\
 	\begin{description}
@@ -156,7 +156,7 @@ The preprocessing pipeline ensures consistent input representations across diffe
 	\item[Observation preprocessing:]\
 	\begin{itemize}
 		\item raw RGB images are converted to grayscale and resized to 84×84 pixels (\verb|GrayScaleObservation| and \verb|ResizeObservation|).
-		\item a history of the last four frames is stacked (\verb|FrameStack(4)|) to provide temporal context, compensating for the lack of explicit memory.
+		\item a history of the last four frames is stacked (\verb|FrameStack(4)|) to provide temporal context, compensating for the partially observable nature of the environment.
 	\end{itemize}
 	\item[Reward clipping:] rewards are clipped between -1 and 1 (\verb|ClipRewardEnv|) to standardize their scale across different games. This makes the algorithms able to work with all games without needing refinements to adapt to particularly high- or low-reward games, while stabilizing training.
 \end{description}
@@ -166,40 +166,42 @@ The Arcade Learning Environment (ALE)~\cite{bellemare:ale} provides multiple ver
 
 In this study, we use the \textit{NoFrameskip-v4} environments~\cite{farama:ale}. This choice is motivated by several factors. First, \textit{NoFrameskip-v4} ensures fully deterministic execution when a fixed random seed is used, which is crucial for the reproducibility of our experiments. This determinism allows us to conduct controlled comparisons of different algorithms while minimizing the influence of environment stochasticity on performance evaluation. Additionally, since our preprocessing pipeline explicitly applies \verb|MaxAndSkipEnv(skip=4)| to handle frame skipping in a standardized way (as discussed in the previous section), the built-in frame skipping behavior of other environment versions is unnecessary and would introduce redundant processing.
 
-The primary difference between our setup and the \textit{v5} environments is the exclusion of sticky actions. While sticky actions can enhance generalization in long training regimes by preventing the agent from overfitting to deterministic game mechanics, their benefits are less relevant in our setting, where each run is limited to only 100k interactions. Under such a short training horizon, the additional stochasticity introduced by sticky actions would significantly degrade training stability and learning efficiency, leading to noisier performance estimates thus removing them is not only not problematic, but almost mandatory. Furthermore, the use of sticky actions is not as ubiquitous in the reinforcement learning literature as other preprocessing steps, making their exclusion a reasonable choice also for comparability with prior work.
+The primary difference between our setup and the \textit{v5} environments is the exclusion of sticky actions. While sticky actions can enhance generalization in long training regimes by preventing the agent from overfitting to deterministic game mechanics, their benefits are less relevant in our setting, where each run is limited to only 100k interactions. Under such a short training horizon, the additional stochasticity introduced by sticky actions would significantly degrade training stability and learning efficiency, leading to noisier performance estimates, thus removing them is not only not problematic, but almost mandatory. Furthermore, the use of sticky actions is not as ubiquitous in the reinforcement learning literature as other preprocessing steps, making their exclusion a reasonable choice also for comparability with prior work.
 
-By structuring our preprocessing pipeline around the NoFrameskip-v4 environments and following the best practices from \cite{machado:revisiting_ale}, we ensure that our experimental results are robust, reproducible, and comparable to the large body of prior deep reinforcement learning research. The preprocessing steps applied in our implementation are widely used in reinforcement learning studies and enable fair performance evaluations across different Atari games. Furthermore, the decision to exclude sticky actions aligns with the constraints of our 100k iteration limit, ensuring meaningful training without excessive randomness hindering learning progress.
+By structuring our preprocessing pipeline around the NoFrameskip-v4 environments and following the best practices from \cite{machado:revisiting_ale}, we ensure that our experimental results are robust, reproducible, and comparable to the large body of prior deep reinforcement learning research. The preprocessing steps applied in our implementation are widely used in reinforcement learning studies and enable fair performance evaluations across different Atari games. Furthermore, the decision to exclude sticky actions aligns with the constraints of our 100k iteration limit, ensuring meaningful training without excessive randomness hindering learning progress. Table~\ref{tab:ale_comparison} show a comparison between our setup and v5.
 
-\begin{table}[h]
-	\centering
-	\begin{tabular}{|l|c|c|}
-		\hline
-		\textbf{Feature} & \textbf{NoFrameskip-v4 (Our Setup)} & \textbf{ALE v5} \\
-		\hline
-		\textbf{Frame Skipping} & Explicitly set via \texttt{MaxAndSkipEnv(skip=4)} & Implicit (default 4) \\
-		\hline
-		\textbf{No-op Start} & \texttt{NoopResetEnv(noop\_max=30)} & \texttt{NoopResetEnv(noop\_max=30)} \\
-		\hline
-		\textbf{Episodic Life} & \texttt{EpisodicLifeEnv} & \texttt{EpisodicLifeEnv} \\
-		\hline
-		\textbf{Fire Reset} & \texttt{FireResetEnv} (if needed) & \texttt{FireResetEnv} (if needed) \\
-		\hline
-		\textbf{Observation Preprocessing} & 
-		Grayscale + Resize (84x84) + FrameStack(4) & 
-		Grayscale + Resize (84x84) + FrameStack(4) \\
-		\hline
-		\textbf{Reward Clipping} & \texttt{ClipRewardEnv} (-1, 1) & \texttt{ClipRewardEnv} (-1, 1) \\
-		\hline
-		\textbf{Sticky Actions (\texttt{repeat\_action\_probability})} & Not Used (Fixed Action Selection) & Enabled (\texttt{0.25}) \\
-		\hline
-	\end{tabular}
+\begin{table}
 	\caption{Comparison between our setup based on NoFrameskip-v4 and ALE v5 environments.}
 	\label{tab:ale_comparison}
+	\centering
+	\makebox[\textwidth]{%
+	\begin{tabularx}{1.2\textwidth}{XXX}
+		\toprule
+		\textbf{Feature} & \textbf{NoFrameskip-v4 (Our Setup)} & \textbf{ALE v5} \\
+		\midrule
+		Frame Skipping & Explicitly set via \texttt{MaxAndSkipEnv(skip=4)} & Implicit (default 4) \\
+		\midrule
+		No-op Start & \texttt{NoopResetEnv(noop\_max=30)} & \texttt{NoopResetEnv(noop\_max=30)} \\
+		\midrule
+		Episodic Life & \texttt{EpisodicLifeEnv} & \texttt{EpisodicLifeEnv} \\
+		\midrule
+		Fire Reset & \texttt{FireResetEnv} (if needed) & \texttt{FireResetEnv} (if needed) \\
+		\midrule
+		Observation Preprocessing & 
+		Grayscale + Resize (84x84) + FrameStack(4) & 
+		Grayscale + Resize (84x84) + FrameStack(4) \\
+		\midrule
+		Reward Clipping & \texttt{ClipRewardEnv} (-1, 1) & \texttt{ClipRewardEnv} (-1, 1) \\
+		\midrule
+		Sticky Actions (\texttt{repeat\_action\_probability}) & Not Used (Fixed Action Selection) & Enabled (\texttt{0.25}) \\
+		\bottomrule
+	\end{tabularx}
+	}%
 \end{table}
 
 \subsubsection{(Hyper)Parameter Configurations}
 
-We discuss in this section a set of parameters that influence the experiment setup but not directly the optimization process like hyperparameters do. Regarding the latter, we do discuss here our general approach in their initial setting and optimization, but we delay to section \ref{sec:preliminary_results}, in which we dedicate a section to every algorithm, the details regarding their fine tuning, so to have a more cohesive and complete presentation.
+We discuss in this section a set of parameters that influence the experiment setup but not directly the optimization process like hyperparameters do. Regarding the latter, we do discuss here our general approach in their initial setting and optimization, but we delay to section \ref{sec:preliminary_results}, in which we dedicate a section to every algorithm, the details regarding their fine tuning, so to have a more cohesive and complete presentation. Both parameters and hyperparameters are passed to the script as command-line arguments.
 
 \paragraph{Parameters}
 \begin{description}
@@ -246,25 +248,25 @@ We collected detailed logs for each run: TensorBoard event files (containing met
 \subsubsection{Normalization of Returns}
 \label{subsubsec:normalization}
 Since the raw episodic returns for Atari games vary widely in scale, a fair and not skewd comparison needed a normalization step. This is one of the reasons that prevented us from directly using tensorboard and wandb plots. We performed two distinct normalization procedures:
-\begin{itemize}
-	\item \textbf{Human-Normalized Returns.} In this approach, for each game, we subtract the score of a random agent and divide by the difference between the human baseline and the random baseline. This is a standard practice in Atari benchmarks to contextualize performance relative to human play.
-	\item \textbf{Min-Max Normalization.} A classic min-max scaling (\emph{i.e.}, $x_{\text{norm}} = \frac{x - x_{\min}}{x_{\max} - x_{\min}}$) on a per-game basis, where $x_{\min}$ and $x_{\max}$ come from the observed range of returns for that game.
-\end{itemize}
-These normalized returns facilitate more intuitive cross-game comparisons, ensuring that no single game with unusually high or low rewards dominates the overall analysis. Since we don't care about comparing the performance of our implementations with the literature, and the relative comparison between the algorithms is the same with both normalizations, we can use indifferently either one of them based on which one produce a clearer plot.
+\begin{description}
+	\item[Human-Normalized Returns:] in this approach, for each game, we subtract the score of a random agent and divide by the difference between the human baseline and the random baseline. This is a standard practice in Atari benchmarks to contextualize performance relative to human play. Among the first to use this approach were the authors of~\cite{mnih:human}, from which we took the random policy and professional human player values used for normalization. The formula for obtaining the normalized value is: $x_{\text{norm}} = \frac{x - x_\text{random}}{x_\text{human} - x_\text{random}}$, where $x$ is the agent score, $x_\text{random}$ is the random policy score, and $x_\text{human}$ is the professional human player score.
+	\item[Min-Max Normalization:] a classic min-max scaling (\emph{i.e.}, $x_{\text{norm}} = \frac{x - x_{\min}}{x_{\max} - x_{\min}}$) on a per-game basis, where $x_{\min}$ and $x_{\max}$ come from the observed range of returns for that game, over training and evaluation of all algorithms.
+\end{description}
+These normalized returns facilitate more intuitive cross-game comparisons, ensuring that no single game with unusually high or low rewards dominates the overall analysis. Since the relative comparison between the algorithms is the same with both normalizations, we can use indifferently either one of them based on which one produce a clearer plot.
 
 \subsubsection{Interpolation and Aggregation}
 When generating metric curves (such as episodic returns vs.\ training steps), we needed a consistent $x$-axis across runs. Many runs log metrics at slightly different steps (due to stochastic episode lengths, logging frequencies, etc.). The management of this aspect from both wandb and tensorboard is not ideal or lacking, not always allowing precise control or easy export of aggregated data.
 
 In our pipeline, we therefore:
 \begin{enumerate}
-	\item \textbf{Filtered by Metric and Algorithm.} We grouped rows in the CSV by a specific tag (e.g., \texttt{charts/episodic\_return}, \texttt{charts/SPS}) and by algorithm.
-	\item \textbf{Interpolated to a Common Grid.} For each subset, we created a uniformly spaced array of steps (e.g., \num{1000} points from \num{0} to \num{100000}. We then applied linear interpolation on each run's time series to ensure all runs aligned on this common step axis.
-	\item \textbf{Computed Statistics.} At each point on the new, shared step grid, we aggregated the interpolated run values to produce statistics such as \textit{mean}, \textit{min--max range}, \textit{standard deviation}, etc.
+	\item \textbf{Filtered by Metric and Run.} We grouped rows in the CSV by a specific tag (e.g., \texttt{charts/episodic\_return}, \texttt{charts/SPS}) and by run.
+	\item \textbf{Interpolated to a Common Grid.} For each subset, we created a uniformly spaced array of steps (i.e., \num{1000} points from \num{0} to \num{100000}). We then applied linear interpolation on each run's time series to ensure all runs aligned on this common step axis.
+	\item \textbf{Computed Statistics.} At each point on the new, shared step grid, we aggregated the interpolated run values to produce statistics such as \textit{mean}, \textit{min--max range}, \textit{standard deviation}, \textit{iqmean} etc.
 \end{enumerate}
 The interpolation ensures that every run contributes to the curves at the same discrete set of training steps, simplifying the generation of \emph{mean} or \emph{min--max} envelopes. This was crucial for plotting aggregate performance over multiple runs.
 
 \subsubsection{Plot Generation and CSV Output}
-Following the interpolation and aggregation process, the final step was to produce consistent plots for each metric--algorithm pair. We used \texttt{matplotlib} to generate both raster (PNG) and vector (SVG) graphics, giving us flexibility for both online presentation and printed material. Additionally, the aggregated statistics for each plot were saved as a separate CSV file, allowing subsequent combinations of multiple algorithms on a single plot without re-running the entire pipeline.
+Following the interpolation and aggregation process, the final step was to produce consistent plots for each metric--algorithm pair. We used \texttt{matplotlib} to generate both raster (PNG) and vector (SVG) graphics. Additionally, the aggregated statistics for each plot were saved as a separate CSV file, allowing subsequent combinations of multiple algorithms on a single plot without re-running the entire pipeline.
 
 Overall, this approach provided:
 \begin{itemize}

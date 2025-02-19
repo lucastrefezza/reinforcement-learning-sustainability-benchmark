@@ -1,69 +1,133 @@
 \section{Implications of the Results}
 \label{sec:implications_results}
-This section interprets the findings from the previous section and discusses their broader implications.
 
-This section is more interpretative and application-focused—it explains why the results matter.
+%ricorda video su "deepseek clone at 30\$", dice tipo che quale algo usi sembra non fare differenza, quindi si potrebbe optare a prescindere per il più green, o soft spot tra reinforce e ppo per dire, magari reinforce with baseline e migliori batch.
 
+%\subsection{Limitations and Future Work}
+%(dopo lo slash la versione aggiornata dopo aver fatto notare che c'è la sezione conclusioni, la versione aggiornata delle direzioni future è semplicemente azzeccata dopo quella originale, nel senso primi due item sono vecchi, altri 3 nuovi)
+%\begin{itemize}
+%	\item \textbf{CodeCarbon limitations:} Real-time tracking slowed down experiments. / Real-time tracking was too slow, limiting fine-grained energy measurements.
+%	\item \textbf{Hardware constraints:} Would stronger GPUs reduce energy costs through faster convergence? / The computational budget influenced the choice of tested methods.
+%	\item \textbf{Future directions:}
+%	\begin{itemize}
+%		\item Development of energy-efficient RL architectures.
+%		\item Methods for optimizing training without excessive power use.
+%		\item Can reinforcement learning frameworks be modified to prioritize energy-efficient training?
+%		\item How does energy consumption vary with different hardware architectures?
+%		\item Investigating potential trade-offs between batch size, learning rate, and energy efficiency.
+%	\end{itemize}
+%\end{itemize}
+%CodeCarbon limitations: Not tracking step-by-step emissions limited insights into fine-grained energy consumption patterns.
+%Hardware constraints: Would more powerful GPUs reduce energy costs through faster convergence?
+%Future Research Directions:
+%Could energy-efficient architectures be developed?
+%Should reinforcement learning algorithms be adapted for lower energy consumption?
+
+%%%%%%%%%%%% QUI %%%%%%%%%%%%%%%%
+
+In this section, we interpret the findings from Section~\ref{sec:preliminary_results} in light of 
+practical concerns such as deployment costs, carbon footprints, 
+and sustainability requirements. We also consider how short-horizon 
+benchmarks (100k steps) might shape our broader understanding of deep RL performance.
 
 \subsection{General Observations}
-\begin{itemize}
-	\item What trends emerged from the results?
-	\item Were any algorithms unexpectedly energy-efficient?
-	\item Did any algorithm perform significantly worse than expected in terms of energy usage?	
-\end{itemize}
-What were the most notable trends in the results?
-Any surprising findings? (e.g., did a simpler method turn out to be more efficient than an advanced one?).
+\label{subsec:general_observations}
 
-\subsection{Energy Efficiency vs. Performance Trade-Off}
+Overall, our results show that:
 \begin{itemize}
-	\item Which algorithms achieved the best performance at low energy costs?
-	\item Are high-performance methods necessarily more energy-intensive?
-	\item Is there a clear "sweet spot" balancing energy and reward?
-	\item Are there diminishing returns for performance improvements vs. energy consumption?
+	\item \textbf{Value-based} (DQN-family) methods (DQN, DoubleDQN, PER, DuelingDQN, 
+	C51) typically converge to moderate or high returns on several environments 
+	(e.g., \emph{Freeway}, \emph{Boxing}), 
+	but face stability challenges in some tasks (e.g., \emph{Pong}, \emph{MsPacMan}). 
+	\item \textbf{Policy-based} algorithms produce more varied performance: 
+	\texttt{PPO} reliably achieves competitive returns with lower emissions, 
+	whereas \texttt{SAC} can outperform others in a few environments (\emph{Breakout}) 
+	but runs more slowly and emits significantly more CO\textsubscript{2}.
+	\item \textbf{Short 100k-step horizon} constrains the potential for improvement, 
+	so many advanced techniques (e.g., Rainbow combinations, PER, etc.) 
+	do not show clear benefits over simpler methods within this limited training budget.
 \end{itemize}
-Which algorithms performed well at low energy costs?
-Which algorithms achieved the best performance but at high energy costs?
-Is there a clear “sweet spot” algorithm?
+
+As a consequence, while these results confirm certain known trends—e.g., \emph{DoubleDQN} 
+mitigates Q-value overestimation, \emph{PER} can accelerate training if allowed enough steps—
+the practical impacts at 100k steps are muted.
+
+\subsection{Energy Efficiency vs.\ Performance Trade-Off}
+\label{subsec:energy_vs_perf}
+
+A central theme of this work is the **trade-off** between achieving higher returns 
+and incurring greater computational cost and carbon emissions. Our measurements reveal that:
+\begin{itemize}
+	\item \textbf{SAC} consistently has the highest carbon footprint (on average $\sim 0.015$\,kg\,CO\textsubscript{2}), 
+	in part due to its off-policy updates and dual Q-network overhead, 
+	even though it sometimes outperforms other algorithms in late-stage learning.
+	\item \textbf{PPO} exhibits the \emph{lowest} emissions (around $0.0029$\,kg\,CO\textsubscript{2}) 
+	and shortest runtime ($\sim2.4$\,hours total for 32 runs) but generally places 
+	only mid-to-high in final returns, depending on the environment.
+	\item Most \textbf{DQN-based methods} lie in the middle 
+	($\sim0.006$--$0.008$\,kg\,CO\textsubscript{2} on average), 
+	with total runtimes of around 5--7\,hours for 32 runs.
+\end{itemize}
+
+Hence, the classic adage of “no free lunch” holds: \textbf{SAC} can deliver strong scores 
+on certain games but at a large computational and environmental cost, 
+while \textbf{PPO} is impressively lean and still achieves respectable performance. 
+For tasks where top-tier scores are not essential, 
+a lower-emission method like PPO or DQN might suffice.
 
 \subsection{Practical Implications for AI Sustainability}
-\begin{itemize}
-	\item If a company prioritizes high performance, which algorithm should they use?
-	\item If low energy consumption is the main concern, what is the best choice?
-	\item How can reinforcement learning be made more sustainable?
-\end{itemize}
-If companies want maximum performance, which algorithm should they choose?
-If a low-carbon footprint is the priority, what’s the best option?
-What does this study suggest about future AI energy efficiency research?
-Seconda versione, dopo aver fatto notare della sezione conclusioni:
-\begin{itemize}
-	\item Which algorithms should be prioritized in resource-limited environments?
-	\item If reinforcement learning is applied in an industry setting, which method should be chosen for:
-	\begin{itemize}
-		\item Maximum efficiency?
-		\item Best performance at a reasonable cost?
-		\item Low-carbon AI initiatives?
-	\end{itemize}
-	\item How could energy-efficient reinforcement learning impact research and business decisions?
-\end{itemize}
----------
-ricorda video su "deepseek clone at 30\$", dice tipo che quale algo usi sembra non fare differenza, quindi si potrebbe optare a prescindere per il più green, o soft spot tra reinforce e ppo per dire, magari reinforce with baseline e migliori batch.
+\label{subsec:practical_sustainability}
+
+For organizations aiming to balance \emph{performance} with \emph{sustainability}:
+\begin{enumerate}
+	\item \textbf{Hardware Selection:} 
+	Using GPUs that CodeCarbon or W\&B can track precisely (e.g., recent NVIDIA lines) 
+	greatly improves the accuracy of energy estimates. CPU usage is more difficult 
+	to capture reliably on certain OS/hardware combos.
+	\item \textbf{Short-Horizon Benchmarks:} 
+	Although many RL advances were proposed under multi-million-step training, 
+	the 100k-step regime can highlight efficiency differences relevant to 
+	real-world scenarios where time or resources are limited.
+	\item \textbf{Algorithm Choice:} 
+	If a moderate level of performance is acceptable, adopting \textbf{PPO} 
+	significantly lowers emissions while reducing training time. 
+	If the highest possible return is mandatory and the environment's raw reward range 
+	suits it (e.g., \emph{Breakout}), \textbf{SAC} might be worth its higher carbon cost.
+\end{enumerate}
+
+This interplay of performance vs.\ overhead suggests that sustainability-conscious 
+applications should carefully weigh the marginal returns gain from more computationally 
+intense algorithms, especially if those gains only appear after 500k or 1 million steps.
 
 \subsection{Limitations and Future Work}
-(dopo lo slash la versione aggiornata dopo aver fatto notare che c'è la sezione conclusioni, la versione aggiornata delle direzioni future è semplicemente azzeccata dopo quella originale, nel senso primi due item sono vecchi, altri 3 nuovi)
-\begin{itemize}
-	\item \textbf{CodeCarbon limitations:} Real-time tracking slowed down experiments. / Real-time tracking was too slow, limiting fine-grained energy measurements.
-	\item \textbf{Hardware constraints:} Would stronger GPUs reduce energy costs through faster convergence? / The computational budget influenced the choice of tested methods.
-	\item \textbf{Future directions:}
-	\begin{itemize}
-		\item Development of energy-efficient RL architectures.
-		\item Methods for optimizing training without excessive power use.
-		\item Can reinforcement learning frameworks be modified to prioritize energy-efficient training?
-		\item How does energy consumption vary with different hardware architectures?
-		\item Investigating potential trade-offs between batch size, learning rate, and energy efficiency.
-	\end{itemize}
-\end{itemize}
-CodeCarbon limitations: Not tracking step-by-step emissions limited insights into fine-grained energy consumption patterns.
-Hardware constraints: Would more powerful GPUs reduce energy costs through faster convergence?
-Future Research Directions:
-Could energy-efficient architectures be developed?
-Should reinforcement learning algorithms be adapted for lower energy consumption?
+\label{subsec:limitations_futurework}
+
+A few constraints shape our interpretation:
+
+\paragraph{Limited Training Steps (100k).}
+Many popular DRL algorithms (Rainbow, distributional expansions, multi-step returns, etc.) 
+truly shine beyond the 1 million–step mark. Our 100k-limit test can understate 
+these methods’ potential.
+
+\paragraph{Restricted Environment Selection.}
+Although we tested 8 Atari games across 4 seeds (32 runs per algorithm), 
+the full ALE suite has 55+ games. A broader set might reveal 
+different rank orders, especially for highly complex tasks.
+
+\paragraph{Approximate CPU/RAM Tracking.}
+Due to Windows Intel Power Gadget deprecation and partial fallback modes, 
+our CPU and RAM usage data rely on either TDP approximations or 
+coarse telemetry from W\&B. GPU tracking is more accurate, 
+but the total system-level emissions remain an estimate.
+
+\paragraph{Stochastic Variation.}
+With only 4 seeds per environment, 
+some especially negative outliers (Boxing’s large negative dips for certain seeds) 
+can skew the aggregated means, 
+though we mitigate this with IQM as recommended in~\cite{agarwal:statistical_precipice}.
+
+Future work might extend training to 1--5 million steps for each method 
+to see if advanced techniques eventually surpass simpler baselines 
+in both performance and energy efficiency. 
+Additionally, exploring specialized hardware or \emph{hybrid HPC} 
+could reveal new ways to reduce DRL’s carbon footprint.

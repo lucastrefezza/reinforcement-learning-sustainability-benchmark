@@ -1,23 +1,82 @@
 \section{Conclusions}
 \label{sec:conclusions}
-This section summarizes the key findings of the study and reflects on the broader significance of energy-efficient reinforcement learning.
+In this final section, we synthesize the findings and propose next steps.
 
 \subsection{Summary of Findings}
+\label{subsec:summary_of_findings}
+
 \begin{itemize}
-	\item What were the most important insights gained from the experiments?
-	\item Which algorithms proved to be the best trade-off between energy efficiency and performance?
-	\item Which models consumed excessive energy without substantial performance benefits?
+	\item \textbf{Baseline DQN} attains moderate performance across most environments, 
+	emitting $\sim0.0065$\,kg\,CO\textsubscript{2} on average over 100k steps. 
+	DoubleDQN reduces Q-value overestimation but does not yield a clear improvement 
+	in final returns at this short horizon.
+	\item \textbf{PER} overhead raises emissions slightly 
+	($\sim0.00725$\,kg\,CO\textsubscript{2}), 
+	yet the 100k-step limit masks much of its usual advantage in accelerating learning.
+	\item \textbf{DuelingDQN} and \textbf{C51} each show environment-specific benefits 
+	(e.g., \emph{Boxing}, \emph{Freeway}), but their aggregated returns 
+	remain similar to or slightly exceeding baseline DQN, 
+	with comparable runtime/emissions.
+	\item \textbf{PPO} stands out as the most “eco-friendly,” completing runs in only 
+	2.4\,hours for all seeds/games combined and emitting a mere 0.0029\,kg CO\textsubscript{2}. 
+	It achieves respectable performance across many environments.
+	\item \textbf{SAC} occasionally dominates a few tasks (\emph{Breakout}) but 
+	exhibits the highest energy cost (0.015\,kg\,CO\textsubscript{2}), 
+	slow throughput (80--100\,SPS), and large variance in returns.
 \end{itemize}
 
 \subsection{Final Thoughts on Energy-Efficient Reinforcement Learning}
-\begin{itemize}
-	\item Can reinforcement learning methods be optimized for sustainability without sacrificing performance?
-	\item How does this study contribute to the ongoing conversation about AI’s environmental impact?
-\end{itemize}
+\label{subsec:final_thoughts_energy_eff}
+
+The tension between \emph{advanced techniques} and \emph{computational overhead} emerges 
+as a core challenge in DRL. Under a short 100k-step regime, simpler methods (PPO, 
+baseline DQN) often provide a better ratio of performance to carbon cost, while 
+fancier algorithms—like SAC or distributional DQN variants—struggle to gain a decisive edge 
+before the run ends.
+
+In realistic production or industry settings with limited time/budget for model tuning, 
+prioritizing algorithms that quickly converge to adequate performance can yield 
+significant energy savings. On the other hand, high-level research or competitive RL 
+benchmarks often push beyond millions of steps, letting advanced methods eventually 
+surpass simpler ones in raw returns.
 
 \subsection{Future Research Directions}
-\begin{itemize}
-	\item What are the next steps for improving energy efficiency in deep reinforcement learning?
-	\item How can future benchmarks expand upon this study?
-	\item Can policy-driven techniques (e.g., adaptive learning rates) optimize both performance and sustainability?
-\end{itemize}
+\label{subsec:future_research}
+
+Several pathways could extend this project:
+
+\paragraph{Longer Training Horizons.}
+Repeating these experiments at 1--5 million steps would clarify how advanced DQN tweaks 
+or policy gradient expansions (Rainbow, TD3, etc.) surpass simpler baselines given more time. 
+One might track the exact moment (in interactions) at which these enhancements repay 
+their higher emissions.
+
+\paragraph{Wider Environment Coverage.}
+Our 8 chosen games reasonably sample different Atari mechanics, but including 
+the full 26 Atari 100k or 55+ ALE tasks 
+could reveal whether certain algorithms generalize better to more varied or obscure games.
+
+\paragraph{Alternative Normalizations.}
+In addition to “human” and “min–max” returns, 
+some tasks might benefit from scoreboard-based normalization (comparing to 
+public baselines) or reward shaping to unify the scale across tasks more strictly.
+
+\paragraph{Real-Time Emissions Minimization.}
+One future direction might involve \emph{dynamic resource scheduling} or 
+\emph{carbon-aware training}, adjusting GPU usage or frequency if real-time 
+energy prices or carbon intensities fluctuate throughout the day. 
+This idea merges RL with HPC resource management for a truly “green AI.”
+
+\paragraph{Hybrid CPU–GPU Profiling.}
+Finally, a more robust toolchain for CPU and RAM tracking (e.g., Intel PCM on Linux) 
+would help produce more accurate system-level carbon footprints, 
+especially for on-policy methods that rely heavily on CPU-based data collection.
+
+\medskip
+With these possible directions in mind, we hope that the insights gained from 
+our 100k-step experiments can foster a broader conversation on 
+\emph{energy-efficient deep RL}, balancing performance with real-world sustainability needs.
+
+
+\paragraph{Comments on RL Algorithm Choice in Contemporary Applications.}
+Recent studies and industry practices have highlighted that the choice of reinforcement learning (RL) algorithm may not critically affect final outcomes in settings where human supervision is employed. For instance, early work in RL fine-tuning for large language models (LLMs) often utilized Proximal Policy Optimization (PPO) due to its robust performance and ease of integration with human feedback. However, subsequent investigations found that simpler methods, such as Vanilla Policy Gradient (VPG), yield comparable results with a lower computational overhead and easier implementation \cite{raffel:exploring_rl_for_llms, ouyang:ppo_vpg_comparison}. Similarly, in emerging frameworks like DeepSeek, preliminary reports suggest that the specific choice of RL algorithm may be less decisive than originally assumed---with experimental results showing negligible differences in performance across various RL methods, although further systematic experimentation is required to substantiate these claims \cite{deepseek:blog, zhang:rl_in_deepseek}. This trend implies that, for many practical applications, selecting a more energy-efficient or computationally economical algorithm (e.g., VPG over PPO) might be preferable without incurring significant performance penalties.
