@@ -288,7 +288,7 @@ poetry run pip install "stable_baselines3==2.0.0a1"
         with open(model_path, "wb") as f:
             f.write(flax.serialization.to_bytes(model_data))
         print(f"model saved to {model_path}")
-        from cleanrl_utils.evals.c51_jax_eval import evaluate
+        from cleanrl_utils.evals.extra.c51_jax_eval import evaluate
 
         episodic_returns = evaluate(
             model_path,

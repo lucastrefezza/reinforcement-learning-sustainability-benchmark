@@ -302,7 +302,7 @@ poetry run pip install "stable_baselines3==2.0.0a1"
                 )
             )
         print(f"model saved to {model_path}")
-        from cleanrl_utils.evals.ddpg_jax_eval import evaluate
+        from cleanrl_utils.evals.extra.ddpg_jax_eval import evaluate
 
         episodic_returns = evaluate(
             model_path,

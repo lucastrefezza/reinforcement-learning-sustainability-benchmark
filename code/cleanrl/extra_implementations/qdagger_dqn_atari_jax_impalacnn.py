@@ -31,8 +31,8 @@ from stable_baselines3.common.atari_wrappers import (
 from stable_baselines3.common.buffers import ReplayBuffer
 from torch.utils.tensorboard import SummaryWriter
 
-from cleanrl.dqn_atari_jax import QNetwork as TeacherModel
-from cleanrl_utils.evals.dqn_jax_eval import evaluate
+from cleanrl.extra_implementations.dqn_atari_jax import QNetwork as TeacherModel
+from cleanrl_utils.evals.extra.dqn_jax_eval import evaluate
 
 
 @dataclass
@@ -460,7 +460,7 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
         with open(model_path, "wb") as f:
             f.write(flax.serialization.to_bytes(q_state.params))
         print(f"model saved to {model_path}")
-        from cleanrl_utils.evals.dqn_jax_eval import evaluate
+        from cleanrl_utils.evals.extra.dqn_jax_eval import evaluate
 
         episodic_returns = evaluate(
             model_path,

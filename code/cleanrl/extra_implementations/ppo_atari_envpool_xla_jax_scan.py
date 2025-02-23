@@ -498,7 +498,7 @@ if __name__ == "__main__":
                 )
             )
         print(f"model saved to {model_path}")
-        from cleanrl_utils.evals.ppo_envpool_jax_eval import evaluate
+        from cleanrl_utils.evals.extra.ppo_envpool_jax_eval import evaluate
 
         episodic_returns = evaluate(
             model_path,

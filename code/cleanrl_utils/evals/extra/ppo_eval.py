@@ -39,7 +39,7 @@ def evaluate(
 if __name__ == "__main__":
     from huggingface_hub import hf_hub_download
 
-    from cleanrl.ppo_continuous_action import Agent, make_env
+    from cleanrl.extra_implementations.ppo_continuous_action import Agent, make_env
 
     model_path = hf_hub_download(
         repo_id="sdpkjc/Hopper-v4-ppo_continuous_action-seed1", filename="ppo_continuous_action.cleanrl_model"

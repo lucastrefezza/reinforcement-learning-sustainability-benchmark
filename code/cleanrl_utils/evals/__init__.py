@@ -1,8 +1,8 @@
 def dqn():
-    import cleanrl.dqn
+    import cleanrl.extra_implementations.dqn
     import cleanrl_utils.evals.dqn_eval
 
-    return cleanrl.dqn.QNetwork, cleanrl.dqn.make_env, cleanrl_utils.evals.dqn_eval.evaluate
+    return cleanrl.extra_implementations.dqn.QNetwork, cleanrl.extra_implementations.dqn.make_env, cleanrl_utils.evals.dqn_eval.evaluate
 
 
 def dqn_atari():
@@ -13,24 +13,24 @@ def dqn_atari():
 
 
 def dqn_jax():
-    import cleanrl.dqn_jax
-    import cleanrl_utils.evals.dqn_jax_eval
+    import cleanrl.extra_implementations.dqn_jax
+    import cleanrl_utils.evals.extra.dqn_jax_eval
 
-    return cleanrl.dqn_jax.QNetwork, cleanrl.dqn_jax.make_env, cleanrl_utils.evals.dqn_jax_eval.evaluate
+    return cleanrl.extra_implementations.dqn_jax.QNetwork, cleanrl.extra_implementations.dqn_jax.make_env, cleanrl_utils.evals.extra.dqn_jax_eval.evaluate
 
 
 def dqn_atari_jax():
-    import cleanrl.dqn_atari_jax
-    import cleanrl_utils.evals.dqn_jax_eval
+    import cleanrl.extra_implementations.dqn_atari_jax
+    import cleanrl_utils.evals.extra.dqn_jax_eval
 
-    return cleanrl.dqn_atari_jax.QNetwork, cleanrl.dqn_atari_jax.make_env, cleanrl_utils.evals.dqn_jax_eval.evaluate
+    return cleanrl.extra_implementations.dqn_atari_jax.QNetwork, cleanrl.extra_implementations.dqn_atari_jax.make_env, cleanrl_utils.evals.extra.dqn_jax_eval.evaluate
 
 
 def c51():
-    import cleanrl.c51
+    import cleanrl.extra_implementations.c51
     import cleanrl_utils.evals.c51_eval
 
-    return cleanrl.c51.QNetwork, cleanrl.c51.make_env, cleanrl_utils.evals.c51_eval.evaluate
+    return cleanrl.extra_implementations.c51.QNetwork, cleanrl.extra_implementations.c51.make_env, cleanrl_utils.evals.c51_eval.evaluate
 
 
 def c51_atari():
@@ -41,31 +41,31 @@ def c51_atari():
 
 
 def c51_jax():
-    import cleanrl.c51_jax
-    import cleanrl_utils.evals.c51_jax_eval
+    import cleanrl.extra_implementations.c51_jax
+    import cleanrl_utils.evals.extra.c51_jax_eval
 
-    return cleanrl.c51_jax.QNetwork, cleanrl.c51_jax.make_env, cleanrl_utils.evals.c51_jax_eval.evaluate
+    return cleanrl.extra_implementations.c51_jax.QNetwork, cleanrl.extra_implementations.c51_jax.make_env, cleanrl_utils.evals.extra.c51_jax_eval.evaluate
 
 
 def c51_atari_jax():
-    import cleanrl.c51_atari_jax
-    import cleanrl_utils.evals.c51_jax_eval
+    import cleanrl.extra_implementations.c51_atari_jax
+    import cleanrl_utils.evals.extra.c51_jax_eval
 
-    return cleanrl.c51_atari_jax.QNetwork, cleanrl.c51_atari_jax.make_env, cleanrl_utils.evals.c51_jax_eval.evaluate
+    return cleanrl.extra_implementations.c51_atari_jax.QNetwork, cleanrl.extra_implementations.c51_atari_jax.make_env, cleanrl_utils.evals.extra.c51_jax_eval.evaluate
 
 
 def ppo_atari_envpool_xla_jax_scan():
-    import cleanrl.ppo_atari_envpool_xla_jax_scan
-    import cleanrl_utils.evals.ppo_envpool_jax_eval
+    import cleanrl.extra_implementations.ppo_atari_envpool_xla_jax_scan
+    import cleanrl_utils.evals.extra.ppo_envpool_jax_eval
 
     return (
         (
-            cleanrl.ppo_atari_envpool_xla_jax_scan.Network,
-            cleanrl.ppo_atari_envpool_xla_jax_scan.Actor,
-            cleanrl.ppo_atari_envpool_xla_jax_scan.Critic,
+            cleanrl.extra_implementations.ppo_atari_envpool_xla_jax_scan.Network,
+            cleanrl.extra_implementations.ppo_atari_envpool_xla_jax_scan.Actor,
+            cleanrl.extra_implementations.ppo_atari_envpool_xla_jax_scan.Critic,
         ),
-        cleanrl.ppo_atari_envpool_xla_jax_scan.make_env,
-        cleanrl_utils.evals.ppo_envpool_jax_eval.evaluate,
+        cleanrl.extra_implementations.ppo_atari_envpool_xla_jax_scan.make_env,
+        cleanrl_utils.evals.extra.ppo_envpool_jax_eval.evaluate,
     )
 
 

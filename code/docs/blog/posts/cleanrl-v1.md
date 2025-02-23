@@ -190,15 +190,15 @@ import torch
 
 
 def evaluate(
-    model_path: str,
-    make_env: Callable,
-    env_id: str,
-    eval_episodes: int,
-    run_name: str,
-    Model: torch.nn.Module,
-    device: torch.device,
-    epsilon: float = 0.05,
-    capture_video: bool = True,
+        model_path: str,
+        make_env: Callable,
+        env_id: str,
+        eval_episodes: int,
+        run_name: str,
+        Model: torch.nn.Module,
+        device: torch.device,
+        epsilon: float = 0.05,
+        capture_video: bool = True,
 ):
     envs = gym.vector.SyncVectorEnv([make_env(env_id, 0, 0, capture_video, run_name)])
     model = Model(envs).to(device)
@@ -226,7 +226,7 @@ def evaluate(
 if __name__ == "__main__":
     from huggingface_hub import hf_hub_download
 
-    from cleanrl.dqn import QNetwork, make_env
+    from cleanrl.extra_implementations.dqn import QNetwork, make_env
 
     model_path = hf_hub_download(repo_id="cleanrl/CartPole-v1-dqn-seed1", filename="q_network.pth")
 ```

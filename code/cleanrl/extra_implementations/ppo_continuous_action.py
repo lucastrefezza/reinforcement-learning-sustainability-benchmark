@@ -327,7 +327,7 @@ if __name__ == "__main__":
         model_path = f"runs/{run_name}/{args.exp_name}.cleanrl_model"
         torch.save(agent.state_dict(), model_path)
         print(f"model saved to {model_path}")
-        from cleanrl_utils.evals.ppo_eval import evaluate
+        from cleanrl_utils.evals.extra.ppo_eval import evaluate
 
         episodic_returns = evaluate(
             model_path,
