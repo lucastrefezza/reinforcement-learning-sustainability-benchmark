@@ -38,7 +38,7 @@ while the rest remained unchanged. Note in particular that \texttt{buffer\_size}
 accommodate the shorter 100k-step regime.
 
 \begin{table}
-	\caption{Key hyperparameters for the DQN baseline. Only \texttt{env\_id} and \texttt{seed} change across runs.}
+	\caption{Key hyperparameters for the Deep Q-Network baseline. Only \texttt{env\_id} and \texttt{seed} change across runs.}
 	\label{tab:dqn_hyperparams}
 	\centering
 	\begin{tabular}{ll}
@@ -821,26 +821,31 @@ Further hyperparameter tuning or more extended runs might better reveal PER’s 
 The \emph{Dueling DQN}~\cite{wang:dueling} architecture modifies the final layers of the Q-network
 to separate the estimation of the state-value function $V(s)$ from that of the advantage function $A(s,a)$,
 defined as $A(s, a) = Q(s, a) - V(s)$.
-These two \textit{heads}, termed \textit{stream} in the paper, are then combined to yield
+These two \textit{heads}, termed \textit{streams} in the paper, are then combined to yield
 $$
 Q(s, a) = V(s) + (A(s, a) - \mathcal{B})
 $$
-where $\mathcal{B}$ is a sort of "baseline" (see~\cite{wang:dueling} for the details on why this is necessary). The authors of the paper proposed $\mathcal{B} = \max_{a' \in A(s)} A(s, a')$ and $\mathcal{B} = \frac{1}{|\mathcal{A}|}\sum_{a' \in A(s)} A(s, a')$, but mainly experimented with the latter, so we did the same, as did most of the subsequent literature.
+where $\mathcal{B}$ is a sort of "baseline" (see~\cite{wang:dueling} for the details on why this is necessary). The authors of the paper proposed either $\mathcal{B} = \max_{a' \in A(s)} A(s, a')$ or the \textit{average} $\mathcal{B} = \frac{1}{|\mathcal{A}|}\sum_{a' \in A(s)} A(s, a')$, but mainly experimented with the latter, so we did the same, as did most of the subsequent literature.
+
 This approach allows the network to learn which states are valuable 
 (\emph{regardless} of action) and which actions are relatively better than others 
-(\emph{given} a state), stabilizing learning in states where are present various actions with a close value, and improving sample efficiency 
+(\emph{given} a state), thereby stabilizing learning in states where multiple actions have a close Q-value, and improving sample efficiency 
 in many environments.
 
 \paragraph{(Hyper)Parameters}
-Because the dueling architecture introduces separate streams for $V$ and $A$, the model ends up
-with slightly more parameters. We considered reducing the size of the shared layer to keep the
-overall parameter count equal to the baseline, but the difference was only about 512 neurons,
-so we retained the original layer size for consistency with the other DQN variants.
+Adopting the same base configuration as our DQN baseline (Section~\ref{subsubsec:dqn_baseline}), we set 
+\texttt{buffer\_size}=\num{10000} and \texttt{learning\_starts}=\num{1000} to accommodate the 100k-step regime. 
+Table~\ref{tab:dueling_dqn_hyperparams} summarizes the key hyperparameters used in our Dueling DQN implementation. As with the baseline DQN, the \texttt{env\_id} and \texttt{seed} parameters were varied across runs to ensure statistically significant results across different games and random initializations.
 
-We also tested whether gradient clipping (as mentioned in some references) would improve
-stability, but found no clear benefit here.
-Finally, we did not combine dueling with Double DQN or PER, as our goal is to isolate the contribution
-of this single tweak in terms of performance and emissions.
+Because the dueling architecture introduces separate streams for $V(s)$ and $A(s,a)$, the model ends up
+with slightly more parameters than the baseline and other DQN variants. We considered reducing the size of the last shared layer to keep the
+overall parameter count equal to the baseline, but being the difference only about 512 weights,
+we opted to retain the original layer size for consistency with the other tested DQN variants.
+
+The original Dueling DQN work introduced gradient clipping to maintain training stability, since there were now the gradients from two different stream
+that merged in the common layers. However, our tests indicated no significant difference with or without gradient clipping, suggesting sufficient inherent stability in our setup. Therefore, we chose to omit it for consistency across all algorithms and to avoid introducing unnecessary modifications.
+
+Finally, to maintain a controlled comparison, we did not combine dueling with Double DQN or PER (although that was explored in~\cite{wang:dueling}), as our primary goal is to evaluate the individual contribution of this single architectural tweak to performance and emissions, in line with our methodology for all DQN variants.
 
 \begin{table}
 	\caption{Key hyperparameters for Dueling DQN. Only \texttt{env\_id} and \texttt{seed} vary across runs.}
@@ -877,6 +882,13 @@ of this single tweak in terms of performance and emissions.
 \end{table}
 
 \paragraph{Training Dynamics}
+Figure~\ref{fig:dueling_training_metrics} displays key training metrics aggregated over 32 runs (8 games $\times$ 4 seeds). 
+
+As shown in Figure~\ref{fig:dueling_episodic_length}, the episodic length generally hovers between 3500 and 4000 steps, exhibiting variability with minimums near 0 and maximums reaching up to 8000. The steps-per-second (SPS) metric, depicted in Figure~\ref{fig:dueling_sps}, shows an initial ramp-up phase before stabilizing around 155-160, slightly below the baseline DQN's average of approximately 165-170.
+
+Q-values (Figure~\ref{fig:dueling_q_values}) generally ascend beyond 4-5, with some outliers reaching 8-10, a trend consistent with standard DQN but with slightly lower peak values than Double DQN or PER. 
+
+The TD loss (Figure~\ref{fig:dueling_td_loss}) remains relatively low, generally staying below 1.5-2.0, with some runs exhibiting increased variability later in training. 
 
 \begin{figure}
 	\centering
@@ -908,6 +920,13 @@ of this single tweak in terms of performance and emissions.
 \end{figure}
 
 \paragraph{Episodic Return (Aggregated)}
+Figures~\ref{fig:dueling_return_human} and~\ref{fig:dueling_return_minmax} show 
+the average episodic returns over 100k steps, in \emph{human-normalized} and 
+\emph{min--max normalized} scales, respectively. 
+
+As seen in  Figure~\ref{fig:dueling_return_human}, the human-normalized returns exhibit significant variance, with occasional dips below -8. The mean trend hovers around 0.1-0.2, slightly surpassing the baseline DQN’s typical value, but is influenced by the volatility of results in environments like \emph{Boxing}.
+
+Min-Max Normalized curve, in (Fig.~\ref{fig:dueling_return_minmax}) scales near 0.1-0.2 to 0.35-0.45, which equals to what see for the baseline implementation.
 
 \begin{figure}
 	\centering
@@ -925,6 +944,10 @@ of this single tweak in terms of performance and emissions.
 \end{figure}
 
 \paragraph{Per-Game Returns}
+Figures~\ref{fig:dueling_return_pergame_human} and~\ref{fig:dueling_return_pergame_minmax} 
+provide a detailed breakdown of returns for each of the 8 Atari games:
+On Figure~\ref{fig:dueling_return_pergame_human}, with the human normalized metrics, you can see that \emph{Boxing} (orange) can swing from $-1.93$ up to $+3.55$, while \emph{Freeway} and \emph{Assault} can reach higher normalized scores.
+Figure~\ref{fig:dueling_return_pergame_minmax} demonstrates that, considering the min max normalization, \emph{Freeway} often pushes above 0.7, \emph{Assault} similarly reaches 0.7--0.8.
 
 \begin{figure}
 	\centering
@@ -943,11 +966,18 @@ of this single tweak in terms of performance and emissions.
 \end{figure}
 
 \paragraph{Emissions}
+Table~\ref{tab:dueling_dqn_emissions} presents the aggregated carbon footprint: 
+a mean of $0.006893$\,kg\,CO\textsubscript{2}-eq, with a standard deviation of $0.00029$. 
+This is higher than the baseline DQN’s $\sim0.00647$\,kg 
+but still below some others (e.g., PER’s $\sim0.00725$\,kg). 
+Figure~\ref{fig:dueling_emissions_barplot} illustrates a direct comparison 
+between Dueling DQN and baseline DQN.
 
 \begin{table}
 	\caption{Carbon emissions (kg\,CO\textsubscript{2}eq) for Dueling DQN across 32 runs.}
 	\label{tab:dueling_dqn_emissions}
 	\centering
+	\makebox[\textwidth]{%
 	\begin{tabular}{lcccccccc}
 		\toprule
 		\textbf{Algorithm} & \textbf{mean} & \textbf{std} & \textbf{median} & 
@@ -956,6 +986,7 @@ of this single tweak in terms of performance and emissions.
 		Dueling DQN & 0.006893 & 0.0002901 & 0.006742 & 0.006672 & 0.007002 & 0.006617 & 0.007478 & 0.006779 \\
 		\bottomrule
 	\end{tabular}
+	}
 \end{table}
 
 \begin{figure}
@@ -966,11 +997,15 @@ of this single tweak in terms of performance and emissions.
 \end{figure}
 
 \paragraph{Evaluation Results}
+Table~\ref{tab:dueling_dqn_eval_overall} reports the overall final evaluation (10 episodes each) for Dueling DQN across all 32 runs, while Table~\ref{tab:dueling_dqn_eval_gamewise} provides a game-by-game breakdown.
+Analyzing Table ~\ref{tab:dueling_dqn_eval_overall}, one can see that in human normalized version we obtain some numbers which, given what we found for dqn or double dqn, seem high (0.5 in freeway), but we also see the value for boxing pulling down the other score.
+The numbers from min max are in line with similar algorithms, with the freeway ones again on the lead.
 
 \begin{table}
 	\caption{Overall final evaluation (10 episodes each) for Dueling DQN across 32 runs.}
 	\label{tab:dueling_dqn_eval_overall}
 	\centering
+	\makebox[\textwidth]{%
 	\begin{tabular}{lcccccccc}
 		\toprule
 		\textbf{Normalization} & \textbf{mean} & \textbf{std} & \textbf{median} & 
@@ -980,6 +1015,7 @@ of this single tweak in terms of performance and emissions.
 		\textbf{Min--Max}& 0.3849 & 0.3056 & 0.2632 & 0.1100 & 0.7448 & 0.0 & 0.9523 & 0.3454 \\
 		\bottomrule
 	\end{tabular}
+	}
 \end{table}
 
 \begin{table}
@@ -1039,11 +1075,26 @@ lower than some other variants (e.g.\ PER at 0.00725).
 	more than DQN’s 0.00647 but less than PER’s 0.00725.
 \end{itemize}
 
+In terms of performance, Dueling DQN demonstrates a small improvement in human-normalized returns compared to the baseline DQN, while maintaining a similar emissions profile, as shown by the evaluation results.
+
+Overall, \textbf{Dueling DQN} yields a small performance boost compared to baseline DQN 
+within 100k steps, at a marginally higher carbon cost, consistent with the idea 
+that decoupling $V(s)$ from $A(s,a)$ can help focus updates in states 
+where actions yield similar Q-values.
 
 \subsubsection{Categorical DQN (C51)}
 \label{subsubsec:c51}
+Categorical DQN (C51)~\cite{bellemare:distributional} extends the traditional DQN framework by modeling the action-value function $Q(s,a)$ as a full (discrete) probability distribution over possible returns rather than just a single expected value. This distributional approach enables the agent to capture not only the mean reward but also the variability and uncertainty associated with future returns. C51 achieves this by discretizing the range of potential returns, spanning from $v_{\mathrm{min}}$ to $v_{\mathrm{max}}$, into a fixed set of support points (atoms).
+
+During the learning process, the algorithm projects the Bellman update onto this discrete support and uses a cross-entropy loss to align the predicted distribution with the target distribution. Such a rich representation of returns is particularly beneficial in risk-sensitive or high-variance environments, as it provides more informative learning signals that can lead to improved stability and performance over longer training periods. Although this enhanced representation introduces additional computational overhead, as reflected by the increased emissions compared to the baseline DQN, it holds promise for more nuanced decision-making in complex tasks.
+%Categorical DQN (\textbf{C51})~\cite{bellemare:distributional} models $Q(s,a)$ 
+%as a discrete probability distribution over possible returns, using $\texttt{n\_atoms}$ support points 
+%that span the interval $[v_{\mathrm{min}},\,v_{\mathrm{max}}]$. 
+%By capturing more than a single expected value, C51 can potentially improve learning stability 
+%and performance, especially in risk- or variance-sensitive tasks.
 
 \paragraph{(Hyper)Parameters}
+The key hyperparameters used for the C51 implementation are summarized in Table~\ref{tab:c51_hyperparams}. In this configuration, most settings remain constant across runs, with only the environment identifier (\texttt{env\_id}) and the random seed (\texttt{seed}) varying. Notably, C51 employs a discrete return distribution with 51 atoms spanning the interval $[-10, 10]$, and uses a learning rate of \num{0.00025}. Other parameters such as the total timesteps (\num{100000}), batch size (32), and target network update frequency (\num{1000}) have been kept consistent with the other tested algorithm. 
 
 \begin{table}
 	\caption{Key hyperparameters for the C51 algorithm. Only \texttt{env\_id} and \texttt{seed} vary across runs.}
@@ -1081,22 +1132,31 @@ lower than some other variants (e.g.\ PER at 0.00725).
 	\end{tabular}
 \end{table}
 
-\paragraph{Innovation: Distributional RL}
-Categorical DQN (\textbf{C51})~\cite{bellemare:distributional} models $Q(s,a)$ 
-as a discrete probability distribution over possible returns, using $\texttt{n\_atoms}$ support points 
-that span the interval $[v_{\mathrm{min}},\,v_{\mathrm{max}}]$. 
-By capturing more than a single expected value, C51 can potentially improve learning stability 
-and performance, especially in risk- or variance-sensitive tasks.
-
 \paragraph{Hyperparameter Tuning}
 We adopted CleanRL’s \texttt{c51\_atari} configuration with 51 atoms, $v_{\min}=-10$, $v_{\max}=10$, 
 and a learning rate of $2.5\times10^{-4}$. While we tested alternative rates, 
 this default proved effective over only 100k steps.  
 
-We also experimented with \texttt{target\_network\_frequency} values of 1k, 5k, and 10k 
-to see if less frequent updates might reduce overhead. 
-Ultimately, 1k provided a good balance of stable returns and moderate emissions, 
-aligning with other DQN-based variants.
+Following the original work, we also experimented with various \texttt{target\_network\\\_frequency} values, between them \num{1000}, \num{5000}, and \num{10000} (see figure~\ref{fig:episodic_return_1k_10k}), the last one being the cleanrl default. Ultimately, once again 1k proved to be the best value, providing a good balance of stable returns and moderate emissions (figure~\ref{fig:c51_tuning_emissions}), aligning with other DQN-based variants.
+
+\begin{figure}
+	\centering
+	\subfloat[][C51 raw episodic return on Breakout with a \texttt{target\_network\_frequency} of \num{1000} (blue) and \num{10000} (orange)]{
+		\includegraphics[width=.45\textwidth]{figures/c51/charts_episodic_return_1k_10k.jpeg}
+		\label{fig:episodic_return_1k_10k}
+	}
+	\quad
+	\subfloat[][Emissions at 100k steps, \texttt{target\_network\_frequency} = \num{1000} (blue), \num{5000} (red) \num{10000} (orange)]{
+		\includegraphics[width=.45\textwidth]{figures/c51/emissions_1k_5k_10k.png}
+		\label{fig:c51_tuning_emissions}
+	}
+	\caption{Tuning of \texttt{target\_network\_frequency}.}
+	\label{fig:c51_tuning}
+%	\centering
+%	\includegraphics[width=0.6\textwidth]{figures/c51/charts_episodic_return_1k_10k.jpeg}
+%	\caption{C51 raw episodic return on Breakout with a \verb*|target_network_frequency| of \num{1000} (blue) and \num{10000} (orange)}
+%	\label{fig:episodic_return_1k_10k}
+\end{figure}
 
 \paragraph{Training Dynamics}
 
@@ -1129,12 +1189,12 @@ aligning with other DQN-based variants.
 	\label{fig:c51_training_metrics}
 \end{figure}
 
-Figure~\ref{fig:c51_training_metrics} shows that certain runs produce extremely long episodes 
-(Figure~\ref{fig:c51_episodic_length}, subfloat~a), 
-while the overall \texttt{SPS} curve (subfloat~b) hovers around 140--150 later in training, 
+Figure~\vref{fig:c51_training_metrics} shows that certain runs produce extremely long episodes 
+(Figure~\ref{fig:c51_episodic_length}), 
+while the overall \texttt{SPS} curve (Figure~\ref{fig:c51_sps}) hovers around 140--150 later in training, 
 slightly lower than baseline DQN’s $\sim160$. 
-The training loss (subfloat~c) descends from near 4.0 to 2.0, 
-while distributional \texttt{q\_values} (subfloat~d) broaden significantly.
+The training loss (Figure~\ref{fig:c51_loss}) descends from near 4.0 to 2.0, 
+while distributional \texttt{q\_values} (Figure~\ref{fig:c51_q_values}) broaden significantly.
 
 \paragraph{Episodic Return (Aggregated)}
 
@@ -1155,11 +1215,12 @@ while distributional \texttt{q\_values} (subfloat~d) broaden significantly.
 \end{figure}
 
 Due to extreme negative performance in certain games, such as \emph{Boxing}, 
-the human-normalized return (Figure~\ref{fig:c51_return_human}) 
-often falls below -1. In min--max (Figure~\ref{fig:c51_return_minmax}), 
+the human-normalized return (Figure~\vref{fig:c51_return_human}) 
+often falls below -1. In min--max (Figure~\vref{fig:c51_return_minmax}), 
 the mean approaches $\sim0.25$--$0.30$ by 100k steps.
 
 \paragraph{Per-Game Returns}
+Figure~\ref{fig:c51_return_pergame_human} presents the human-normalized episodic returns for C51 on a per-game basis. Notably, the game \emph{Boxing} exhibits extremely negative returns—with values plunging below \num{-12}, significantly impacting the overall human-normalized performance. In contrast, games such as \emph{Alien} and \emph{Amidar} show relatively stable and modest returns. Similarly, Figure~\ref{fig:c51_return_pergame_minmax} displays the min--max normalized returns, where \emph{Assault} reaches values above \num{0.5}, while \emph{Pong} remains consistently near zero. These per-game analyses underline the variability of C51's performance across different environments, emphasizing the importance of detailed game-specific evaluations.
 
 \begin{figure}
 	\centering
@@ -1178,11 +1239,13 @@ the mean approaches $\sim0.25$--$0.30$ by 100k steps.
 \end{figure}
 
 \paragraph{Emissions}
+Table~\ref{tab:c51_emissions} details the carbon emissions recorded for C51 across the 32 runs, showing a mean emission of approximately 0.00775\,kg CO\textsubscript{2}eq. This value exceeds that of the baseline DQN, which recorded mean emissions of 0.00647\,kg CO\textsubscript{2}eq. The additional computational overhead in C51 arises from the need to compute and update a 51-atom probability distribution for the return at each training step, a process that likely increases GPU utilization. Although the absolute emissions remain relatively modest, the consistent increase across runs highlights an important trade-off: while the distributional approach of C51 may offer richer representations of return variability, it does so at the cost of higher energy consumption. This observation is particularly relevant in contexts where energy efficiency and environmental impact are critical considerations.
 
 \begin{table}
 	\caption{Carbon emissions (kg\,CO\textsubscript{2}eq) for C51 across 32 runs.}
 	\label{tab:c51_emissions}
 	\centering
+	\makebox[\textwidth]{%
 	\begin{tabular}{lcccccccc}
 		\toprule
 		\textbf{Algorithm} & \textbf{mean} & \textbf{std} & \textbf{median} & 
@@ -1191,6 +1254,7 @@ the mean approaches $\sim0.25$--$0.30$ by 100k steps.
 		C51 & 0.007750 & 0.0003042 & 0.007655 & 0.007489 & 0.008099 & 0.007410 & 0.008257 & 0.007679 \\
 		\bottomrule
 	\end{tabular}
+	}
 \end{table}
 
 \begin{figure}
@@ -1200,15 +1264,14 @@ the mean approaches $\sim0.25$--$0.30$ by 100k steps.
 	\label{fig:c51_vs_dqn_emissions}
 \end{figure}
 
-C51’s mean emissions near 0.00775\,kg exceed DQN’s 0.00647\,kg. 
-Distributional overhead (computing 51 probability “atoms”) likely increases GPU usage.
-
 \paragraph{Evaluation Results}
+The overall final evaluation of C51, conducted over 10 episodes per run and aggregated across 32 runs, is summarized in Table~\ref{tab:c51_eval_overall}. On the human-normalized scale, C51 achieves a mean return of -1.0811 with a high standard deviation of 3.2862 and a range from -12.8810 to 0.7770, reflecting significant variability driven by outlier performances (notably in \emph{Boxing}). In contrast, min--max normalization yields a mean of 0.2503 with a smaller standard deviation of 0.2568 and a range from 0.0 to 0.8270, indicating a more balanced distribution of performance scores. Furthermore, Table~\ref{tab:c51_eval_gamewise} provides a per-game breakdown, where for example \emph{Boxing} registers a human-normalized mean of -9.3869, while other games such as \emph{Alien} and \emph{Amidar} exhibit near-neutral scores. These results offer a nuanced perspective on C51's performance across different games and normalization methods.
 
 \begin{table}
 	\caption{Overall final evaluation (10 episodes each) for C51 across 32 runs.}
 	\label{tab:c51_eval_overall}
 	\centering
+	\makebox[\textwidth]{%
 	\begin{tabular}{lcccccccc}
 		\toprule
 		\textbf{Normalization} & \textbf{mean} & \textbf{std} & \textbf{median} & 
@@ -1218,6 +1281,7 @@ Distributional overhead (computing 51 probability “atoms”) likely increases 
 		\textbf{Min--Max}& 0.2503 & 0.2568 & 0.2005 & 0.0 & 0.4419 & 0.0 & 0.8270 & 0.13997 \\
 		\bottomrule
 	\end{tabular}
+	}
 \end{table}
 
 \begin{table}
@@ -1257,7 +1321,7 @@ Distributional overhead (computing 51 probability “atoms”) likely increases 
 \end{table}
 
 \paragraph{Comparison with Baseline DQN}
-Overall, C51’s human-normalized final mean is \textbf{-1.0811}, pulled down by severe negative performance in \emph{Boxing} (around $-9.39$). Even ignoring that outlier, other titles do not significantly outperform baseline DQN’s 0.1353. In min--max scale, C51’s 0.2503 is also lower than DQN’s 0.3802. Emissions, by contrast, are higher ($\sim0.00775\,\mathrm{kg}$ vs.\ DQN’s 0.00647), reflecting the overhead of computing a 51-atom return distribution each update.
+Overall, C51's human-normalized final mean is \num{-1.0811}, pulled down by severe negative performance in \emph{Boxing} (around $-9.39$). Even ignoring that outlier, other titles do not significantly outperform baseline DQN's \num{0.1353}. In min--max scale, C51's \num{0.2503} is also lower than DQN's \num{0.3802}. Emissions, by contrast, are higher ($\sim0.00775\,\mathrm{kg}$ vs.\ DQN's \num{0,00647}), reflecting the overhead of computing a 51-atom return distribution each update.
 
 \paragraph{Observations}
 \begin{itemize}
@@ -1292,7 +1356,7 @@ In this section, we synthesize the results of all five DQN-based algorithms:
 We compare them on two axes: final performance (evaluated in both human- and min--max-normalized scales) and carbon emissions. 
 
 \paragraph{Aggregated Final Returns and Emissions}
-Table~\ref{tab:dqn_overall} compiles the final evaluation means from Sections \ref{subsubsec:dqn_baseline}, \ref{subsubsec:double_dqn}, \ref{subsubsec:per}, \ref{subsubsec:dueling_dqn}, and \ref{subsubsec:c51}. We list each method’s mean episodic return under both normalization schemes, along with its mean carbon footprint. For completeness, we include standard deviations (\texttt{std}) and other statistics where relevant.
+Table~\ref{tab:dqn_overall} compiles the final evaluation means from Sections \ref{subsubsec:dqn_baseline}, \ref{subsubsec:double_dqn}, \ref{subsubsec:per}, \ref{subsubsec:dueling_dqn}, and \ref{subsubsec:c51}. We list each method’s mean episodic return under both normalization schemes, along with its mean carbon footprint. For completeness, we include standard deviations (\texttt{std}) and other statistics. Table~\ref{tab:dqn_overall_iqm} extends the previous summary table by including the interquartile mean (IQM)~\cite{agarwal:statistical_precipice} for each of the three metrics. Recall that IQM is a robust estimator of central tendency, averaging only the middle 50\% of data points (between the 25th and 75th percentiles), thus mitigating the impact of extreme outliers.
 
 \begin{table}
 	\caption{Overall final evaluation and emissions for DQN-based algorithms. 
@@ -1318,6 +1382,51 @@ Table~\ref{tab:dqn_overall} compiles the final evaluation means from Sections \r
 	\end{tabular}
 \end{table}
 
+\begin{table}
+	\caption{DQN‐Based Algorithms: Final Returns (Human \& Min--Max Norm) \emph{vs.} Emissions,
+		including both Mean and Interquartile Mean (IQM). 
+		Data are aggregated over 32 runs (8 Atari games $\times$ 4 seeds). 
+		Negative human‐norm means can stem from poor performance in certain games 
+		(e.g.\ \emph{Boxing} with highly negative scores).}
+	\label{tab:dqn_overall_iqm}
+	\centering
+	\makebox[\textwidth]{%
+		\begin{tabular}{lrrrrrr}
+			\toprule
+			& \multicolumn{2}{c}{\textbf{Human‐Norm Return}} 
+			& \multicolumn{2}{c}{\textbf{Min--Max Return}}
+			& \multicolumn{2}{c}{\textbf{Emissions (kg\,CO\textsubscript{2})}} \\
+			\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+			\textbf{Algorithm}
+			& \textbf{Mean} & \textbf{IQM}
+			& \textbf{Mean} & \textbf{IQM}
+			& \textbf{Mean} & \textbf{IQM} \\
+			\midrule
+			\textbf{DQN} 
+			& 0.1353 & 0.1137 
+			& 0.3802 & 0.3426 
+			& 0.00647 & 0.00637 \\
+			\textbf{Double DQN} 
+			& 0.0226 & 0.0894 
+			& 0.3737 & 0.3272 
+			& 0.00667 & 0.00656 \\
+			\textbf{PER} 
+			& 0.0607 & 0.0813 
+			& 0.3533 & 0.3087 
+			& 0.00725 & 0.00716 \\
+			\textbf{Dueling DQN} 
+			& 0.1860 & 0.1020 
+			& 0.3849 & 0.3454 
+			& 0.00689 & 0.00678 \\
+			\textbf{C51} 
+			& $-1.0811$ & 0.00684 
+			& 0.2503 & 0.1400 
+			& 0.00775 & 0.00768 \\
+			\bottomrule
+		\end{tabular}
+	}
+\end{table}
+
 \paragraph{Performance Discussion}
 \begin{itemize}
 	\item \textbf{Dueling DQN} achieves the highest human-norm mean ($0.1860$), 
@@ -1335,68 +1444,11 @@ Table~\ref{tab:dqn_overall} compiles the final evaluation means from Sections \r
 	largely due to extreme results in \emph{Boxing} and a few other titles, 
 	but obtains $0.2503$ in min--max. 
 	It also has the largest emissions ($0.00775$\,kg) among these five, 
-	reflecting the overhead of a distributional approach with 51 “atoms.”
+	reflecting the overhead of a distributional approach with 51 “atoms”.
 	\item \textbf{Baseline DQN} remains a strong reference point. 
 	Though not best in any single metric, it has decent performance across games (especially $0.3802$ in min--max), 
 	while keeping the lowest carbon footprint ($0.00647$\,kg). 
 \end{itemize}
-
-%%%%%% tabella con IQM %%%%%%
-Table~\ref{tab:dqn_overall_iqm} extends the previous summary
-(Table~\ref{tab:dqn_overall})
-by including the interquartile mean (IQM)~\cite{agarwal:statistical_precipice}
-for each of the three metrics:
-\begin{itemize}
-	\item \textbf{Human‐Normalized Returns} (mean and IQM)
-	\item \textbf{Min--Max Normalized Returns} (mean and IQM)
-	\item \textbf{Emissions (kg\,CO\textsubscript{2}-eq)} (mean and IQM)
-\end{itemize}
-Recall that IQM is a robust estimator of central tendency, 
-averaging only the middle 50\% of data points (between the 25th and 75th percentiles),
-thus mitigating the impact of extreme outliers.
-
-\begin{table}[htbp]
-	\caption{DQN‐Based Algorithms: Final Returns (Human \& Min--Max Norm) \emph{vs.} Emissions,
-		including both Mean and Interquartile Mean (IQM). 
-		Data are aggregated over 32 runs (8 Atari games $\times$ 4 seeds). 
-		Negative human‐norm means can stem from poor performance in certain games 
-		(e.g.\ \emph{Boxing} with highly negative scores).}
-	\label{tab:dqn_overall_iqm}
-	\centering
-	\begin{tabular}{lrrrrrr}
-		\toprule
-		& \multicolumn{2}{c}{\textbf{Human‐Norm Return}} 
-		& \multicolumn{2}{c}{\textbf{Min--Max Return}}
-		& \multicolumn{2}{c}{\textbf{Emissions (kg\,CO\textsubscript{2})}} \\
-		\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
-		\textbf{Algorithm}
-		& \textbf{Mean} & \textbf{IQM}
-		& \textbf{Mean} & \textbf{IQM}
-		& \textbf{Mean} & \textbf{IQM} \\
-		\midrule
-		\textbf{DQN} 
-		& 0.1353 & 0.1137 
-		& 0.3802 & 0.3426 
-		& 0.00647 & 0.00637 \\
-		\textbf{Double DQN} 
-		& 0.0226 & 0.0894 
-		& 0.3737 & 0.3272 
-		& 0.00667 & 0.00656 \\
-		\textbf{PER} 
-		& 0.0607 & 0.0813 
-		& 0.3533 & 0.3087 
-		& 0.00725 & 0.00716 \\
-		\textbf{Dueling DQN} 
-		& 0.1860 & 0.1020 
-		& 0.3849 & 0.3454 
-		& 0.00689 & 0.00678 \\
-		\textbf{C51} 
-		& $-1.0811$ & 0.00684 
-		& 0.2503 & 0.1400 
-		& 0.00775 & 0.00768 \\
-		\bottomrule
-	\end{tabular}
-\end{table}
 
 \paragraph{Discussion.}
 \begin{itemize}
@@ -1410,8 +1462,8 @@ thus mitigating the impact of extreme outliers.
 	suggesting moderate overall gains once outliers are downweighted.
 	\item \textbf{C51’s Negative Mean.} 
 	With $-1.08$ in human‐norm, C51 suffers from severely negative outliers; 
-	however, its IQM (0.00684) sits just above zero, reflecting that most runs or games 
-	are not quite so disastrous outside \emph{Boxing}.
+	however, its IQM (\num{0.00684}) sits just above zero, reflecting that only a few seeds/games 
+	are catastrophic outside \emph{Boxing}.
 	\item \textbf{Emissions Overhead.} 
 	Distributional (C51) and prioritized (PER) methods do have higher carbon costs 
 	(around 0.0077\,kg and 0.00725\,kg, respectively) than vanilla DQN (0.00647\,kg). 
@@ -1431,7 +1483,7 @@ Figures~\ref{fig:dqn_scatter_mean_iqm} and~\ref{fig:dqn_scatter_mean_mean}
 show scatter plots of \texttt{Mean~Emissions} on the x-axis against 
 (\emph{i}) the \texttt{IQMean} or 
 (\emph{ii}) the \texttt{Mean} of final evaluation on the y-axis. 
-We plot both the human-normalized and min--max normalized variants:
+We plot both the human-normalized and min--max normalized variants.
 
 \begin{figure}
 	\centering
@@ -1471,36 +1523,19 @@ We plot both the human-normalized and min--max normalized variants:
 \paragraph{Game-by-Game Observations}
 When looking individually per environment:
 \begin{itemize}
-	\item \textbf{Boxing} heavily skews human-normalized averages for PER and especially C51, 
+	\item \textbf{Boxing} (figure~\ref{fig:boxing_comparison}) heavily skews human-normalized averages for PER and especially C51, 
 	yielding strongly negative means. 
 	Dueling or Double DQN often handle \emph{Boxing} more stably.
-	\item \textbf{Freeway} is comparatively easier, so all variants converge to near-human or above. 
+	\item \textbf{Freeway} (figure~\ref{fig:freeway_comparison}) is comparatively easier, so all variants converge to near-human or above. 
 	PER and Dueling both score well here. 
-	\item \textbf{Assault} sees moderate or high min--max normalized returns across the board; 
+	\item \textbf{Assault} (figure~\vref{fig:assault_comparison}) sees moderate or high min--max normalized returns across the board; 
 	distributional methods like C51 can do fairly well in some seeds, but not enough to beat DQN or Dueling on average.
 \end{itemize}
-\begin{figure}[htbp]
-	\centering
-	\subfloat[][Human Norm: Assault]{
-		\includegraphics[width=.45\textwidth]{figures/dqn_based_comparison/charts_episodic_return_human_comparison_AssaultNoFrameskip-v4_dqn.png}
-		\label{fig:assault_human_dqn}
-	}
-	\quad
-	\subfloat[][Min--Max: Assault]{
-		\includegraphics[width=.45\textwidth]{figures/dqn_based_comparison/charts_episodic_return_minmax_comparison_AssaultNoFrameskip-v4_dqn.png}
-		\label{fig:assault_minmax_dqn}
-	}
-	\caption{Comparison of DQN-based algorithms on \textbf{Assault}, 
-		showing human-normalized (\textbf{left}) and min--max normalized (\textbf{right}) 
-		final returns over 100k steps. 
-		Distributional methods (e.g.\ C51) can excel in some seeds but not enough to surpass Dueling/DQN on average.}
-	\label{fig:assault_comparison}
-\end{figure}
 
 %----------------------
-% 2) BOXING
+% 1) BOXING
 %----------------------
-\begin{figure}[htbp]
+\begin{figure}
 	\centering
 	\subfloat[][Human Norm: Boxing]{
 		\includegraphics[width=.45\textwidth]{figures/dqn_based_comparison/charts_episodic_return_human_comparison_BoxingNoFrameskip-v4_dqn.png}
@@ -1511,16 +1546,16 @@ When looking individually per environment:
 		\includegraphics[width=.45\textwidth]{figures/dqn_based_comparison/charts_episodic_return_minmax_comparison_BoxingNoFrameskip-v4_dqn.png}
 		\label{fig:boxing_minmax_dqn}
 	}
-	\caption{Comparison of DQN-based algorithms on \textbf{Boxing}. 
-		The human-normalized scale (\textbf{left}) highlights large negative dips, especially for C51 and PER. 
-		Min--max normalized (\textbf{right}) shows moderate ranges for most algorithms.}
+	\caption{Comparison of DQN-based algorithms on \text{Boxing}. 
+		The human-normalized scale (\textit{left}) highlights large negative dips, especially for C51 and PER. 
+		Min--max normalized (\textit{right}) shows moderate ranges for most algorithms.}
 	\label{fig:boxing_comparison}
 \end{figure}
 
 %----------------------
-% 3) FREEWAY
+% 2) FREEWAY
 %----------------------
-\begin{figure}[htbp]
+\begin{figure}
 	\centering
 	\subfloat[][Human Norm: Freeway]{
 		\includegraphics[width=.45\textwidth]{figures/dqn_based_comparison/charts_episodic_return_human_comparison_FreewayNoFrameskip-v4_dqn.png}
@@ -1531,12 +1566,32 @@ When looking individually per environment:
 		\includegraphics[width=.45\textwidth]{figures/dqn_based_comparison/charts_episodic_return_minmax_comparison_FreewayNoFrameskip-v4_dqn.png}
 		\label{fig:freeway_minmax_dqn}
 	}
-	\caption{Comparison of DQN-based algorithms on \textbf{Freeway}. 
+	\caption{Comparison of DQN-based algorithms on \textit{Freeway}. 
 		All methods converge relatively quickly to near-human or above. 
 		PER and Dueling typically perform strongly on this environment.}
 	\label{fig:freeway_comparison}
 \end{figure}
 
+%----------------------
+% 3) ASSAULT
+%----------------------
+\begin{figure}
+	\centering
+	\subfloat[][Human Norm: Assault]{
+		\includegraphics[width=.45\textwidth]{figures/dqn_based_comparison/charts_episodic_return_human_comparison_AssaultNoFrameskip-v4_dqn.png}
+		\label{fig:assault_human_dqn}
+	}
+	\quad
+	\subfloat[][Min--Max: Assault]{
+		\includegraphics[width=.45\textwidth]{figures/dqn_based_comparison/charts_episodic_return_minmax_comparison_AssaultNoFrameskip-v4_dqn.png}
+		\label{fig:assault_minmax_dqn}
+	}
+	\caption{Comparison of DQN-based algorithms on \textit{Assault}, 
+		showing human-normalized (\textit{left}) and min--max normalized (\textit{right}) 
+		final returns over 100k steps. 
+		Distributional methods (C51) can excel in some seeds but not enough to surpass Dueling/DQN on average.}
+	\label{fig:assault_comparison}
+\end{figure}
 
 \paragraph{Emissions and Efficiency}
 As indicated by both Table~\ref{tab:dqn_overall}, Table~\ref{tab:dqn_overall_iqm}, 
@@ -1557,6 +1612,24 @@ of the average emissions (with error bars for standard deviation) for the five m
 	\caption{Emissions Barplot (DQN-based Comparison). 
 		C51 (magenta) leads with $\sim 0.0078\,\mathrm{kg}$, while DQN (gold) is at the low end ($0.00647$).}
 	\label{fig:dqn_comp_emissions_bar}
+\end{figure}
+
+\paragraph{Steps Per Second (SPS) Comparison}
+Figure~\ref{fig:dqn_comp_sps} displays the aggregated SPS for each of the five DQN-based algorithms.
+DQN (gold) and Double DQN (red) generally achieve the highest throughput, stabilizing around
+160--170 steps per second. PER (green) and Dueling (blue) see moderate slowdowns, often converging
+in the 140--160 range. C51 (magenta), with its added distributional overhead, tends to maintain
+the lowest SPS, sometimes falling below 140. These throughput differences align with the 
+emissions data (Tables~\ref{tab:dqn_overall} and~\vref{tab:dqn_overall_iqm}), reinforcing that more
+computationally demanding methods can incur higher carbon footprints, even within a 
+relatively short 100k-step training horizon.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.65\textwidth]{figures/dqn_based_comparison/sps_dqn_based.png}
+	\caption{Comparison of Steps Per Second (SPS) over 100k steps for the five DQN-based algorithms. 
+		Baseline DQN and Double DQN generally run fastest, while C51 exhibits the slowest throughput.}
+	\label{fig:dqn_comp_sps}
 \end{figure}
 
 \paragraph{Key Takeaways}
@@ -1582,7 +1655,7 @@ This section presents results for the three policy gradient methods.
 
 \paragraph{(Hyper)Parameters}
 
-\begin{table}[htbp]
+\begin{table}
 	\caption{Key hyperparameters for the REINFORCE algorithm. Only \texttt{env\_id} and \texttt{seed} vary across runs.}
 	\label{tab:reinforce_hyperparams}
 	\centering
