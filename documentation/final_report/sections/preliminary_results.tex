@@ -1652,8 +1652,10 @@ This section presents results for the three policy gradient methods.
 
 \subsubsection{REINFORCE}
 \label{subsubsec:reinforce}
+REINFORCE is a classical policy gradient algorithm, discussed in Chapter 13 of~\cite{sutton:rl}. In its pure form, the algorithm updates the policy parameters using the full return observed in an episode, without any baseline or actor–critic modifications, thus adhering closely to the theoretical formulation. Although it enjoys strong theoretical convergence guarantees in the limit of infinite interactions, in practice (especially over a short 100k-step training horizon) REINFORCE exhibits high variance, leading to unstable learning. Nonetheless, in our implementation we follow the standard formulation as closely as possible, with only minor modifications such as a slight learning rate annealing. 
 
 \paragraph{(Hyper)Parameters}
+We adopt a standard configuration for REINFORCE similar to prior work on policy gradient methods. Table~\ref{tab:reinforce_hyperparams} summarizes the key hyperparameters used in our experiments. In our setup, only the environment identifier (\texttt{env\_id}) and the random seed (\texttt{seed}) vary across runs. Notably, the learning rate is set to \num{0.00025} and the discount factor (\(\gamma\)) to \num{0.99}.
 
 \begin{table}
 	\caption{Key hyperparameters for the REINFORCE algorithm. Only \texttt{env\_id} and \texttt{seed} vary across runs.}
@@ -1680,13 +1682,12 @@ This section presents results for the three policy gradient methods.
 	\end{tabular}
 \end{table}
 
-\paragraph{Learning‐Rate Tuning}
+\paragraph{Hyperparameter Tuning}
 We tested two primary learning rates ($1\times10^{-4}$ vs.\ $2.5\times10^{-4}$), each with a slight annealing schedule over the 100k steps. 
 Ultimately, $2.5\times10^{-4}$ converged more reliably in short‐run experiments, as illustrated in Figure~\ref{fig:reinforce_lr_tuning}. 
-Removing reward clipping made no difference, likely because we already normalize returns. 
-However, even the better LR sees limited improvements in just 100k steps, reflecting the high variance of REINFORCE.
-
-\begin{figure}[htbp]
+However, even the better (and higher) learning rate sees limited improvements in just 100k steps, reflecting REINFORCE’s inherent high variance.
+In our experiments, we also tested the impact of (removing) reward clipping; however, probably because we already normalize returns as a best practice to stabilize learning, its presence or absence had no measurable effect, so we kept it for consistency with the other methods tested.
+\begin{figure}
 	\centering
 	\subfloat[][Episodic Return (Raw) for Two LRs]{
 		\includegraphics[width=.45\textwidth]{figures/reinforce/reinforce_lr_tuning_episodic_return.jpeg}
@@ -1703,14 +1704,14 @@ However, even the better LR sees limited improvements in just 100k steps, reflec
 \end{figure}
 
 \paragraph{Aggregated Returns}
-Figures~\ref{fig:reinforce_returns_agg} show the aggregated episodic returns (mean $\pm$ min–max envelope) 
+Figures~\ref{fig:reinforce_return_human_agg} and~\ref{fig:reinforce_return_minmax_agg} show the aggregated episodic returns (mean $\pm$ min–max envelope) 
 for \emph{human‐normalized} and \emph{min--max normalized} scales:
 \begin{itemize}
 	\item \textbf{Human norm} typically hovers around zero—some seeds spike up to +4 or +5, others dip to -2 or -3.
 	\item \textbf{Min--max norm} plateaus around 0.15--0.20, but occasionally climbs near 0.8 in certain runs.
 \end{itemize}
 
-\begin{figure}[htbp]
+\begin{figure}
 	\centering
 	\subfloat[][Human‐Normalized Returns (Aggregated)]{
 		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_episodic_return_human_reinforce_atari.png}
@@ -1721,9 +1722,9 @@ for \emph{human‐normalized} and \emph{min--max normalized} scales:
 		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_episodic_return_minmax_reinforce_atari.png}
 		\label{fig:reinforce_return_minmax_agg}
 	}
-	\caption{\textbf{REINFORCE: Aggregated Episodic Returns.} 
-		Strong variance across seeds/games yields a wide min--max band in both normalizations. 
-		Mean in human norm often oscillates near zero, while min--max hovers around 0.15--0.20.}
+	\caption{\textit{Aggregated Episodic Returns.} 
+		Strong variance across seeds/games yields a wide min-max band in both normalizations. 
+		Mean in human norm often oscillates near zero, while min-max hovers around 0.15-0.20.}
 	\label{fig:reinforce_returns_agg}
 \end{figure}
 
@@ -1731,13 +1732,12 @@ for \emph{human‐normalized} and \emph{min--max normalized} scales:
 Figure~\ref{fig:reinforce_pergame_return} displays the same returns (human \& min--max) 
 but \emph{separated by environment}:
 \begin{itemize}
-	\item \textbf{Boxing} can show positive or negative extremes in human‐norm,
-	while \textbf{Freeway} remains almost trivial (zero or near zero).
-	\item \textbf{Assault} (green in min--max) can reach $\sim0.4$ in certain seeds,
-	outpacing many other tasks.
+	\item \textbf{Boxing} shows extreme positive and negative values in human‐norm.
+	\item \textbf{Freeway} remains nearly flat (close to zero).
+	\item \textbf{Assault} in min--max normalization reaches approximately 0.4 in some seeds, outpacing many other tasks.
 \end{itemize}
 
-\begin{figure}[htbp]
+\begin{figure}
 	\centering
 	\subfloat[][Per‐Game: Human Norm]{
 		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_episodic_return_per_game_human_reinforce_atari.png}
@@ -1748,20 +1748,14 @@ but \emph{separated by environment}:
 		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_episodic_return_per_game_minmax_reinforce_atari.png}
 		\label{fig:reinforce_return_pergame_minmax}
 	}
-	\caption{\textbf{REINFORCE: Returns by Environment.} 
-		Some runs on \emph{Boxing} or \emph{Assault} achieve higher peaks, 
-		while \emph{Freeway} is essentially flat. 
-		Variance remains high across multiple seeds.}
+	\caption{\textit{Returns by Environment.} 
+	Variability is evident across different Atari games, with Boxing and Assault exhibiting the highest fluctuations.}
 	\label{fig:reinforce_pergame_return}
 \end{figure}
 
 \paragraph{Training Metrics}
-We log additional metrics in Figures~\ref{fig:reinforce_trainmetrics1}--\ref{fig:reinforce_trainmetrics2}. 
-The steps per second (SPS) quickly rises above 150, the episodic length averages around 3500–4000 steps,
-and the \texttt{losses\_loss} curve fluctuates significantly from positive to negative. 
-The learning rate chart verifies the slight linear decay from $2.5\times10^{-4}$ to roughly $2.4\times10^{-4}$ by 100k steps.
-
-\begin{figure}[htbp]
+Additional training metrics are shown in Figures~\ref{fig:reinforce_trainmetrics1} and~\ref{fig:reinforce_trainmetrics2}. The episode length stabilizes near 3800–4000 steps (Figure~\ref{fig:reinforce_epilen}), while the steps per second (SPS) plateaus between 150 and 170 (Figure~\ref{fig:reinforce_sps}). The policy loss (raw) fluctuates significantly due to high-variance returns, and the learning rate drifts minimally from $2.5\times10^{-4}$ to approximately $2.4\times10^{-4}$ over 100k steps.
+\begin{figure}
 	\centering
 	\subfloat[][Episode Length]{
 		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_episodic_length_reinforce_atari.png}
@@ -1772,14 +1766,14 @@ The learning rate chart verifies the slight linear decay from $2.5\times10^{-4}$
 		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_SPS_reinforce_atari.png}
 		\label{fig:reinforce_sps}
 	}
-	\caption{\textbf{REINFORCE: Episode Length and Throughput.} 
+	\caption{\textit{Episode Length and Throughput.} 
 		The average length stabilizes near 3800–4000 steps; 
 		min–max can exceed 7000–8000 in some seeds. 
 		SPS plateaus around 150–170.}
 	\label{fig:reinforce_trainmetrics1}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}
 	\centering
 	\subfloat[][Policy Loss (raw)]{
 		\includegraphics[width=.45\textwidth]{figures/reinforce/losses_loss_reinforce_atari.png}
@@ -1790,23 +1784,17 @@ The learning rate chart verifies the slight linear decay from $2.5\times10^{-4}$
 		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_learning_rate_reinforce_atari.png}
 		\label{fig:reinforce_lr}
 	}
-	\caption{\textbf{REINFORCE: Loss and Learning‐Rate Curves.} 
-		The loss exhibits large swings across runs due to high‐variance returns, 
-		while the LR only drifts from $2.5\times10^{-4}$ down to $\sim2.4\times10^{-4}$.}
+	\caption{\textit{Loss and Learning‐Rate Curves.} 
+		The loss shows large fluctuations, while the LR decays minimally over the training period.}
 	\label{fig:reinforce_trainmetrics2}
 \end{figure}
 
 \paragraph{Evaluation and Emissions}
-Table~\ref{tab:reinforce_evalstats} consolidates final performance 
-and emissions across 32 runs (8 Atari games $\times$ 4 seeds). 
-Mean human‐norm returns are about $0.026$ (with large variance), 
-and min–max is $\sim0.154$. 
-Energy usage is $0.00676$\,kg\,CO\textsubscript{2} on average, 
-slightly above baseline DQN ($0.00647$).
+Table~\ref{tab:reinforce_evalstats} summarizes the final evaluation performance and emissions across 32 runs (8 Atari games $\times$ 4 seeds). The mean human‐normalized return is approximately \num{0.026}, with a min–max normalized mean of about 0.154. The average energy consumption is \num{0.00676}\,kg\,CO\textsubscript{2}eq, slightly above the baseline DQN's \num{0.00647}\,kg\,CO\textsubscript{2}eq.
 
-\begin{table}[htbp]
+\begin{table}
 	\caption{REINFORCE: Final Evaluation and Emissions (Means and Ranges). 
-		High variance is evident in the negative minimum (Boxing) and moderate positive maximum (2.83).}
+		High variance is evident from the negative minimum and positive maximum values.}
 	\label{tab:reinforce_evalstats}
 	\centering
 	\begin{tabular}{lcccc}
@@ -1822,29 +1810,40 @@ slightly above baseline DQN ($0.00647$).
 \end{table}
 
 \paragraph{Discussion}
+%\begin{itemize}
+%	\item \textbf{Pure Policy Gradient Variance:} 
+%	Without baselines or actor‐critic structure, REINFORCE’s updates rely entirely on full returns. 
+%	In just 100k steps, this approach shows wide fluctuations, as seen in the loss and returns.
+%	\item \textbf{LR Choice:} 
+%	$2.5\times10^{-4}$ is preferable to $1\times10^{-4}$ within these short runs, 
+%	but neither rate fully stabilizes the performance. 
+%	\item \textbf{Emissions and Overhead:} 
+%	REINFORCE’s simpler forward pass keeps emissions at $0.00676$\,kg, 
+%	somewhat above the $0.00647$\,kg for DQN but below distributional or PER methods ($\sim0.0072$--$0.0078$).
+%	\item \textbf{Longer‐Horizon Potential:} 
+%	Theoretical convergence may require millions of steps. 
+%	Practical setups usually adopt actor‐critic or baseline modifications to reduce variance 
+%	and accelerate learning in fewer steps.
+%\end{itemize}
 \begin{itemize}
-	\item \textbf{Pure Policy Gradient Variance:} 
-	Without baselines or actor‐critic structure, REINFORCE’s updates rely entirely on full returns. 
-	In just 100k steps, this approach shows wide fluctuations, as seen in the loss and returns.
-	\item \textbf{LR Choice:} 
-	$2.5\times10^{-4}$ is preferable to $1\times10^{-4}$ within these short runs, 
-	but neither rate fully stabilizes the performance. 
-	\item \textbf{Emissions and Overhead:} 
-	REINFORCE’s simpler forward pass keeps emissions at $0.00676$\,kg, 
-	somewhat above the $0.00647$\,kg for DQN but below distributional or PER methods ($\sim0.0072$--$0.0078$).
-	\item \textbf{Longer‐Horizon Potential:} 
-	Theoretical convergence may require millions of steps. 
-	Practical setups usually adopt actor‐critic or baseline modifications to reduce variance 
-	and accelerate learning in fewer steps.
+	\item \textbf{High Variance:} REINFORCE, without a baseline, relies solely on full-episode returns, which leads to high variance in updates and unstable learning in a 100k-step regime.
+	\item \textbf{Learning Rate Impact:} The higher learning rate of $2.5\times10^{-4}$ performs better than $1\times10^{-4}$, though improvements remain limited due to the inherent variance.
+	\item \textbf{Reward Clipping:} The absence of any effect from reward clipping confirms that return normalization is an effective stabilization measure.
+	\item \textbf{Energy Consumption:} With emissions at \num{0.00676}\,kg\,CO\textsubscript{2}eq on average, REINFORCE has a slightly higher energy cost than baseline DQN, reflecting its computational overhead despite a simpler forward pass.
+	\item \textbf{Convergence Horizon:} Although REINFORCE has strong theoretical convergence guarantees, our experiments indicate that even one million steps may not be sufficient to achieve significantly better performance, underscoring the challenges of using pure policy gradient methods in practice. Practical implementations often incorporate baselines or actor–critic structures to mitigate these issues and accelerate learning in fewer steps.
 \end{itemize}
-
 
 \subsubsection{Proximal Policy Optimization (PPO)}
 \label{subsubsec:ppo}
+Proximal Policy Optimization (PPO) is an on-policy actor–critic method that has gained popularity due to its simplicity (conceptually, the implementation presents many hardships) and robust performance. Unlike pure policy gradient methods such as REINFORCE, PPO employs a clipped surrogate objective that limits the magnitude of policy updates, thus reducing the risk of destructive parameter changes. It further leverages Generalized Advantage Estimation (GAE)~\cite{schulman:gae} to compute more stable advantage estimates. These innovations allow PPO to achieve more stable and efficient learning even in high-dimensional environments, while its use of multiple parallel environments helps to improve sample efficiency.
 
-\paragraph{(Hyper)Parameters}
+\paragraph{Hyperparameter Tuning and Settings}
+We follow the default \emph{CleanRL}~\cite{huang:cleanrl} PPO hyperparameters with a few notable modifications. Table~\ref{tab:ppo_hyperparams} summarizes the key hyperparameters. In our setup, only \texttt{env\_id} and \texttt{seed} vary across runs, while \texttt{num\_envs}=8 enables collecting experience from 8 parallel environments per rollout. Each iteration processes $8\times128=1024$ steps, leading to approximately 97 updates over 100k total timesteps.
+Note that the parameters \texttt{batch\_size}, \texttt{minibatch\_size}, and \texttt{num\_iterations} are computed dynamically at runtime based on the rollout configuration (i.e., \(\texttt{num\_envs} \times \texttt{num\_steps}\)), following the CleanRL implementation.
+We set \(\texttt{clip\_coef}=0.1\) (a bit lower than the common 0.2) and employ standard GAE with \(\texttt{gae\_lambda}=0.95\) for advantage estimation. Importantly, \texttt{anneal\_lr=True} triggers a substantial linear decay of the learning rate from $2.5\times10^{-4}$ down toward zero by the end of training, as illustrated in Figure~\ref{fig:ppo_lr}.
 
-\begin{table}[htbp]
+
+\begin{table}
 	\caption{Key hyperparameters for PPO. Only \texttt{env\_id} and \texttt{seed} vary across runs. 
 		Note that \texttt{num\_envs}=8 collects experience from 8 parallel environments each rollout.}
 	\label{tab:ppo_hyperparams}
@@ -1885,18 +1884,18 @@ slightly above baseline DQN ($0.00647$).
 	\end{tabular}
 \end{table}
 
-\paragraph{Overview and Settings}
-We follow the default \emph{CleanRL}~\cite{huang:cleanrl} PPO hyperparameters, 
-with \(\texttt{clip\_coef}=0.1\) (a bit lower than the usual 0.2). 
-Each iteration processes $8\times128=1024$ steps, giving $\sim97$ updates across 100k total steps. 
-We keep standard GAE~\cite{schulman:gae} for advantage estimation. 
-Importantly, \texttt{anneal\_lr=True} implements a **substantial** linear decay 
-of the learning rate from $2.5\times 10^{-4}$ down toward zero by the end of training, 
-as seen in Figure~\ref{fig:ppo_lr}.
+\begin{figure} 
+	\centering
+	\includegraphics[width=.5\textwidth]{figures/ppo/charts_learning_rate_ppo_atari.png}
+	\caption{\textbf{PPO: Learning Rate Decay.}
+		The learning rate anneals linearly from $2.5\times10^{-4}$ down to near $0$ 
+		over \num{100000} steps, reducing update magnitudes as training progresses.}
+	\label{fig:ppo_lr}
+\end{figure}
 
 \paragraph{Aggregated Returns}
 Figures~\ref{fig:ppo_returns_agg} depict the episodic returns (mean $\pm$ min--max) 
-for both **human** and **min--max** normalization across 32 total runs (8 games, 4 seeds each):
+for both human and min--max normalization across 32 total runs (8 games, 4 seeds each):
 \begin{itemize}
 	\item \textbf{Human norm} 
 	(Fig.~\ref{fig:ppo_returns_human}): The average meanders near zero, with large 
@@ -1906,7 +1905,7 @@ for both **human** and **min--max** normalization across 32 total runs (8 games,
 	with some seeds spiking up to $0.8$ or higher.
 \end{itemize}
 
-\begin{figure}[htbp]
+\begin{figure}
 	\centering
 	\subfloat[][Human‐Normalized (Aggregated)]{
 		\includegraphics[width=.45\textwidth]{figures/ppo/charts_episodic_return_human_ppo_atari.png}
@@ -1924,15 +1923,15 @@ for both **human** and **min--max** normalization across 32 total runs (8 games,
 \end{figure}
 
 \paragraph{Per‐Game Returns}
-Figure~\ref{fig:ppo_returns_pergame} shows these returns for each environment:
+Figure~\ref{fig:ppo_returns_pergame} shows the returns for each environment. They clearly illustrates that the \textbf{Boxing} environment exhibits particularly high variability in human-normalized returns, with some seeds showing extreme positive spikes and others deep negative dips. In contrast, environments such as \textbf{Assault} tend to display more consistent performance in the min--max scale. In particular:
 \begin{itemize}
-	\item \textbf{Boxing} (orange) occasionally leaps above +1 or below -1 in human norm,
+	\item Boxing (orange) occasionally leaps above +1 or below -1 in human norm,
 	with big shifts in min--max as well.
-	\item \textbf{Assault} (green) can exceed 0.4 in min--max.
-	\item Some runs in \textbf{Breakout} or \textbf{Freeway} remain near zero.
+	\item Assault (green) can exceed 0.4 in min--max.
+	\item Some runs in Breakout or Freeway remain near zero.
 \end{itemize}
 
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[][Per‐Game: Human Norm]{
 		\includegraphics[width=.45\textwidth]{figures/ppo/charts_episodic_return_per_game_human_ppo_atari.png}
@@ -1950,9 +1949,9 @@ Figure~\ref{fig:ppo_returns_pergame} shows these returns for each environment:
 \end{figure}
 
 \paragraph{Additional Training Metrics}
-Alongside returns, we log episode length, throughput (SPS), learning rate, KL divergences, and further diagnostic losses:
+Alongside returns, we log episode length, throughput (SPS), learning rate, KL divergences, and other diagnostic losses:
 
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[][Episode Length]{
 		\includegraphics[width=.45\textwidth]{figures/ppo/charts_episodic_length_ppo_atari.png}
@@ -1970,16 +1969,7 @@ Alongside returns, we log episode length, throughput (SPS), learning rate, KL di
 	\label{fig:ppo_epilen_sps}
 \end{figure}
 
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[width=.5\textwidth]{figures/ppo/charts_learning_rate_ppo_atari.png}
-	\caption{\textbf{PPO: Learning Rate Decay.}
-		The LR anneals linearly from $2.5\times10^{-4}$ down to near $0$ 
-		over \num{100000} steps, a steep slope that can reduce update magnitudes near the end.}
-	\label{fig:ppo_lr}
-\end{figure}
-
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Approx KL}]{
 		\includegraphics[width=.45\textwidth]{figures/ppo/losses_approx_kl_ppo_atari.png}
@@ -1996,7 +1986,7 @@ Alongside returns, we log episode length, throughput (SPS), learning rate, KL di
 	\label{fig:ppo_bothkl}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Clip Fraction}]{
 		\includegraphics[width=.32\textwidth]{figures/ppo/losses_clipfrac_ppo_atari.png}
@@ -2010,16 +2000,16 @@ Alongside returns, we log episode length, throughput (SPS), learning rate, KL di
 		\includegraphics[width=.32\textwidth]{figures/ppo/losses_explained_variance_ppo_atari.png}
 		\label{fig:ppo_explvar}
 	}
-	\caption{\textbf{PPO: Additional Diagnostics (ClipFrac, Entropy, Explained Variance).}
+	\caption{\textbf{PPO: Additional Diagnostics.}
 		(a) Clip fraction often spikes above 0.1 early, then drops under 0.01 by 100k steps.
 		(b) Entropy declines from about 2.0 to below 1.5 in some runs, 
 		indicating the policy becomes more deterministic.
 		(c) Explained variance remains near or below 0 for many runs, 
-		suggesting the value function struggles to capture returns in some seeds.}
+		suggesting challenges in value function estimation in some seeds.}
 	\label{fig:ppo_additional_losses}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Policy Loss}]{
 		\includegraphics[width=.45\textwidth]{figures/ppo/losses_policy_loss_ppo_atari.png}
@@ -2040,12 +2030,10 @@ Alongside returns, we log episode length, throughput (SPS), learning rate, KL di
 \end{figure}
 
 \paragraph{Evaluation and Emissions}
-Table~\ref{tab:ppo_eval} summarizes PPO’s final returns (human/min--max) and mean CO\textsubscript{2} usage. 
-Interestingly, PPO emits only $\sim0.00288$\,kg CO\textsubscript{2} on average—significantly lower than 
-the typical 0.006--0.007 range of DQN-based runs. 
-Parallel sampling and shorter GPU usage per environment step likely contribute to this efficiency.
+Table~\ref{tab:ppo_eval} summarizes PPO's final returns (human/min--max) and mean CO\textsubscript{2}eq emissions. 
+Notably, PPO emits only $\sim0.00288$\,kg\,CO\textsubscript{2} on average—significantly lower than the 0.006--0.007 range observed in DQN-based methods. This efficiency likely stems from parallel sampling and faster per-environment updates.
 
-\begin{table}[htbp]
+\begin{table} 
 	\caption{PPO: Final Evaluation (Mean) \& Emissions. Negative dips mainly from \emph{Boxing} or \emph{Breakout}.}
 	\label{tab:ppo_eval}
 	\centering
@@ -2064,41 +2052,26 @@ Parallel sampling and shorter GPU usage per environment step likely contribute t
 \begin{itemize}
 	\item \textbf{Performance Variability:} 
 	Some runs stay near zero, while others occasionally spike above +1 or +2 in human norm. 
-	The min--max scale averages around 0.25, but can exceed 0.8 in certain seeds/games.
+	The min--max scale averages around 0.25, but can exceed 0.8 in certain seeds or games.
 	\item \textbf{Low Emissions:} 
 	PPO’s parallel rollout approach (8 envs) plus relatively fast updates 
 	yield the lowest carbon footprint among tested algorithms so far.
-	\item \textbf{Clipping Coef = 0.1:} 
-	A smaller clipping range might limit the policy’s rate of change, 
-	which, combined with the large LR anneal, can hamper final performance in only 100k steps.
-	\item \textbf{KL Divergence and LR Decay:} 
-	As \texttt{learning\_rate} decays to near zero, 
-	the approximate KL metrics (Fig.~\ref{fig:ppo_bothkl}) 
-	and clip fraction (Fig.~\ref{fig:ppo_additional_losses}(a)) both trend downward, 
-	suggesting slower policy updates and fewer ratio violations.
-	\item \textbf{Policy / Value Losses:} 
-	The policy loss typically hovers around slight negative values (Fig.~\ref{fig:ppo_pol_loss}), 
-	reflecting how PPO’s objective is calculated relative to advantage. 
-	Value loss (Fig.~\ref{fig:ppo_val_loss}) shows moderate means but large max spikes, 
-	implying some seeds or games exhibit abrupt divergences in state-value estimation.
-	\item \textbf{Entropy Decline and Value Modeling:} 
-	Steady entropy decay (Fig.~\ref{fig:ppo_additional_losses}(b)) shows the agent becomes more selective, 
-	while negative dips in explained variance (Fig.~\ref{fig:ppo_additional_losses}(c)) 
-	indicate the baseline network sometimes fails to track returns accurately, 
-	perhaps due to limited training steps or high variability.
+	\item \textbf{KL Divergence and LR Decay:} As the learning rate decays linearly to near zero, both the approximate KL divergence (Fig.~\ref{fig:ppo_bothkl}) and clip fraction (Fig.~\ref{fig:ppo_additional_losses}(a)) decrease, suggesting slower policy updates toward the end of training.
+	\item \textbf{Policy/Value Losses:} The policy loss tends to remain slightly negative (Fig.~\ref{fig:ppo_pol_loss}), while the value loss exhibits moderate averages with occasional large spikes, implying some seeds or games exhibit abrupt divergences in state-value estimation.
+	\item \textbf{Entropy and Value Modeling:} The entropy decline (Fig.~\ref{fig:ppo_entropy}) indicates increasing determinism in the policy, and low or negative explained variance (Fig.~\ref{fig:ppo_explvar}) suggests challenges in modeling returns accurately, perhaps due to limited training steps or high variability.
 \end{itemize}
 
-Overall, PPO in 100k-step Atari remains highly variable, but it demonstrates 
-notably \emph{lower emissions} than the DQN-based methods, 
-albeit with modest average returns in this short training regime.
-
+Overall, PPO in a 100k-step Atari benchmark exhibits high variability in returns but achieves notably lower emissions than DQN-based methods. The method’s innovations—such as the clipped surrogate objective and GAE—provide more stable learning than pure policy gradients, though performance improvements remain modest over this short training horizon.
 
 \subsubsection{Soft Actor-Critic (SAC)}
 \label{subsubsec:sac}
 
-\paragraph{(Hyper)Parameters}
+Soft Actor-Critic (SAC) is an off-policy actor–critic algorithm that incorporates entropy regularization to encourage exploration and robust learning. SAC leverages two Q-functions to mitigate overestimation bias and employs a target network to stabilize critic updates. A distinctive feature of SAC is the autotuning of the temperature parameter $\alpha$, which dynamically balances reward maximization against policy entropy by aiming for a target entropy of approximately 0.89. This combination of techniques makes SAC particularly effective in continuous control tasks, though its performance can be sensitive to hyperparameter settings when applied in discrete environments such as Atari.
 
-\begin{table}[htbp]
+\paragraph{Hyperparameter Tuning and Settings}
+We base our SAC implementation on the \texttt{sac\_atari} variant from CleanRL, adapted to a 100k-step training horizon. Table~\ref{tab:sac_hyperparams} summarizes the key hyperparameters. In our setup, only \texttt{env\_id} and \texttt{seed} vary across runs. Notably, we use a replay buffer of 20k and set \texttt{learning\_starts}=1000 to ensure sufficient initial experience. Although the default SAC configuration is designed for 5 million interactions (with, for example, a \texttt{buffer\_size} roughly 1/5 of that and \verb*|target_network_frequency| proportionally lower), we found that proportionally scaling these values leads to instability or completely unrealistic values. Therefore, we chose a \verb*|target_network_frequency| of \num{1000} (similar to our DQN-based methods) to maintain stable target updates. Autotuning is enabled for $\alpha$ so that the entropy coefficient adjusts dynamically based on a target entropy of \(\sim0.89\). Additionally, both \texttt{policy\_lr} and \texttt{q\_lr} are set to 0.0003. These modifications on which we settled after a coarse grid search represent a compromise between the original CleanRL defaults and the practical demands of training under a limited 100k-step regime.
+
+\begin{table}
 	\caption{Key hyperparameters for SAC. Only \texttt{env\_id} and \texttt{seed} vary across runs.}
 	\label{tab:sac_hyperparams}
 	\centering
@@ -2132,51 +2105,46 @@ albeit with modest average returns in this short training regime.
 	\end{tabular}
 \end{table}
 
-\paragraph{Overview and Settings}
-This SAC implementation derives from \texttt{sac\_atari} in \emph{CleanRL}, tailored to a 100k-step budget. Key adjustments include a replay buffer of 20k, \texttt{learning\_starts}=1000, and \texttt{target\_network\_frequency}=1000 for target Q updates. We enable \texttt{autotune} for \(\alpha\), letting the algorithm optimize its entropy coefficient dynamically based on a target entropy of \(\sim 0.89\).
-
 \paragraph{Aggregated Returns}
-Figures~\ref{fig:sac_returns_human_minmax} illustrate the mean $\pm$ min--max episodic returns, both human‐ and min--max‐normalized. The short 100k horizon yields considerable variance, with some runs dropping below -4 in human norm.
+Figures~\ref{fig:sac_returns_human_minmax} illustrate the aggregated episodic returns (mean \(\pm\) min–max) in both human‐ and min–max‐normalized scales. Over a 100k-step horizon, considerable variance is observed, with some runs dropping below -4 on the human-normalized scale while min–max values mostly remain under 0.8.
 
-\begin{figure}[htbp]
+\begin{figure}
 	\centering
 	\subfloat[][Human‐Normalized (Aggregated)]{
 		\includegraphics[width=.45\textwidth]{figures/sac/charts_episodic_return_human_sac_atari.png}
 		\label{fig:sac_returns_human_agg}
 	}
 	\quad
-	\subfloat[][Min--Max Normalized (Aggregated)]{
+	\subfloat[][Min–Max Normalized (Aggregated)]{
 		\includegraphics[width=.45\textwidth]{figures/sac/charts_episodic_return_minmax_sac_atari.png}
 		\label{fig:sac_returns_minmax_agg}
 	}
-	\caption{\textbf{SAC: Aggregated Episodic Returns.}
-		Notice the swings below -4 in the human norm, while min--max remains mostly under 0.8.}
+	\caption{\textbf{SAC: Aggregated Episodic Returns.} Notice the swings below -4 in the human norm, while min–max remains mostly under 0.8.}
 	\label{fig:sac_returns_human_minmax}
 \end{figure}
 
 \paragraph{Per‐Game Returns}
-Figure~\ref{fig:sac_returns_pergame} breaks down performance by environment, showing that \emph{Boxing} significantly skews the human‐norm mean downward. Meanwhile, \emph{Breakout} and \emph{Assault} achieve moderate positive scores.
+Figure~\ref{fig:sac_returns_pergame} breaks down performance by environment. Notably, \emph{Boxing} significantly skews the human‐norm average downward, while \emph{Breakout} and \emph{Assault} achieve moderate positive scores.
 
-\begin{figure}[htbp]
+\begin{figure}
 	\centering
 	\subfloat[][Per‐Game: Human Norm]{
 		\includegraphics[width=.45\textwidth]{figures/sac/charts_episodic_return_per_game_human_sac_atari.png}
 		\label{fig:sac_returns_pergame_human}
 	}
 	\quad
-	\subfloat[][Per‐Game: Min--Max Norm]{
+	\subfloat[][Per‐Game: Min–Max Norm]{
 		\includegraphics[width=.45\textwidth]{figures/sac/charts_episodic_return_per_game_minmax_sac_atari.png}
 		\label{fig:sac_returns_pergame_minmax}
 	}
-	\caption{\textbf{SAC: Returns by Environment.}
-		\emph{Boxing} can dip below -20 in some runs, while \emph{Pong} remains near -0.01 (human norm).}
+	\caption{\textbf{SAC: Returns by Environment.} \emph{Boxing} can dip below -20 in some runs, while \emph{Pong} remains near -0.01 (human norm).}
 	\label{fig:sac_returns_pergame}
 \end{figure}
 
 \paragraph{Episode Length and SPS}
-Figure~\ref{fig:sac_epilen_sps} shows the episode length and steps-per-second (SPS). The average ep‐length hovers near 3800–4000, while SPS drops from over 100 at start to ~80 by 20k steps, stabilizing thereafter.
+Figure~\ref{fig:sac_epilen_sps} shows the episode length and steps-per-second (SPS). The average episode length hovers near 3800–4000 steps, while SPS drops from over 100 at the beginning to approximately 80 by 20k steps, stabilizing thereafter.
 
-\begin{figure}[htbp]
+\begin{figure}
 	\centering
 	\subfloat[][Episode Length]{
 		\includegraphics[width=.45\textwidth]{figures/sac/charts_episodic_length_sac_atari.png}
@@ -2187,20 +2155,19 @@ Figure~\ref{fig:sac_epilen_sps} shows the episode length and steps-per-second (S
 		\includegraphics[width=.45\textwidth]{figures/sac/charts_SPS_sac_atari.png}
 		\label{fig:sac_sps}
 	}
-	\caption{\textbf{SAC: Episode Length \& Throughput.}
-		Min--max ranges from under 1000 to over 7000 steps, while SPS levels around 80 after initial decay.}
+	\caption{\textbf{SAC: Episode Length \& Throughput.} Min–max ranges from under 1000 to over 7000 steps, while SPS stabilizes around 80 after initial decay.}
 	\label{fig:sac_epilen_sps}
 \end{figure}
 
 \paragraph{Actor Loss and Temperature (\(\alpha\))}
-Figures~\ref{fig:sac_actor_alpha_losses} and \ref{fig:sac_alpha} detail how the policy updates and the learned entropy coefficient evolve:
+Figures~\ref{fig:sac_actor_alpha_losses} and~\ref{fig:sac_alpha} detail the evolution of the actor loss and the entropy temperature:
 \begin{itemize}
-	\item \textbf{Actor Loss}: Initially around -1.0, quickly dips to about -3 by 10k steps, then recovers to near -2. 
-	\item \textbf{Alpha Loss}: Falls below 0.01 around 30k steps, indicating fewer gradient corrections to \(\alpha\).
-	\item \textbf{\(\alpha\) Parameter}: Exhibits a U-shaped curve, dropping to \(\approx0.1\) then climbing above 0.3. Some runs exceed 1.0 near the end, showing high exploration in later training.
+	\item \textbf{Actor Loss:} Initially near -1.0, it quickly drops to about -3 by 10k steps, then recovers to around -2.
+	\item \textbf{Alpha Loss:} Falls below 0.01 around 30k steps, indicating fewer gradient corrections to \(\alpha\).
+	\item \textbf{\(\alpha\) Parameter:} Exhibits a U-shaped curve, dipping to approximately 0.1 before rising above 0.3; some runs exceed 1.0 near the end, suggesting increased exploration.
 \end{itemize}
 
-\begin{figure}[htbp]
+\begin{figure}
 	\centering
 	\subfloat[\textbf{Actor Loss}]{
 		\includegraphics[width=.45\textwidth]{figures/sac/losses_actor_loss_sac_atari.png}
@@ -2211,23 +2178,20 @@ Figures~\ref{fig:sac_actor_alpha_losses} and \ref{fig:sac_alpha} detail how the 
 		\includegraphics[width=.45\textwidth]{figures/sac/losses_alpha_loss_sac_atari.png}
 		\label{fig:sac_alpha_loss}
 	}
-	\caption{\textbf{SAC: Actor and Alpha Losses.}
-		The actor loss bottoms out near -3 by \(\sim\)10k steps, while alpha loss decays from ~0.03 to near 0.0.}
+	\caption{\textbf{SAC: Actor and Alpha Losses.} The actor loss bottoms out near -3 by \(\sim\)10k steps, while the alpha loss decays from ~0.03 to nearly 0.}
 	\label{fig:sac_actor_alpha_losses}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}
 	\centering
 	\includegraphics[width=.5\textwidth]{figures/sac/losses_alpha_sac_atari.png}
-	\caption{\textbf{SAC: Learned \(\alpha\) Over Time.}
-		After dipping to 0.1 around 30k steps, some runs climb above 1.0, while the mean lands near ~0.3 at 100k.}
+	\caption{\textbf{SAC: Learned \(\alpha\) Over Time.} After dipping to around 0.1 near 30k steps, some runs see \(\alpha\) climb above 1.0, with the mean reaching approximately 0.3 at 100k steps.}
 	\label{fig:sac_alpha}
 \end{figure}
 
 \paragraph{Q-Function Losses and Values}
-SAC uses two Q-functions (QF1, QF2) to mitigate overestimation and stabilize training. Figures~\ref{fig:sac_q_metrics_1}--\ref{fig:sac_q_metrics_2} showcase their losses and value estimates:
-
-\begin{figure}[htbp]
+SAC utilizes two Q-functions (QF1 and QF2) to mitigate overestimation and stabilize learning. Figures~\ref{fig:sac_q_metrics_1} and~\ref{fig:sac_q_metrics_2} showcase their losses and value estimates:
+\begin{figure}
 	\centering
 	\subfloat[\textbf{QF Loss (combined)}]{
 		\includegraphics[width=.3\textwidth]{figures/sac/losses_qf_loss_sac_atari.png}
@@ -2241,13 +2205,11 @@ SAC uses two Q-functions (QF1, QF2) to mitigate overestimation and stabilize tra
 		\includegraphics[width=.3\textwidth]{figures/sac/losses_qf1_values_sac_atari.png}
 		\label{fig:sac_qf1_values}
 	}
-	\caption{\textbf{SAC: QF1 Metrics.}
-		Mean QF1 losses remain below 3, but min--max spikes reach 50+ post-40k steps. 
-		QF1 values rise from near 0 to about 20 in the mean, with outliers above 80.}
+	\caption{\textbf{SAC: QF1 Metrics.} Mean QF1 losses remain below 3, although min–max spikes can exceed 50 after 40k steps. QF1 value estimates rise from near 0 to about 20 in the mean, with some outliers above 80.}
 	\label{fig:sac_q_metrics_1}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}
 	\centering
 	\subfloat[\textbf{QF2 Loss}]{
 		\includegraphics[width=.45\textwidth]{figures/sac/losses_qf2_loss_sac_atari.png}
@@ -2258,20 +2220,17 @@ SAC uses two Q-functions (QF1, QF2) to mitigate overestimation and stabilize tra
 		\includegraphics[width=.45\textwidth]{figures/sac/losses_qf2_values_sac_atari.png}
 		\label{fig:sac_qf2_values}
 	}
-	\caption{\textbf{SAC: QF2 Metrics.}
-		Similar to QF1, QF2 losses show large spikes up to 50+ in some runs, 
-		and QF2 values climb from below 10 to 20 in the mean, 
-		reaching 100 in certain seeds by 100k steps.}
+	\caption{\textbf{SAC: QF2 Metrics.} QF2 losses also exhibit large spikes (up to 50+ in some runs), while QF2 values increase from below 10 to around 20 on average, reaching up to 100 in certain seeds.}
 	\label{fig:sac_q_metrics_2}
 \end{figure}
 
 \noindent
-Both QF1 and QF2 exhibit moderate \emph{mean} losses (generally below 3), but the min--max band can spike drastically, especially after \(\sim\)40k steps. The Q-function value estimates likewise climb, with some seeds surpassing 80–100 near the end, which can indicate overestimation or genuinely high return states.
+Both QF1 and QF2 display moderate mean losses (generally below 3), but their min–max band ranges reveal occasional instability, particularly after \(\sim\)40k steps. Q-value estimates similarly show high variability, with some seeds surpassing 80–100 near the end, which can indicate overestimation or genuinely high return states.
 
 \paragraph{Evaluation and Emissions}
-Table~\ref{tab:sac_eval} reports final performance after 100k steps and average CO\(_2\) emissions. Large negative outliers in \emph{Boxing} produce a mean human‐norm score of \(-1.10\), while \emph{Breakout} and \emph{Assault} partially offset this. Emissions at \(\sim0.015\) kg CO\(_2\) exceed PPO’s \(\sim0.003\) but remain in line with other off-policy setups requiring more frequent updates.
+Table~\ref{tab:sac_eval} reports final performance and average CO\textsubscript{2} emissions. Due to extreme negative results in \emph{Boxing}, the mean human‐normalized return is \(-1.10\), whereas the min–max normalized mean is around 0.227. \emph{Breakout} and \emph{Assault} partially offset this. Emissions average approximately 0.01545 kg CO\textsubscript{2}, which is higher than PPO's but in line with other off-policy methods that require more frequent updates.
 
-\begin{table}[htbp]
+\begin{table}
 	\centering
 	\caption{SAC: Final Evaluation (Mean) \& Emissions.}
 	\label{tab:sac_eval}
@@ -2280,26 +2239,31 @@ Table~\ref{tab:sac_eval} reports final performance after 100k steps and average 
 		\textbf{Metric} & \textbf{Mean} & \textbf{Std} & \textbf{Min} & \textbf{Max} \\
 		\midrule
 		Human‐Norm Return & -1.10 & 4.43 & -23.36 & 0.93 \\
-		Min--Max Return   & 0.227 & 0.254 & 0.00   & 0.83 \\
+		Min–Max Return   & 0.227 & 0.254 & 0.00   & 0.83 \\
 		Emissions (kg\,CO\textsubscript{2}) & 0.01545 & 0.00033 & 0.01495 & 0.01610 \\
 		\bottomrule
 	\end{tabular}
 \end{table}
 
+\paragraph{Evaluation Procedure}
+While SAC is naturally a stochastic policy method (and many works in continuous control evaluate it by sampling actions), in our discrete Atari setting we opted for a deterministic evaluation: selecting the action with the highest probability at each decision step. This choice not only aligns with the evaluation procedures of other discrete-action methods such as DQN but also tends to yield more stable performance metrics (and, obviously, higher returns, see figure~\vref{fig:eval_episodic_return_deterministic_vs_stochastic}). Although many continuous-action SAC studies employ stochastic evaluation, our approach is consistent with several adaptations of SAC to discrete domains, where deterministic evaluation is often preferred.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=.5\textwidth]{figures/sac/eval_episodic_return_deterministic_vs_stochastic.jpeg}
+	\caption{The two possible SAC evaluation (deterministic in green and stochastic in blue) compared on Breakout. The plots show the 10 raw evaluation returns.}
+	\label{fig:eval_episodic_return_deterministic_vs_stochastic}
+\end{figure}
+
 \paragraph{Discussion}
 \begin{itemize}
-	\item \textbf{High QF Variance:}
-	QF1 and QF2 both show substantial spikes in loss and inflated value estimates, suggesting partial overestimation or instability in certain seeds—common in off-policy algorithms with short training horizons.
-	\item \textbf{\(\alpha\) U-Shape:}
-	After initially dropping to enhance exploitation, many runs ramp \(\alpha\) back up above 1.0, indicating renewed exploration strategies late in training.
-	\item \textbf{Performance Skew:}
-	Negative \emph{Boxing} results dominate the human‐norm average, but \emph{Breakout} and \emph{Assault} exhibit moderate positive returns, illustrating the algorithm’s uneven game-to-game performance in only 100k steps.
-	\item \textbf{Emissions:}
-	Frequent gradient steps (update frequency = 4) and maintaining two critics lead to higher carbon costs (\(\sim0.015\) kg) compared to simpler on-policy methods, though still modest in absolute terms.
+	\item \textbf{High Q-Function Variance:} Both QF1 and QF2 exhibit substantial spikes in losses and inflated value estimates, suggesting overestimation or instability in certain seeds—a common challenge in off-policy algorithms with limited training interactions.
+	\item \textbf{\(\alpha\) Behavior:} The learned entropy coefficient (\(\alpha\)) displays a U-shaped trajectory, initially decreasing to promote exploitation, then increasing in some runs (even exceeding 1.0), which indicates renewed exploration later in training.
+	\item \textbf{Performance Skew:} Extremely poor performance in \emph{Boxing} dominates the human‐norm average, although environments like \emph{Breakout} and \emph{Assault} achieve moderate positive scores, illustrating the algorithm’s uneven game-to-game performance in only 100k steps.
+	\item \textbf{Emissions:} The relatively high number of gradient updates (update frequency = 4), coupled with maintaining two critics/Q-functions, results in higher carbon emissions (\(\sim0.01545\) kg CO\textsubscript{2}) compared to simpler on-policy methods, although this is expected given the off-policy nature of SAC.
 \end{itemize}
 
-Overall, SAC demonstrates potential for improvement in some Atari tasks under 100k interactions but also exhibits high variance in Q-function estimates and a complex \(\alpha\) schedule. Longer training or more conservative Q-network updates may mitigate these spikes and produce steadier performance across seeds. 
-
+Overall, SAC shows promise in some Atari tasks under 100k interactions, yet it suffers from high variance in Q-function estimates and a complex \(\alpha\) schedule. Longer training or adjustments to the critic updates (maybe more conservative ones) may be required to achieve more stable performance across seeds.
 
 \subsection{Overall Comparison of Policy Gradient Algorithms}
 \label{subsec:policy_comparison}
@@ -2308,7 +2272,7 @@ In this section, we compare the three policy gradient–based algorithms tested 
 
 \paragraph{Final Evaluation Performance: Human‐Normalized.}
 Table~\ref{tab:policy_final_eval_human} summarizes the aggregated human‐normalized returns over all 8 environments for each algorithm (mean, std, etc.). 
-\begin{table}[htbp]
+\begin{table} 
 	\centering
 	\caption{Overall human‐normalized returns (aggregated) for policy gradient algorithms.}
 	\label{tab:policy_final_eval_human}
@@ -2329,7 +2293,7 @@ By this metric, \textbf{PPO} shows the highest mean value ($0.077$), albeit with
 \paragraph{Final Evaluation Performance: Min–Max Normalized.}
 A similar pattern emerges when we switch to min–max normalization, as shown in Table~\ref{tab:policy_final_eval_minmax}.
 
-\begin{table}[htbp]
+\begin{table} 
 	\centering
 	\caption{Overall min--max normalized returns (aggregated) for policy gradient algorithms.}
 	\label{tab:policy_final_eval_minmax}
@@ -2350,7 +2314,7 @@ Here, \textbf{PPO} leads with a mean of $0.248$, slightly outperforming \textbf{
 \paragraph{Emissions and Energy Consumption.}
 In addition to performance, our benchmark tracks \textbf{carbon emissions} (kg~CO$_2$) during training (Fig.~\ref{fig:policy_emissions_bar}). Table~\ref{tab:policy_emissions} shows the mean emissions for each algorithm aggregated over all 32 runs:
 
-\begin{table}[htbp]
+\begin{table} 
 	\centering
 	\caption{Average carbon emissions (kg CO$_2$) for policy gradient algorithms over 100k steps.}
 	\label{tab:policy_emissions}
@@ -2365,7 +2329,7 @@ In addition to performance, our benchmark tracks \textbf{carbon emissions} (kg~C
 	\end{tabular}
 \end{table}
 
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\includegraphics[width=0.5\textwidth]{figures/policy_comparison/barplot_emissions_policy_comparison.png}
 	\caption{\textbf{Policy Algorithms: Mean Emissions (kg\,CO$_2$).} Error bars show the standard deviation across 32 runs.}
@@ -2390,7 +2354,7 @@ In addition to performance, our benchmark tracks \textbf{carbon emissions} (kg~C
 \paragraph{Performance vs. Emissions}
 Beyond the aggregated returns and raw carbon footprints, it is also informative to visualize the **trade‐off** between \emph{mean emissions} (kg\,CO$_2$) and \emph{performance} (mean or IQM). Figures~\ref{fig:scatter_emissions_a} and \ref{fig:scatter_emissions_b} combine these metrics under both human‐normalized and min–max normalization.
 
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{IQM (Human)}]{%
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/scatter_iqmean_human_policy_comparison.png}
@@ -2407,7 +2371,7 @@ Beyond the aggregated returns and raw carbon footprints, it is also informative 
 	\label{fig:scatter_emissions_a}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Mean (Human)}]{%
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/scatter_mean_human_policy_comparison.png}
@@ -2433,7 +2397,7 @@ Overall, these visualizations underscore a **trade‐off**: although SAC can som
 \paragraph{Training Throughput and Runtime}
 A key factor driving these energy differences is \textbf{training speed}, often measured in \emph{Samples per Second} (SPS). Figure~\ref{fig:policy_sps_comparison} compares the SPS curves for PPO, SAC, and REINFORCE across the 100k interactions. Meanwhile, Table~\ref{tab:policy_training_time} lists the total wall‐clock time for all 32 runs (8 games × 4 seeds).
 
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\includegraphics[width=0.6\textwidth]{figures/policy_comparison/policy_sps_comparison.png}
 	\caption{\textbf{Combined SPS Curves for PPO, SAC, and REINFORCE.}
@@ -2442,7 +2406,7 @@ A key factor driving these energy differences is \textbf{training speed}, often 
 	\label{fig:policy_sps_comparison}
 \end{figure}
 
-\begin{table}[htbp]
+\begin{table} 
 	\centering
 	\caption{Total wall‐clock time for 32 runs (8 games × 4 seeds) per algorithm.}
 	\label{tab:policy_training_time}
@@ -2478,7 +2442,7 @@ Hence, for \emph{short‐horizon} Atari training, \textbf{PPO} stands out as the
 To illustrate performance trends for \textbf{PPO}, \textbf{REINFORCE}, and \textbf{SAC}, each of the eight Atari games is now presented with a paired set of plots. One subfigure shows the human‐normalized returns over \num{100000} steps, while the other displays the corresponding returns under \textbf{min--max normalization}, which rescales each environment’s returns based on its observed minimum and maximum. This dual presentation clarifies differences that might be obscured by large raw score ranges.
 
 \noindent \textbf{Alien.}
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Human Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_human_comparison_AlienNoFrameskip-v4_policy.png}
@@ -2501,7 +2465,7 @@ To illustrate performance trends for \textbf{PPO}, \textbf{REINFORCE}, and \text
 \medskip
 
 \noindent \textbf{Amidar.}
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Human Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_human_comparison_AmidarNoFrameskip-v4_policy.png}
@@ -2524,7 +2488,7 @@ To illustrate performance trends for \textbf{PPO}, \textbf{REINFORCE}, and \text
 \medskip
 
 \noindent \textbf{Assault.}
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Human Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_human_comparison_AssaultNoFrameskip-v4_policy.png}
@@ -2547,7 +2511,7 @@ To illustrate performance trends for \textbf{PPO}, \textbf{REINFORCE}, and \text
 \medskip
 
 \noindent \textbf{Boxing.}
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Human Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_human_comparison_BoxingNoFrameskip-v4_policy.png}
@@ -2570,7 +2534,7 @@ To illustrate performance trends for \textbf{PPO}, \textbf{REINFORCE}, and \text
 \medskip
 
 \noindent \textbf{Breakout.}
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Human Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_human_comparison_BreakoutNoFrameskip-v4_policy.png}
@@ -2593,7 +2557,7 @@ To illustrate performance trends for \textbf{PPO}, \textbf{REINFORCE}, and \text
 \medskip
 
 \noindent \textbf{Freeway.}
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Human Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_human_comparison_FreewayNoFrameskip-v4_policy.png}
@@ -2616,7 +2580,7 @@ To illustrate performance trends for \textbf{PPO}, \textbf{REINFORCE}, and \text
 \medskip
 
 \noindent \textbf{MsPacman.}
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Human Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_human_comparison_MsPacmanNoFrameskip-v4_policy.png}
@@ -2639,7 +2603,7 @@ To illustrate performance trends for \textbf{PPO}, \textbf{REINFORCE}, and \text
 \medskip
 
 \noindent \textbf{Pong.}
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Human Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_human_comparison_PongNoFrameskip-v4_policy.png}
@@ -2711,7 +2675,7 @@ aggregated performance (mean, std, min, max, median, IQM) for each algorithm und
 the single-family comparisons made earlier to the full set of eight algorithms.
 
 % --- Table of all 8 algorithms: human norm
-\begin{table}[htbp]
+\begin{table} 
 	\centering
 	\caption{Overall final returns (human‐normalized) for all algorithms.}
 	\label{tab:all_algo_eval_human}
@@ -2732,7 +2696,7 @@ the single-family comparisons made earlier to the full set of eight algorithms.
 \end{table}
 
 % --- Table of all 8 algorithms: minmax norm
-\begin{table}[htbp]
+\begin{table} 
 	\centering
 	\caption{Overall final returns (min--max normalized) for all algorithms.}
 	\label{tab:all_algo_eval_minmax}
@@ -2767,7 +2731,7 @@ Figure~\ref{fig:barplot_emissions_total} compares the average emissions (kg CO$_
 all 8 algorithms, along with standard deviation error bars. Table~\ref{tab:total_runtimes} 
 then lists each method’s total wall‐clock time to complete 8 games × 4 seeds = 32 runs.
 
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\includegraphics[width=0.65\textwidth]{figures/comparison/barplot_emissions_total.png}
 	\caption{\textbf{Mean Emissions for All 8 Algorithms}, with standard deviation bars.
@@ -2776,7 +2740,7 @@ then lists each method’s total wall‐clock time to complete 8 games × 4 seed
 	\label{fig:barplot_emissions_total}
 \end{figure}
 
-\begin{table}[htbp]
+\begin{table} 
 	\centering
 	\caption{Total runtime (hh:mm:ss) over 32 runs per algorithm.}
 	\label{tab:total_runtimes}
@@ -2812,7 +2776,7 @@ Another measure of algorithmic efficiency is how many environment interactions e
 can process per second. Figure~\ref{fig:sps_all} plots the aggregated SPS curves for all 
 eight algorithms over 100k steps.
 
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\includegraphics[width=0.65\textwidth]{figures/comparison/sps_all.png}
 	\caption{\textbf{SPS Comparison for All Algorithms}. PPO (blue line/shade) surpasses 
@@ -2837,7 +2801,7 @@ each contain two subplots, one for \textbf{human‐normalized} and one for
 \textbf{min--max normalized} performance. We show both \textbf{IQM} (i.e.\ interquartile mean) 
 and \textbf{mean} returns in separate figures.
 
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{IQM (Human)}]{
 		\includegraphics[width=0.45\textwidth]{figures/comparison/scatter_iqmean_human_comparison.png}
@@ -2855,7 +2819,7 @@ and \textbf{mean} returns in separate figures.
 	\label{fig:scatter_all_iqmean}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Mean (Human)}]{
 		\includegraphics[width=0.45\textwidth]{figures/comparison/scatter_mean_human_comparison.png}
@@ -2897,7 +2861,7 @@ To better understand how each algorithm performs on individual Atari environment
 we collected **episode-level data** for each run, providing per-game final returns 
 (human or min--max normalized) and per-game mean emissions. Table~\ref{tab:per_game_example}
 below shows a **small extract** of these environment-level results for reference:
-\begin{table}[htbp]
+\begin{table} 
 	\centering
 	\caption{Example snippet of per-game returns (human norm) and emissions for selected environments. 
 		Full details for all games and normalizations appear in Appendix~\ref{appendix:env_data}.}
@@ -2940,7 +2904,7 @@ We discuss notable patterns in each environment below.
 %------------------ ALIEN ------------------
 \noindent
 \textbf{AlienNoFrameskip-v4}
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Min--Max Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_AlienNoFrameskip-v4.png}%
@@ -2971,7 +2935,7 @@ Under human norm, the range compresses to near 0.0--0.1 for many runs.
 %------------------ AMIDAR ------------------
 \noindent
 \textbf{AmidarNoFrameskip-v4}
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Min--Max Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_AmidarNoFrameskip-v4.png}%
@@ -3000,7 +2964,7 @@ revealing smaller raw rewards in Amidar.
 %------------------ ASSAULT ------------------
 \noindent
 \textbf{AssaultNoFrameskip-v4}
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Min--Max Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_AssaultNoFrameskip-v4.png}%
@@ -3029,7 +2993,7 @@ raw scores in Assault.
 %------------------ BOXING ------------------
 \noindent
 \textbf{BoxingNoFrameskip-v4}
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Min--Max Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_BoxingNoFrameskip-v4.png}%
@@ -3058,7 +3022,7 @@ in that scale.
 %------------------ BREAKOUT ------------------
 \noindent
 \textbf{BreakoutNoFrameskip-v4}
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Min--Max Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_BreakoutNoFrameskip-v4.png}%
@@ -3087,7 +3051,7 @@ albeit at a higher computational cost (\S\ref{subsec:overall_algo_comparison}).
 %------------------ FREEWAY ------------------
 \noindent
 \textbf{FreewayNoFrameskip-v4}
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Min--Max Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_FreewayNoFrameskip-v4.png}%
@@ -3117,7 +3081,7 @@ reflecting that Freeway has a high reward potential even early in training.
 %------------------ MS PAC-MAN ------------------
 \noindent
 \textbf{MsPacmanNoFrameskip-v4}
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Min--Max Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_MsPacmanNoFrameskip-v4.png}%
@@ -3146,7 +3110,7 @@ due to MsPacman’s moderate raw reward potential within 100k steps.
 %------------------ PONG ------------------
 \noindent
 \textbf{PongNoFrameskip-v4}
-\begin{figure}[htbp]
+\begin{figure} 
 	\centering
 	\subfloat[\textbf{Min--Max Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_PongNoFrameskip-v4.png}%

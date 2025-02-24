@@ -3,4 +3,4 @@ rosso = 5000
 blu = 1000
 arancione = 10000
 
-in per uno dei learning rate era 1/4 dell'altro,come da paper
+in per uno dei learning rate era 1/4 dell'altro, come da paper
