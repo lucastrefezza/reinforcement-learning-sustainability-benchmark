@@ -1,45 +1,16 @@
 \section{Implications of the Results}
 \label{sec:implications_results}
-
-%ricorda video su "deepseek clone at 30\$", dice tipo che quale algo usi sembra non fare differenza, quindi si potrebbe optare a prescindere per il più green, o soft spot tra reinforce e ppo per dire, magari reinforce with baseline e migliori batch.
-
-%\subsection{Limitations and Future Work}
-%(dopo lo slash la versione aggiornata dopo aver fatto notare che c'è la sezione conclusioni, la versione aggiornata delle direzioni future è semplicemente azzeccata dopo quella originale, nel senso primi due item sono vecchi, altri 3 nuovi)
-%\begin{itemize}
-%	\item \textbf{CodeCarbon limitations:} Real-time tracking slowed down experiments. / Real-time tracking was too slow, limiting fine-grained energy measurements.
-%	\item \textbf{Hardware constraints:} Would stronger GPUs reduce energy costs through faster convergence? / The computational budget influenced the choice of tested methods.
-%	\item \textbf{Future directions:}
-%	\begin{itemize}
-%		\item Development of energy-efficient RL architectures.
-%		\item Methods for optimizing training without excessive power use.
-%		\item Can reinforcement learning frameworks be modified to prioritize energy-efficient training?
-%		\item How does energy consumption vary with different hardware architectures?
-%		\item Investigating potential trade-offs between batch size, learning rate, and energy efficiency.
-%	\end{itemize}
-%\end{itemize}
-%CodeCarbon limitations: Not tracking step-by-step emissions limited insights into fine-grained energy consumption patterns.
-%Hardware constraints: Would more powerful GPUs reduce energy costs through faster convergence?
-%Future Research Directions:
-%Could energy-efficient architectures be developed?
-%Should reinforcement learning algorithms be adapted for lower energy consumption?
-
-%%%%%%%%%%%% QUI %%%%%%%%%%%%%%%%
-
-In this section, we interpret the findings from Section~\ref{sec:preliminary_results} in light of 
-practical concerns such as deployment costs, carbon footprints, 
-and sustainability requirements. We also consider how short-horizon 
-benchmarks (100k steps) might shape our broader understanding of deep RL performance.
+In this section, we interpret the findings from Section~\ref{sec:preliminary_results} in light of practical concerns such as deployment costs, carbon footprints, and sustainability requirements. For completeness, we also examine environment-specific emissions trends and explore the choice of RL algorithm for LLM fine-tuning, an issue with significant sustainability implications, exploring recent developments in the area. Finally, we consider how short-horizon benchmarks (100k steps) might shape our broader understanding of deep RL performance.
 
 \subsection{General Observations}
 \label{subsec:general_observations}
-
 Overall, our results show that:
 \begin{itemize}
 	\item \textbf{Value-based} (DQN-family) methods (DQN, DoubleDQN, PER, DuelingDQN, 
 	C51) typically converge to moderate or high returns on several environments 
 	(e.g., \emph{Freeway}, \emph{Boxing}), 
 	but face stability challenges in some tasks (e.g., \emph{Pong}, \emph{MsPacMan}). 
-	\item \textbf{Policy-based} algorithms produce more varied performance: 
+	\item \textbf{Policy-gradient} algorithms produce more varied performance: 
 	\texttt{PPO} reliably achieves competitive returns with lower emissions, 
 	whereas \texttt{SAC} can outperform others in a few environments (\emph{Breakout}) 
 	but runs more slowly and emits significantly more CO\textsubscript{2}.
@@ -54,8 +25,7 @@ the practical impacts at 100k steps are muted.
 
 \subsection{Energy Efficiency vs.\ Performance Trade-Off}
 \label{subsec:energy_vs_perf}
-
-A central theme of this work is the **trade-off** between achieving higher returns 
+A central theme of this work is the \emph{trade-off} between achieving higher returns 
 and incurring greater computational cost and carbon emissions. Our measurements reveal that:
 \begin{itemize}
 	\item \textbf{SAC} consistently has the highest carbon footprint (on average $\sim 0.015$\,kg\,CO\textsubscript{2}), 
@@ -77,7 +47,6 @@ a lower-emission method like PPO or DQN might suffice.
 
 \subsection{Practical Implications for AI Sustainability}
 \label{subsec:practical_sustainability}
-
 For organizations aiming to balance \emph{performance} with \emph{sustainability}:
 \begin{enumerate}
 	\item \textbf{Hardware Selection:} 
@@ -98,6 +67,62 @@ For organizations aiming to balance \emph{performance} with \emph{sustainability
 This interplay of performance vs.\ overhead suggests that sustainability-conscious 
 applications should carefully weigh the marginal returns gain from more computationally 
 intense algorithms, especially if those gains only appear after 500k or 1 million steps.
+
+In addition to the algorithmic comparisons, an aggregated analysis of per-game emissions reveals that certain environments intrinsically incur higher energy costs. These environment-specific trends are discussed in the next section~(\ref{subsubsec:environment_emissions}).
+
+\subsubsection{Environment-Specific Emissions Trends}
+\label{subsubsec:environment_emissions}
+An analysis of the per-game carbon emissions aggregated across all eight algorithms reveals notable trends in how different Atari environments inherently demand varying computational resources.Table~\ref{tab:env_emissions} reports the aggregated statistics, namely the mean, standard deviation, median, minimum, maximum, and interquartile mean, derived from the average emissions of each algorithm within an environment. In essence, the values presented are the mean of means, standard deviation of means, and so on.
+
+For instance, \emph{AlienNoFrameskip-v4} exhibits an average emission of approximately \num{0.00748}\,kg\,CO\textsubscript{2} (with a median of \num{0.00677}\,kg\,CO\textsubscript{2}), while \emph{AmidarNoFrameskip-v4} and \emph{AssaultNoFrameskip-v4} show very similar means (\num{0.00735}\,kg\,CO\textsubscript{2} and \num{0.00732}\,kg\,CO\textsubscript{2}, respectively). In contrast, \emph{FreewayNoFrameskip-v4} stands out with the highest average emissions at about \num{0.00811}\,kg\,CO\textsubscript{2}, and \emph{BoxingNoFrameskip-v4} also registers relatively high values (approximately \num{0.00790}\,kg\,CO\textsubscript{2}). Meanwhile, environments such as \emph{MsPacmanNoFrameskip-v4} and \emph{PongNoFrameskip-v4} tend to have lower mean emissions (roughly \num{0.00729}\,kg\,CO\textsubscript{2} and \num{0.00727}\,kg\,CO\textsubscript{2}, respectively).
+
+Although the absolute differences are modest, on the order of \num{0.001} to \num{0.0015}\,kg\,CO\textsubscript{2}, this represents a variation of roughly \num{10}–\num{15}\% relative to the baseline values, indicating that the intrinsic properties of an environment (such as frame complexity, episode length, and interaction dynamics) have a direct impact on the carbon footprint of training DRL algorithms, independent of the specific method used. In sustainability-sensitive applications, this implies that selecting or designing tasks with inherently lower computational demands can contribute significantly to reducing overall energy consumption.
+
+\begin{table}
+	\centering
+	\caption{Aggregated Average Emissions per Environment (kg CO$_2$eq) Across All Algorithms}
+	\label{tab:env_emissions}
+	\begin{tabular}{lcccccc}
+		\toprule
+		\textbf{Environment} & \textbf{Mean} & \textbf{Std} & \textbf{Median} & \textbf{Min} & \textbf{Max} & \textbf{IQMean} \\
+		\midrule
+		Alien    & 0.00748 & 0.00351 & 0.00677 & 0.00292 & 0.01539 & 0.00683 \\
+		Amidar   & 0.00735 & 0.00352 & 0.00665 & 0.00267 & 0.01521 & 0.00670 \\
+		Assault  & 0.00732 & 0.00374 & 0.00658 & 0.00248 & 0.01575 & 0.00663 \\
+		Boxing   & 0.00790 & 0.00347 & 0.00733 & 0.00333 & 0.01567 & 0.00731 \\
+		Breakout & 0.00740 & 0.00352 & 0.00685 & 0.00259 & 0.01520 & 0.00690 \\
+		Freeway  & 0.00811 & 0.00349 & 0.00751 & 0.00367 & 0.01602 & 0.00751 \\
+		MsPacman & 0.00729 & 0.00354 & 0.00658 & 0.00267 & 0.01523 & 0.00665 \\
+		Pong     & 0.00727 & 0.00352 & 0.00661 & 0.00268 & 0.01517 & 0.00666 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\subsubsection{Implications for RL Algorithm Choice in LLM Fine-Tuning}
+\label{subsubsec:rlhf}
+One of the most widespread use cases for reinforcement learning today is in the domain of 
+"Reinforcement Learning Enhanced LLMs"~\cite{wang:rl_enhanced_llm}, particularly through approaches 
+such as Reinforcement Learning from Human Feedback (RLHF) and Reinforcement Learning from AI Feedback (RLAIF). 
+In these settings, Proximal Policy Optimization (PPO) is the undisputed workhorse and is employed almost 
+universally—a fact that, in a green context, aligns well with the sustainability results of our study.
+
+However, a recent work, \emph{Back to Basics: Revisiting REINFORCE Style Optimization for Learning from Human Feedback in LLMs}~\cite{ahmadian:back_to_basics}, proposes a simplification of the RL optimization process. 
+It argues that many of the motivational principles behind PPO are less of a practical concern in RLHF, and 
+advocates for a less computationally expensive method that preserves, or even enhances, performance. 
+This is an interesting development: on one hand, a simpler method might further reduce emissions; on the other, 
+our results indicate that REINFORCE, which is much simpler than PPO, actually produces higher emissions. 
+It would be valuable to conduct further experiments comparing these approaches specifically in terms of sustainability and in the context of the task at hand.
+If simpler methods indeed yield lower emissions, that would be a compelling argument for their adoption. 
+However, if PPO, despite its complexity, continues to exhibit superior energy efficiency, then from a green perspective 
+it might be preferable to continue using PPO for RLHF fine-tuning. Of course, one must not forget the limitations of CodeCarbon
+in tracking CPU and RAM energy consumption when interpreting our results (the overhead from parallelization in CPU/RAM may offset some of the GPU emission savings).
+
+However, our benchmark demonstrates that PPO, that consistently achieves superior energy efficiency—with lower 
+carbon emissions and shorter training times compared to simpler approaches such as REINFORCE, coulb be a strong contender for this task too. A first comparison, again in terms of performance and emissions, should be with GRPO, for obvious reasons.
+
+A related argument comes from recent work such as DeepSeek-R1~\cite{deepseekai:r1}, which employs reinforcement learning to enhance chain-of-thought (CoT) reasoning without direct human supervision. Its introduction has spurred further research into RL methods for reasoning optimization. Early experiments, in particular those reported in \cite{pan:tinyzero} and discussed in the associated \url{https://x.com/jiayi_pirate/status/1882839370505621655}{Twitter/X thread} linked in the GitHub repository, suggest that the exact RL algorithm used to trigger CoT emergence in LLMs might not be critical. In these experiments, variants such as GRPO (the algorithm used by the DeepSeek team, based on PPO), PPO itself, and PRIME produced comparable performance. If these findings hold, then identifying a more sustainable RL algorithm that achieves the same performance would be highly attractive, as reducing computational cost can benefit both large companies and individual users.
+
+However, our benchmark suggests that PPO (which achieves superior energy efficiency, with lower carbon emissions and shorter training times, compared to simpler approaches like REINFORCE) could be a strong contender for this task too. This observation motivates a direct comparison in terms of performance and emissions between PPO and GRPO, as well as with any other alternative method, to explore whether additional sustainability gains can be achieved without sacrificing performance.
 
 \subsection{Limitations and Future Work}
 \label{subsec:limitations_futurework}

@@ -1647,7 +1647,7 @@ relatively short 100k-step training horizon.
 \end{itemize}
 
 
-\subsection{Policy-Based Algorithms}
+\subsection{Policy Gradient Algorithms}
 This section presents results for the three policy gradient methods.
 
 \subsubsection{REINFORCE}
@@ -1698,7 +1698,7 @@ In our experiments, we also tested the impact of (removing) reward clipping; how
 		\includegraphics[width=.45\textwidth]{figures/reinforce/reinforce_lr_tuning_learning_rate.jpeg}
 		\label{fig:reinforce_lr_tuning_lr}
 	}
-	\caption{\textbf{REINFORCE LR Tuning.} Two learning rates ($1\times10^{-4}$ in red, $2.5\times10^{-4}$ in blue) 
+	\caption{\emph{REINFORCE Learning Rate Tuning.} Two learning rates ($1\times10^{-4}$ in red, $2.5\times10^{-4}$ in blue) 
 		both with minimal decay. The higher LR eventually performed better, although volatility remained high.}
 	\label{fig:reinforce_lr_tuning}
 \end{figure}
@@ -1722,7 +1722,7 @@ for \emph{human‐normalized} and \emph{min--max normalized} scales:
 		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_episodic_return_minmax_reinforce_atari.png}
 		\label{fig:reinforce_return_minmax_agg}
 	}
-	\caption{\textit{Aggregated Episodic Returns.} 
+	\caption{\textit{REINFORCE Aggregated Episodic Returns.} 
 		Strong variance across seeds/games yields a wide min-max band in both normalizations. 
 		Mean in human norm often oscillates near zero, while min-max hovers around 0.15-0.20.}
 	\label{fig:reinforce_returns_agg}
@@ -1748,7 +1748,7 @@ but \emph{separated by environment}:
 		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_episodic_return_per_game_minmax_reinforce_atari.png}
 		\label{fig:reinforce_return_pergame_minmax}
 	}
-	\caption{\textit{Returns by Environment.} 
+	\caption{\textit{REINFORCE Returns by Environment.} 
 	Variability is evident across different Atari games, with Boxing and Assault exhibiting the highest fluctuations.}
 	\label{fig:reinforce_pergame_return}
 \end{figure}
@@ -1766,7 +1766,7 @@ Additional training metrics are shown in Figures~\ref{fig:reinforce_trainmetrics
 		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_SPS_reinforce_atari.png}
 		\label{fig:reinforce_sps}
 	}
-	\caption{\textit{Episode Length and Throughput.} 
+	\caption{\textit{REINFORCE Episode Length and Throughput.} 
 		The average length stabilizes near 3800–4000 steps; 
 		min–max can exceed 7000–8000 in some seeds. 
 		SPS plateaus around 150–170.}
@@ -1784,7 +1784,7 @@ Additional training metrics are shown in Figures~\ref{fig:reinforce_trainmetrics
 		\includegraphics[width=.45\textwidth]{figures/reinforce/charts_learning_rate_reinforce_atari.png}
 		\label{fig:reinforce_lr}
 	}
-	\caption{\textit{Loss and Learning‐Rate Curves.} 
+	\caption{\textit{REINFORCE Loss and Learning‐Rate Curves.} 
 		The loss shows large fluctuations, while the LR decays minimally over the training period.}
 	\label{fig:reinforce_trainmetrics2}
 \end{figure}
@@ -1887,7 +1887,7 @@ We set \(\texttt{clip\_coef}=0.1\) (a bit lower than the common 0.2) and employ 
 \begin{figure} 
 	\centering
 	\includegraphics[width=.5\textwidth]{figures/ppo/charts_learning_rate_ppo_atari.png}
-	\caption{\textbf{PPO: Learning Rate Decay.}
+	\caption{\emph{PPO: Learning Rate Decay.}
 		The learning rate anneals linearly from $2.5\times10^{-4}$ down to near $0$ 
 		over \num{100000} steps, reducing update magnitudes as training progresses.}
 	\label{fig:ppo_lr}
@@ -1916,7 +1916,7 @@ for both human and min--max normalization across 32 total runs (8 games, 4 seeds
 		\includegraphics[width=.45\textwidth]{figures/ppo/charts_episodic_return_minmax_ppo_atari.png}
 		\label{fig:ppo_returns_minmax}
 	}
-	\caption{\textbf{PPO: Aggregated Episodic Returns.} 
+	\caption{\emph{PPO: Aggregated Episodic Returns.} 
 		The broad shaded area shows high variance among runs/games. 
 		The mean remains around zero in human norm but reaches 0.2--0.3 in min--max.}
 	\label{fig:ppo_returns_agg}
@@ -1942,7 +1942,7 @@ Figure~\ref{fig:ppo_returns_pergame} shows the returns for each environment. The
 		\includegraphics[width=.45\textwidth]{figures/ppo/charts_episodic_return_per_game_minmax_ppo_atari.png}
 		\label{fig:ppo_return_pergame_minmax}
 	}
-	\caption{\textbf{PPO: Returns by Environment.} 
+	\caption{\emph{PPO: Returns by Environment.} 
 		Notable extreme spikes/dips appear in \emph{Boxing} (orange) 
 		and occasionally \emph{Assault} or \emph{Breakout}.}
 	\label{fig:ppo_returns_pergame}
@@ -1962,7 +1962,7 @@ Alongside returns, we log episode length, throughput (SPS), learning rate, KL di
 		\includegraphics[width=.45\textwidth]{figures/ppo/charts_SPS_ppo_atari.png}
 		\label{fig:ppo_sps}
 	}
-	\caption{\textbf{PPO: Episode Length \& Throughput.}
+	\caption{\emph{PPO: Episode Length \& Throughput.}
 		The mean ep‐length hovers near 3500--4000 steps, 
 		with some runs dropping below 1000 or spiking above 7000. 
 		Meanwhile, parallel envs let SPS exceed 400 or 500.}
@@ -1971,16 +1971,16 @@ Alongside returns, we log episode length, throughput (SPS), learning rate, KL di
 
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Approx KL}]{
+	\subfloat[\emph{Approx KL}]{
 		\includegraphics[width=.45\textwidth]{figures/ppo/losses_approx_kl_ppo_atari.png}
 		\label{fig:ppo_approxkl}
 	}
 	\quad
-	\subfloat[\textbf{Old Approx KL}]{
+	\subfloat[\emph{Old Approx KL}]{
 		\includegraphics[width=.45\textwidth]{figures/ppo/losses_old_approx_kl_ppo_atari.png}
 		\label{fig:ppo_oldapproxkl}
 	}
-	\caption{\textbf{PPO: KL Divergences vs.\ Training Steps.}
+	\caption{\emph{PPO: KL Divergences vs.\ Training Steps.}
 		Both metrics hover near 0.001--0.003 for most of training, 
 		though spikes appear. The old KL is centered around 0 but can jump above +0.02 or dip below -0.01.}
 	\label{fig:ppo_bothkl}
@@ -1988,19 +1988,19 @@ Alongside returns, we log episode length, throughput (SPS), learning rate, KL di
 
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Clip Fraction}]{
+	\subfloat[\emph{Clip Fraction}]{
 		\includegraphics[width=.32\textwidth]{figures/ppo/losses_clipfrac_ppo_atari.png}
 		\label{fig:ppo_clipfrac}
 	}
-	\subfloat[\textbf{Entropy}]{
+	\subfloat[\emph{Entropy}]{
 		\includegraphics[width=.32\textwidth]{figures/ppo/losses_entropy_ppo_atari.png}
 		\label{fig:ppo_entropy}
 	}
-	\subfloat[\textbf{Explained Variance}]{
+	\subfloat[\emph{Explained Variance}]{
 		\includegraphics[width=.32\textwidth]{figures/ppo/losses_explained_variance_ppo_atari.png}
 		\label{fig:ppo_explvar}
 	}
-	\caption{\textbf{PPO: Additional Diagnostics.}
+	\caption{\emph{PPO: Additional Diagnostics.}
 		(a) Clip fraction often spikes above 0.1 early, then drops under 0.01 by 100k steps.
 		(b) Entropy declines from about 2.0 to below 1.5 in some runs, 
 		indicating the policy becomes more deterministic.
@@ -2011,16 +2011,16 @@ Alongside returns, we log episode length, throughput (SPS), learning rate, KL di
 
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Policy Loss}]{
+	\subfloat[\emph{Policy Loss}]{
 		\includegraphics[width=.45\textwidth]{figures/ppo/losses_policy_loss_ppo_atari.png}
 		\label{fig:ppo_pol_loss}
 	}
 	\quad
-	\subfloat[\textbf{Value Loss}]{
+	\subfloat[\emph{Value Loss}]{
 		\includegraphics[width=.45\textwidth]{figures/ppo/losses_value_loss_ppo_atari.png}
 		\label{fig:ppo_val_loss}
 	}
-	\caption{\textbf{PPO: Policy and Value Losses.}
+	\caption{\emph{PPO: Policy and Value Losses.}
 		\textbf{(a)} The policy loss fluctuates around slightly negative values 
 		(often between $-0.01$ and $0.0$), with occasional positive spikes up to $\sim0.005$. 
 		\textbf{(b)} The value loss remains around $0.1$--$0.3$ on average but can exceed $1.0$ in some runs 
@@ -2119,7 +2119,7 @@ Figures~\ref{fig:sac_returns_human_minmax} illustrate the aggregated episodic re
 		\includegraphics[width=.45\textwidth]{figures/sac/charts_episodic_return_minmax_sac_atari.png}
 		\label{fig:sac_returns_minmax_agg}
 	}
-	\caption{\textbf{SAC: Aggregated Episodic Returns.} Notice the swings below -4 in the human norm, while min–max remains mostly under 0.8.}
+	\caption{\emph{SAC: Aggregated Episodic Returns.} Notice the swings below -4 in the human norm, while min–max remains mostly under 0.8.}
 	\label{fig:sac_returns_human_minmax}
 \end{figure}
 
@@ -2137,7 +2137,7 @@ Figure~\ref{fig:sac_returns_pergame} breaks down performance by environment. Not
 		\includegraphics[width=.45\textwidth]{figures/sac/charts_episodic_return_per_game_minmax_sac_atari.png}
 		\label{fig:sac_returns_pergame_minmax}
 	}
-	\caption{\textbf{SAC: Returns by Environment.} \emph{Boxing} can dip below -20 in some runs, while \emph{Pong} remains near -0.01 (human norm).}
+	\caption{\emph{SAC: Returns by Environment.} \emph{Boxing} can dip below -20 in some runs, while \emph{Pong} remains near -0.01 (human norm).}
 	\label{fig:sac_returns_pergame}
 \end{figure}
 
@@ -2155,7 +2155,7 @@ Figure~\ref{fig:sac_epilen_sps} shows the episode length and steps-per-second (S
 		\includegraphics[width=.45\textwidth]{figures/sac/charts_SPS_sac_atari.png}
 		\label{fig:sac_sps}
 	}
-	\caption{\textbf{SAC: Episode Length \& Throughput.} Min–max ranges from under 1000 to over 7000 steps, while SPS stabilizes around 80 after initial decay.}
+	\caption{\emph{SAC: Episode Length \& Throughput.} Min–max ranges from under 1000 to over 7000 steps, while SPS stabilizes around 80 after initial decay.}
 	\label{fig:sac_epilen_sps}
 \end{figure}
 
@@ -2169,23 +2169,23 @@ Figures~\ref{fig:sac_actor_alpha_losses} and~\ref{fig:sac_alpha} detail the evol
 
 \begin{figure}
 	\centering
-	\subfloat[\textbf{Actor Loss}]{
+	\subfloat[\emph{Actor Loss}]{
 		\includegraphics[width=.45\textwidth]{figures/sac/losses_actor_loss_sac_atari.png}
 		\label{fig:sac_actor_loss}
 	}
 	\quad
-	\subfloat[\textbf{Alpha Loss}]{
+	\subfloat[\emph{Alpha Loss}]{
 		\includegraphics[width=.45\textwidth]{figures/sac/losses_alpha_loss_sac_atari.png}
 		\label{fig:sac_alpha_loss}
 	}
-	\caption{\textbf{SAC: Actor and Alpha Losses.} The actor loss bottoms out near -3 by \(\sim\)10k steps, while the alpha loss decays from ~0.03 to nearly 0.}
+	\caption{\emph{SAC: Actor and Alpha Losses.} The actor loss bottoms out near -3 by \(\sim\)10k steps, while the alpha loss decays from ~0.03 to nearly 0.}
 	\label{fig:sac_actor_alpha_losses}
 \end{figure}
 
 \begin{figure}
 	\centering
 	\includegraphics[width=.5\textwidth]{figures/sac/losses_alpha_sac_atari.png}
-	\caption{\textbf{SAC: Learned \(\alpha\) Over Time.} After dipping to around 0.1 near 30k steps, some runs see \(\alpha\) climb above 1.0, with the mean reaching approximately 0.3 at 100k steps.}
+	\caption{\emph{SAC: Learned \(\alpha\) Over Time.} After dipping to around 0.1 near 30k steps, some runs see \(\alpha\) climb above 1.0, with the mean reaching approximately 0.3 at 100k steps.}
 	\label{fig:sac_alpha}
 \end{figure}
 
@@ -2193,34 +2193,34 @@ Figures~\ref{fig:sac_actor_alpha_losses} and~\ref{fig:sac_alpha} detail the evol
 SAC utilizes two Q-functions (QF1 and QF2) to mitigate overestimation and stabilize learning. Figures~\ref{fig:sac_q_metrics_1} and~\ref{fig:sac_q_metrics_2} showcase their losses and value estimates:
 \begin{figure}
 	\centering
-	\subfloat[\textbf{QF Loss (combined)}]{
+	\subfloat[\emph{QF Loss (combined)}]{
 		\includegraphics[width=.3\textwidth]{figures/sac/losses_qf_loss_sac_atari.png}
 		\label{fig:sac_qf_loss}
 	}
-	\subfloat[\textbf{QF1 Loss}]{
+	\subfloat[\emph{QF1 Loss}]{
 		\includegraphics[width=.3\textwidth]{figures/sac/losses_qf1_loss_sac_atari.png}
 		\label{fig:sac_qf1_loss}
 	}
-	\subfloat[\textbf{QF1 Values}]{
+	\subfloat[\emph{QF1 Values}]{
 		\includegraphics[width=.3\textwidth]{figures/sac/losses_qf1_values_sac_atari.png}
 		\label{fig:sac_qf1_values}
 	}
-	\caption{\textbf{SAC: QF1 Metrics.} Mean QF1 losses remain below 3, although min–max spikes can exceed 50 after 40k steps. QF1 value estimates rise from near 0 to about 20 in the mean, with some outliers above 80.}
+	\caption{\emph{SAC: QF1 Metrics.} Mean QF1 losses remain below 3, although min–max spikes can exceed 50 after 40k steps. QF1 value estimates rise from near 0 to about 20 in the mean, with some outliers above 80.}
 	\label{fig:sac_q_metrics_1}
 \end{figure}
 
 \begin{figure}
 	\centering
-	\subfloat[\textbf{QF2 Loss}]{
+	\subfloat[\emph{QF2 Loss}]{
 		\includegraphics[width=.45\textwidth]{figures/sac/losses_qf2_loss_sac_atari.png}
 		\label{fig:sac_qf2_loss}
 	}
 	\quad
-	\subfloat[\textbf{QF2 Values}]{
+	\subfloat[\emph{QF2 Values}]{
 		\includegraphics[width=.45\textwidth]{figures/sac/losses_qf2_values_sac_atari.png}
 		\label{fig:sac_qf2_values}
 	}
-	\caption{\textbf{SAC: QF2 Metrics.} QF2 losses also exhibit large spikes (up to 50+ in some runs), while QF2 values increase from below 10 to around 20 on average, reaching up to 100 in certain seeds.}
+	\caption{\emph{SAC: QF2 Metrics.} QF2 losses also exhibit large spikes (up to 50+ in some runs), while QF2 values increase from below 10 to around 20 on average, reaching up to 100 in certain seeds.}
 	\label{fig:sac_q_metrics_2}
 \end{figure}
 
@@ -2267,7 +2267,6 @@ Overall, SAC shows promise in some Atari tasks under 100k interactions, yet it s
 
 \subsection{Overall Comparison of Policy Gradient Algorithms}
 \label{subsec:policy_comparison}
-
 In this section, we compare the three policy gradient–based algorithms tested in our benchmark: \textbf{PPO} (on-policy with a clipped objective), \textbf{REINFORCE} (a basic Monte Carlo policy gradient), and \textbf{SAC} (an off-policy method with automatic entropy tuning). Each algorithm was trained for \num{100000} steps on the same 8 Atari games, with 4 random seeds per game, producing 32 runs per algorithm. We examine both their \emph{final performance} (human‐normalized and min–max normalized returns) and \emph{carbon emissions} over the course of training.
 
 \paragraph{Final Evaluation Performance: Human‐Normalized.}
@@ -2332,7 +2331,7 @@ In addition to performance, our benchmark tracks \textbf{carbon emissions} (kg~C
 \begin{figure} 
 	\centering
 	\includegraphics[width=0.5\textwidth]{figures/policy_comparison/barplot_emissions_policy_comparison.png}
-	\caption{\textbf{Policy Algorithms: Mean Emissions (kg\,CO$_2$).} Error bars show the standard deviation across 32 runs.}
+	\caption{\emph{Policy Algorithms: Mean Emissions (kg\,CO$_2$).} Error bars show the standard deviation across 32 runs.}
 	\label{fig:policy_emissions_bar}
 \end{figure}
 
@@ -2356,16 +2355,16 @@ Beyond the aggregated returns and raw carbon footprints, it is also informative 
 
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{IQM (Human)}]{%
+	\subfloat[\emph{IQM (Human)}]{%
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/scatter_iqmean_human_policy_comparison.png}
 		\label{fig:scatter_iqmean_human}
 	}
 	\quad
-	\subfloat[\textbf{IQM (Min--Max)}]{%
+	\subfloat[\emph{IQM (Min--Max)}]{%
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/scatter_iqmean_minmax_policy_comparison.png}
 		\label{fig:scatter_iqmean_minmax}
 	}
-	\caption{\textbf{Mean Emissions vs. Interquartile Mean (IQM) Return.}
+	\caption{\emph{Mean Emissions vs. Interquartile Mean (IQM) Return.}
 		Each point corresponds to one algorithm’s aggregated final performance (IQM) against its mean carbon emissions. 
 		\textbf{(a)} uses human‐normalized returns, while \textbf{(b)} is min--max normalized.}
 	\label{fig:scatter_emissions_a}
@@ -2373,16 +2372,16 @@ Beyond the aggregated returns and raw carbon footprints, it is also informative 
 
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Mean (Human)}]{%
+	\subfloat[\emph{Mean (Human)}]{%
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/scatter_mean_human_policy_comparison.png}
 		\label{fig:scatter_mean_human}
 	}
 	\quad
-	\subfloat[\textbf{Mean (Min--Max)}]{%
+	\subfloat[\emph{Mean (Min--Max)}]{%
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/scatter_mean_minmax_policy_comparison.png}
 		\label{fig:scatter_mean_minmax}
 	}
-	\caption{\textbf{Mean Emissions vs. Mean Return.}
+	\caption{\emph{Mean Emissions vs. Mean Return.}
 		Similar to Fig.~\ref{fig:scatter_emissions_a}, but plotting the average (mean) final performance in human \textbf{(a)} vs.\ min--max \textbf{(b)} normalization.}
 	\label{fig:scatter_emissions_b}
 \end{figure}
@@ -2400,7 +2399,7 @@ A key factor driving these energy differences is \textbf{training speed}, often 
 \begin{figure} 
 	\centering
 	\includegraphics[width=0.6\textwidth]{figures/policy_comparison/policy_sps_comparison.png}
-	\caption{\textbf{Combined SPS Curves for PPO, SAC, and REINFORCE.}
+	\caption{\emph{Combined SPS Curves for PPO, SAC, and REINFORCE.}
 		PPO rapidly climbs above 400--500~SPS, while SAC settles around 100--120, and REINFORCE around 150--200. 
 		Shaded areas (if visible) indicate min--max across seeds.}
 	\label{fig:policy_sps_comparison}
@@ -2444,16 +2443,16 @@ To illustrate performance trends for \textbf{PPO}, \textbf{REINFORCE}, and \text
 \noindent \textbf{Alien.}
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Human Norm}]{
+	\subfloat[\emph{Human Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_human_comparison_AlienNoFrameskip-v4_policy.png}
 		\label{fig:alien_human}
 	}
 	\quad
-	\subfloat[\textbf{Min--Max Norm}]{
+	\subfloat[\emph{Min--Max Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_minmax_comparison_AlienNoFrameskip-v4_policy.png}
 		\label{fig:alien_minmax}
 	}
-	\caption{\textbf{Alien.} 
+	\caption{\emph{Alien.} 
 		(\textbf{a}) Under human normalization, PPO (blue) and SAC (red) periodically reach 0.04--0.05, while REINFORCE (orange) lingers near 0.0.
 		(\textbf{b}) Min--max scaling places PPO’s peaks around 0.12--0.14, with SAC following closely by 100k steps, and REINFORCE near 0.04--0.08.}
 	\label{fig:alien_combined}
@@ -2467,16 +2466,16 @@ To illustrate performance trends for \textbf{PPO}, \textbf{REINFORCE}, and \text
 \noindent \textbf{Amidar.}
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Human Norm}]{
+	\subfloat[\emph{Human Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_human_comparison_AmidarNoFrameskip-v4_policy.png}
 		\label{fig:amidar_human}
 	}
 	\quad
-	\subfloat[\textbf{Min--Max Norm}]{
+	\subfloat[\emph{Min--Max Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_minmax_comparison_AmidarNoFrameskip-v4_policy.png}
 		\label{fig:amidar_minmax}
 	}
-	\caption{\textbf{Amidar.}
+	\caption{\emph{Amidar.}
 		(\textbf{a}) PPO (blue) rises above 0.03, while SAC (red) and REINFORCE (orange) stay under 0.01. 
 		(\textbf{b}) Min--max scaling reveals PPO crossing 0.30, whereas SAC/REINFORCE remain below 0.1.}
 	\label{fig:amidar_combined}
@@ -2490,16 +2489,16 @@ To illustrate performance trends for \textbf{PPO}, \textbf{REINFORCE}, and \text
 \noindent \textbf{Assault.}
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Human Norm}]{
+	\subfloat[\emph{Human Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_human_comparison_AssaultNoFrameskip-v4_policy.png}
 		\label{fig:assault_human_policy}
 	}
 	\quad
-	\subfloat[\textbf{Min--Max Norm}]{
+	\subfloat[\emph{Min--Max Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_minmax_comparison_AssaultNoFrameskip-v4_policy.png}
 		\label{fig:assault_minmax_policy}
 	}
-	\caption{\textbf{Assault.}
+	\caption{\emph{Assault.}
 		(\textbf{a}) PPO (blue) approaches 0.15--0.18, while SAC (red) remains near 0.05--0.10.
 		(\textbf{b}) Min--max scaling finds PPO around 0.30--0.50, SAC 0.20--0.35, and REINFORCE (orange) near 0.20--0.30.}
 	\label{fig:assault_combined}
@@ -2513,16 +2512,16 @@ To illustrate performance trends for \textbf{PPO}, \textbf{REINFORCE}, and \text
 \noindent \textbf{Boxing.}
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Human Norm}]{
+	\subfloat[\emph{Human Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_human_comparison_BoxingNoFrameskip-v4_policy.png}
 		\label{fig:boxing_human}
 	}
 	\quad
-	\subfloat[\textbf{Min--Max Norm}]{
+	\subfloat[\emph{Min--Max Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_minmax_comparison_BoxingNoFrameskip-v4_policy.png}
 		\label{fig:boxing_minmax}
 	}
-	\caption{\textbf{Boxing.}
+	\caption{\emph{Boxing.}
 		(\textbf{a}) All three exhibit wild swings in human norm (e.g., REINFORCE from -1.5 to +2).
 		(\textbf{b}) Min--max compresses those swings to \(\sim0.72\)--0.82.}
 	\label{fig:boxing_combined}
@@ -2536,16 +2535,16 @@ To illustrate performance trends for \textbf{PPO}, \textbf{REINFORCE}, and \text
 \noindent \textbf{Breakout.}
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Human Norm}]{
+	\subfloat[\emph{Human Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_human_comparison_BreakoutNoFrameskip-v4_policy.png}
 		\label{fig:breakout_human}
 	}
 	\quad
-	\subfloat[\textbf{Min--Max Norm}]{
+	\subfloat[\emph{Min--Max Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_minmax_comparison_BreakoutNoFrameskip-v4_policy.png}
 		\label{fig:breakout_minmax}
 	}
-	\caption{\textbf{Breakout.}
+	\caption{\emph{Breakout.}
 		(\textbf{a}) SAC (red) surpasses 0.4--0.5, well above PPO (blue) or REINFORCE (orange).
 		(\textbf{b}) Min--max confirms SAC reaching above 0.5, while PPO stays near 0.2.}
 	\label{fig:breakout_combined}
@@ -2559,16 +2558,16 @@ To illustrate performance trends for \textbf{PPO}, \textbf{REINFORCE}, and \text
 \noindent \textbf{Freeway.}
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Human Norm}]{
+	\subfloat[\emph{Human Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_human_comparison_FreewayNoFrameskip-v4_policy.png}
 		\label{fig:freeway_human}
 	}
 	\quad
-	\subfloat[\textbf{Min--Max Norm}]{
+	\subfloat[\emph{Min--Max Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_minmax_comparison_FreewayNoFrameskip-v4_policy.png}
 		\label{fig:freeway_minmax}
 	}
-	\caption{\textbf{Freeway.}
+	\caption{\emph{Freeway.}
 		(\textbf{a}) PPO (blue) climbs to \(\sim0.18\)--0.20, while SAC (red) and REINFORCE (orange) remain near 0.0.
 		(\textbf{b}) Min--max also shows PPO at \(\sim0.20\), with the others near 0.0.}
 	\label{fig:freeway_combined}
@@ -2582,16 +2581,16 @@ To illustrate performance trends for \textbf{PPO}, \textbf{REINFORCE}, and \text
 \noindent \textbf{MsPacman.}
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Human Norm}]{
+	\subfloat[\emph{Human Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_human_comparison_MsPacmanNoFrameskip-v4_policy.png}
 		\label{fig:mspacman_human}
 	}
 	\quad
-	\subfloat[\textbf{Min--Max Norm}]{
+	\subfloat[\emph{Min--Max Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_minmax_comparison_MsPacmanNoFrameskip-v4_policy.png}
 		\label{fig:mspacman_minmax}
 	}
-	\caption{\textbf{MsPacman.}
+	\caption{\emph{MsPacman.}
 		(\textbf{a}) PPO (blue) peaks near 0.08 by 80k steps, SAC (red) stays in 0.03--0.05, REINFORCE (orange) below 0.02.
 		(\textbf{b}) Min--max scales these results, yielding PPO at \(\sim0.35\)--0.40 vs.\ SAC \(\sim0.15\)--0.20, and REINFORCE < 0.10.}
 	\label{fig:mspacman_combined}
@@ -2605,16 +2604,16 @@ To illustrate performance trends for \textbf{PPO}, \textbf{REINFORCE}, and \text
 \noindent \textbf{Pong.}
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Human Norm}]{
+	\subfloat[\emph{Human Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_human_comparison_PongNoFrameskip-v4_policy.png}
 		\label{fig:pong_human}
 	}
 	\quad
-	\subfloat[\textbf{Min--Max Norm}]{
+	\subfloat[\emph{Min--Max Norm}]{
 		\includegraphics[width=0.45\textwidth]{figures/policy_comparison/charts_episodic_return_minmax_comparison_PongNoFrameskip-v4_policy.png}
 		\label{fig:pong_minmax}
 	}
-	\caption{\textbf{Pong.}
+	\caption{\emph{Pong.}
 		(\textbf{a}) All three methods fluctuate around 0.0--0.06 in human norm.
 		(\textbf{b}) Min--max normalizes that to about 0.0--0.2.}
 	\label{fig:pong_combined}
@@ -2669,7 +2668,7 @@ carbon emissions, training runtime, and throughput (SPS).
 
 \subsubsection{Final Evaluation Performance}
 
-Tables~\ref{tab:all_algo_eval_human} and~\ref{tab:all_algo_eval_minmax} summarize the 
+Tables~\ref{tab:all_algo_eval_human} and~\vref{tab:all_algo_eval_minmax} summarize the 
 aggregated performance (mean, std, min, max, median, IQM) for each algorithm under both 
 \textbf{human} and \textbf{min--max} normalization, respectively. These results extend 
 the single-family comparisons made earlier to the full set of eight algorithms.
@@ -2716,11 +2715,10 @@ the single-family comparisons made earlier to the full set of eight algorithms.
 	\end{tabular}
 \end{table}
 
-\noindent
-\emph{Observation.} From these tables, we see that among the \emph{value-based} algorithms, 
-DuelingDQN, DQN, and DDQN often exhibit the highest mean or IQM returns, while 
+From these tables, we see that among the \emph{value-based} algorithms, 
+Dueling DQN, DQN, and Double DQN often exhibit the highest mean or IQM returns, while 
 \emph{PER} and \emph{C51} sometimes trail behind or show higher variance (especially in 
-human‐norm with large negative outliers). For the \emph{policy} group, SAC yields strong 
+human‐norm with large negative outliers). For the \emph{policy gradient} group, SAC yields strong 
 results in some tasks but is heavily penalized in others (e.g., \emph{Boxing}), resulting 
 in negative or near‐zero means in human norm. PPO remains moderate, whereas REINFORCE 
 lags in final average.
@@ -2729,12 +2727,14 @@ lags in final average.
 
 Figure~\ref{fig:barplot_emissions_total} compares the average emissions (kg CO$_2$) for 
 all 8 algorithms, along with standard deviation error bars. Table~\ref{tab:total_runtimes} 
-then lists each method’s total wall‐clock time to complete 8 games × 4 seeds = 32 runs.
+then lists each method's total wall‐clock time to complete 8 games × 4 seeds = 32 runs.
+
+The total training times of the algorithms are critical from a practical deployment perspective. As Table~\ref{tab:total_runtimes} indicates, PPO completes the 32 runs in only 2.4 hours, which not only minimizes energy consumption but also enables rapid prototyping and iterative tuning. In contrast, SAC's extended runtime of over 11 hours may hinder its use in scenarios where computational resources or time are limited—even if its performance is competitive on select tasks. The intermediate training times of the DQN-based variants (roughly 5–7 hours) suggest that they strike a balance between performance and efficiency. Therefore, when selecting a DRL algorithm, one must consider not only the final performance and energy efficiency but also the training time, which directly affects resource allocation and time-to-deployment.
 
 \begin{figure} 
 	\centering
 	\includegraphics[width=0.65\textwidth]{figures/comparison/barplot_emissions_total.png}
-	\caption{\textbf{Mean Emissions for All 8 Algorithms}, with standard deviation bars.
+	\caption{\emph{Mean Emissions for All 8 Algorithms}, with standard deviation bars.
 		SAC stands out at nearly 0.015~kg\,CO$_2$ on average, while PPO is notably lower than
 		any of the DQN-based methods.}
 	\label{fig:barplot_emissions_total}
@@ -2760,18 +2760,17 @@ then lists each method’s total wall‐clock time to complete 8 games × 4 seed
 	\end{tabular}
 \end{table}
 
-\noindent
-\emph{Commentary.}
+Emissions and runtime are clearly connected, in particular putting them together some key findings are:
 \begin{itemize}
-	\item \textbf{SAC} demands the longest runtime (over 11.4 hours) and, as seen in 
+	\item SAC demands the longest runtime (over 11.4 hours) and, as seen in 
 	Figure~\ref{fig:barplot_emissions_total}, produces the highest average emissions. 
-	\item \textbf{PPO} completes all runs in just 2.4 hours, with the lowest \(\sim0.003\) 
+	\item PPO completes all runs in just 2.4 hours, with the lowest \(\sim0.003\) 
 	kg\,CO$_2$. 
-	\item \textbf{Most DQN variants} cluster around 5--7 hours total, with emissions 
+	\item Most DQN variants cluster around 5--7 hours total, with emissions 
 	\(\sim0.006\)--0.008 kg\,CO$_2$, well above PPO but significantly below SAC.
 \end{itemize}
 
-\subsubsection{Samples per Second (SPS) Comparison}
+\subsubsection{Steps per Second (SPS) Comparison}
 Another measure of algorithmic efficiency is how many environment interactions each method 
 can process per second. Figure~\ref{fig:sps_all} plots the aggregated SPS curves for all 
 eight algorithms over 100k steps.
@@ -2779,40 +2778,38 @@ eight algorithms over 100k steps.
 \begin{figure} 
 	\centering
 	\includegraphics[width=0.65\textwidth]{figures/comparison/sps_all.png}
-	\caption{\textbf{SPS Comparison for All Algorithms}. PPO (blue line/shade) surpasses 
+	\caption{\emph{SPS Comparison for all algorithms}. PPO (blue line/shade) surpasses 
 		500 SPS (mainly due to the parallel environments), while DQN variants group around 150--200, REINFORCE near 150, and SAC remains 
-		under 100. Shaded regions represent min--max or std across seeds.}
+		under 100. Shaded regions represent min--max across seeds.}
 	\label{fig:sps_all}
 \end{figure}
 
-\noindent
-\emph{Analysis.} 
-- \textbf{PPO} quickly ramps up to $\sim500$~SPS, dwarfing the $\sim100$--200 range of the DQN 
+PPO quickly ramps up to $\sim500$~SPS, dwarfing the $\sim100$--200 range of the DQN 
 algorithms plus REINFORCE. 
-- \textbf{SAC}, consistent with its high runtime/emissions, lingers around 80--100~SPS. 
-- Minor differences exist among the DQN variants (e.g., PER may have a slightly heavier overhead 
+SAC, consistent with its high runtime/emissions, lingers around 80--100~SPS. 
+Minor differences exist among the DQN variants (e.g., PER may have a slightly heavier overhead 
 due to priority calculations, etc.).
 
 \subsubsection{Performance vs. Emissions (Scatter Plots)}
 To visualize how each algorithm trades off \emph{emissions} and \emph{performance},
-we plot the \textbf{mean carbon footprint} (\textit{x}-axis) against final evaluation 
+we plot the \textit{mean carbon footprint} (\textit{x}-axis) against final evaluation 
 (\textit{y}-axis). Figures~\ref{fig:scatter_all_iqmean} and~\ref{fig:scatter_all_mean}
-each contain two subplots, one for \textbf{human‐normalized} and one for 
-\textbf{min--max normalized} performance. We show both \textbf{IQM} (i.e.\ interquartile mean) 
-and \textbf{mean} returns in separate figures.
+each contain two subplots, one for \textit{human‐normalized} and one for 
+\textit{min--max normalized} performance. We show both \textit{IQM} (i.e.\ interquartile mean) 
+and \textit{mean} returns in separate figures.
 
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{IQM (Human)}]{
+	\subfloat[\textit{IQM (Human)}]{
 		\includegraphics[width=0.45\textwidth]{figures/comparison/scatter_iqmean_human_comparison.png}
 		\label{fig:scatter_all_iqmean_human}
 	}
 	\quad
-	\subfloat[\textbf{IQM (Min--Max)}]{
+	\subfloat[\textit{IQM (Min--Max)}]{
 		\includegraphics[width=0.45\textwidth]{figures/comparison/scatter_iqmean_minmax_comparison.png}
 		\label{fig:scatter_all_iqmean_minmax}
 	}
-	\caption{\textbf{Mean Emissions vs.\ IQM Evaluation for All 8 Algorithms.}
+	\caption{Mean Emissions vs.\ IQM Evaluation for All 8 Algorithms.
 		\textbf{(a)} Human‐normalized IQM vs.\ mean emissions. 
 		\textbf{(b)} Min--max–normalized IQM vs.\ mean emissions. 
 		Points are labeled by algorithm (\texttt{c51, ddqn, dqn, dueling\_dqn, per, ppo, reinforce, sac}).}
@@ -2821,23 +2818,22 @@ and \textbf{mean} returns in separate figures.
 
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Mean (Human)}]{
+	\subfloat[\textit{Mean (Human)}]{
 		\includegraphics[width=0.45\textwidth]{figures/comparison/scatter_mean_human_comparison.png}
 		\label{fig:scatter_all_mean_human}
 	}
 	\quad
-	\subfloat[\textbf{Mean (Min--Max)}]{
+	\subfloat[\textit{Mean (Min--Max)}]{
 		\includegraphics[width=0.45\textwidth]{figures/comparison/scatter_mean_minmax_comparison.png}
 		\label{fig:scatter_all_mean_minmax}
 	}
-	\caption{\textbf{Mean Emissions vs.\ Mean Evaluation for All 8 Algorithms.}
-		\textbf{(a)} Human‐normalized mean returns vs.\ emissions. 
-		\textbf{(b)} Min--max normalized mean returns vs.\ emissions.}
+	\caption{Mean Emissions vs.\ Mean Evaluation for All 8 Algorithms.
+		\textit{(a)} Human‐normalized mean returns vs.\ emissions. 
+		\textit{(b)} Min--max normalized mean returns vs.\ emissions.}
 	\label{fig:scatter_all_mean}
 \end{figure}
 
-\noindent
-\emph{Observation.} Across these four plots:
+Across these four plots:
 \begin{itemize}
 	\item \textbf{PPO} (blue point) sits at the far left (\(\approx 0.003\) kg\,CO$_2$), 
 	with moderate returns in both IQM and mean. It is the most \emph{energy-efficient}.
@@ -2846,83 +2842,64 @@ and \textbf{mean} returns in separate figures.
 	\item \textbf{DQN-based variants} (C51 in pink, DDQN in red, DQN in gold,
 	Dueling\_DQN in dark blue, PER in green) cluster in the \(\sim0.006\)--0.008 range
 	of mean emissions. Some, e.g.\ \emph{DQN} or \emph{DuelingDQN}, achieve higher 
-	IQM or mean than others. 
+	IQM or mean than others.
 	\item \textbf{REINFORCE} (orange) lies around \(\sim0.007\) emissions but yields 
 	relatively low returns under both human‐norm and min–max.
 \end{itemize}
-Overall, these scatter plots underscore that **PPO** provides a strong balance of 
-moderate/high returns with minimal carbon cost, while **SAC** can yield decent 
+Overall, these scatter plots underscore that \textit{PPO} provides a strong balance of 
+moderate/high returns with minimal carbon cost, while \textit{SAC} can yield decent 
 scores but at a high energy expense. The DQN-family methods vary: some (like 
-DuelingDQN) approach or exceed PPO’s performance, but typically with 2--3$\times$ 
-the emissions.
+Dueling DQN) approach or exceed PPO's performance, but typically with 2--3 times the emissions.
 
-\subsubsection{Per-Game Details}
-To better understand how each algorithm performs on individual Atari environments, 
-we collected **episode-level data** for each run, providing per-game final returns 
-(human or min--max normalized) and per-game mean emissions. Table~\ref{tab:per_game_example}
-below shows a **small extract** of these environment-level results for reference:
-\begin{table} 
-	\centering
-	\caption{Example snippet of per-game returns (human norm) and emissions for selected environments. 
-		Full details for all games and normalizations appear in Appendix~\ref{appendix:env_data}.}
-	\label{tab:per_game_example}
-	\begin{tabular}{lllcc}
-		\toprule
-		\textbf{Env} & \textbf{Algorithm} & \textbf{Human Return (Mean)} & \textbf{CO$_2$ (Mean)} & \textbf{IQM} \\
-		\midrule
-		AlienNoFrameskip-v4 & C51 & -0.0149 & 0.00779 & -0.0113 \\
-		AlienNoFrameskip-v4 & PPO & 0.0103 & 0.00292 & 0.0084 \\
-		% ... etc. 
-		\bottomrule
-	\end{tabular}
-\end{table}
-
-\noindent
-A full breakdown for every environment (Alien, Amidar, Assault, \ldots, Pong) 
-and each algorithm is included in \textbf{Appendix~\ref{appendix:env_data}}, 
-where we present the entire CSV data you provided (see the attached code block).
-We also provide environment-specific line plots of episodic returns (Figures~Y1–Y8)
-for readers who wish to explore how training evolves in detail.
-
-\paragraph{Interesting Outliers}
-Here we highlight two outliers:
-\begin{itemize}
-	\item \textbf{Boxing:} Some algorithms (SAC, REINFORCE) show large negative outliers 
-	in the human norm, though min–max compresses them. 
-	\item \textbf{Freeway:} PPO significantly outperforms DQN and other policy methods 
-	at just 100k steps, showing a near-monotonic climb.
-\end{itemize}
+%\subsubsection{Per-Game Details}
+%To better understand how each algorithm performs on individual Atari environments, 
+%we collected episode-level data for each run, providing per-game final returns 
+%(human and min--max normalized) and per-game mean emissions. Table~\ref{tab:per_game_example}
+%below shows a **small extract** of these environment-level results for reference.
+%
+%\begin{table} 
+%	\centering
+%	\caption{Example snippet of per-game returns (human norm) and emissions for selected environments. 
+%		Full details for all games and normalizations appear in Appendix~\ref{appendix:env_data}.}
+%	\label{tab:per_game_example}
+%	\begin{tabular}{lllcc}
+%		\toprule
+%		\textbf{Env} & \textbf{Algorithm} & \textbf{Human Return (Mean)} & \textbf{CO$_2$ (Mean)} & \textbf{IQM} \\
+%		\midrule
+%		AlienNoFrameskip-v4 & C51 & -0.0149 & 0.00779 & -0.0113 \\
+%		AlienNoFrameskip-v4 & PPO & 0.0103 & 0.00292 & 0.0084 \\
+%		% ... etc. 
+%		\bottomrule
+%	\end{tabular}
+%\end{table}
+%
+%A full breakdown for every environment (Alien, Amidar, Assault, \ldots, Pong) 
+%and each algorithm is included in \textbf{Appendix~\ref{appendix:env_data}}, 
+%where we present the entire CSV data you provided (see the attached code block).
+%We also provide environment-specific line plots of episodic returns (Figures~\ref{fig:alien_comparison_combined}-\ref{fig:pong_comparison_combined})
+%for readers who wish to explore how training evolves in detail, commented in the next section.
+%
+%\paragraph{Interesting Outliers}
+%Here we highlight two outliers:
+%\begin{itemize}
+%	\item \textbf{Boxing:} Some algorithms (SAC, REINFORCE) show large negative outliers 
+%	in the human norm, though min–max compresses them. 
+%	\item \textbf{Freeway:} PPO significantly outperforms DQN and other policy methods 
+%	at just 100k steps, showing a near-monotonic climb.
+%\end{itemize}
 
 \subsubsection{Per-Environment Episodic Returns (All Algorithms)}
 \label{sssec:per_env_all}
 
-In this section, we display the over-time training curves (up to 100k steps) for 
+To better understand how each algorithm performs on individual Atari environments,
+in this section we display the over-time training curves (up to 100k steps) for 
 \emph{all eight} algorithms on each of the eight Atari environments under study, 
-using both \textbf{min--max} and \textbf{human} normalization for the episodic returns. 
+using both \textit{min--max} and \textit{human} normalization for the episodic returns. 
 We discuss notable patterns in each environment below.
 
 %------------------ ALIEN ------------------
-\noindent
-\textbf{AlienNoFrameskip-v4}
-\begin{figure} 
-	\centering
-	\subfloat[\textbf{Min--Max Norm}]{
-		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_AlienNoFrameskip-v4.png}%
-		\label{fig:alien_comparison_minmax}
-	}
-	\quad
-	\subfloat[\textbf{Human Norm}]{
-		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_human_comparison_AlienNoFrameskip-v4.png}%
-		\label{fig:alien_comparison_human}
-	}
-	\caption{\textbf{Alien:} Episodic returns for C51 (pink), DDQN (red), 
-		DQN (gold), DUELING\_DQN (dark blue), PER (green),
-		PPO (navy blue), REINFORCE (orange), and SAC (dark red).}
-	\label{fig:alien_comparison_combined}
-\end{figure}
-
-\noindent
-\emph{Commentary.} 
+\paragraph{AlienNoFrameskip-v4}
+(Figure~\ref{fig:alien_comparison_combined})
 \texttt{DDQN} (red) and \texttt{DQN} (gold) often spike above 0.15--0.20 in min--max, 
 whereas \texttt{PPO} (blue) remains near 0.10--0.15. 
 \texttt{SAC} (dark red) lingers lower but sometimes climbs late, 
@@ -2930,28 +2907,26 @@ whereas \texttt{PPO} (blue) remains near 0.10--0.15.
 shows moderate oscillations. 
 Under human norm, the range compresses to near 0.0--0.1 for many runs.
 
-\bigskip
-
-%------------------ AMIDAR ------------------
-\noindent
-\textbf{AmidarNoFrameskip-v4}
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Min--Max Norm}]{
-		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_AmidarNoFrameskip-v4.png}%
-		\label{fig:amidar_comparison_minmax}
+	\subfloat[\emph{Min--Max Norm}]{
+		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_AlienNoFrameskip-v4.png}%
+		\label{fig:alien_comparison_minmax}
 	}
 	\quad
-	\subfloat[\textbf{Human Norm}]{
-		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_human_comparison_AmidarNoFrameskip-v4.png}%
-		\label{fig:amidar_comparison_human}
+	\subfloat[\emph{Human Norm}]{
+		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_human_comparison_AlienNoFrameskip-v4.png}%
+		\label{fig:alien_comparison_human}
 	}
-	\caption{\textbf{Amidar:} Episodic returns across 100k steps.}
-	\label{fig:amidar_comparison_combined}
+	\caption{\emph{Alien:} Episodic returns for C51 (pink), DDQN (red), 
+		DQN (gold), DUELING DQN (dark blue), PER (green),
+		PPO (navy blue), REINFORCE (orange), and SAC (dark red).}
+	\label{fig:alien_comparison_combined}
 \end{figure}
 
-\noindent
-\emph{Commentary.} 
+%------------------ AMIDAR ------------------
+\paragraph{AmidarNoFrameskip-v4}
+(Figure~\ref{fig:amidar_comparison_combined})
 \texttt{DDQN} (red) and \texttt{Dueling\_DQN} (dark blue) surpass 0.4--0.5 near 80k steps 
 in the min--max figure, while \texttt{C51} (pink) occasionally peaks around 0.5. 
 \texttt{PPO} (blue) is more steady, around 0.2--0.3. \texttt{SAC} (dark red) 
@@ -2959,28 +2934,24 @@ and \texttt{REINFORCE} (orange) stay below 0.1.
 Under human norm, the overall scale is 0.0--0.06 for most algorithms, 
 revealing smaller raw rewards in Amidar.
 
-\bigskip
-
-%------------------ ASSAULT ------------------
-\noindent
-\textbf{AssaultNoFrameskip-v4}
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Min--Max Norm}]{
-		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_AssaultNoFrameskip-v4.png}%
-		\label{fig:assault_minmax}
+	\subfloat[\emph{Min--Max Norm}]{
+		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_AmidarNoFrameskip-v4.png}%
+		\label{fig:amidar_comparison_minmax}
 	}
 	\quad
-	\subfloat[\textbf{Human Norm}]{
-		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_human_comparison_AssaultNoFrameskip-v4.png}%
-		\label{fig:assault_human}
+	\subfloat[\emph{Human Norm}]{
+		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_human_comparison_AmidarNoFrameskip-v4.png}%
+		\label{fig:amidar_comparison_human}
 	}
-	\caption{\textbf{Assault:} Episodic returns across 100k steps.}
-	\label{fig:assault_comparison_combined}
+	\caption{\emph{Amidar:} Episodic returns across 100k steps.}
+	\label{fig:amidar_comparison_combined}
 \end{figure}
 
-\noindent
-\emph{Commentary.}
+%------------------ ASSAULT ------------------
+\paragraph{AssaultNoFrameskip-v4}
+(Figure~\ref{fig:assault_comparison_combined})
 \texttt{Dueling\_DQN} (dark blue) and \texttt{DQN} (gold) climb toward 0.8--0.85 
 late in training (min--max). 
 \texttt{PPO} (blue) approaches 0.7, while \texttt{reinforce} (orange) remains 
@@ -2988,28 +2959,24 @@ under 0.4. \texttt{C51} (pink) gradually ascends but ends around 0.6.
 Under human norm, the spread condenses to 0.0--0.4, consistent with higher 
 raw scores in Assault.
 
-\bigskip
-
-%------------------ BOXING ------------------
-\noindent
-\textbf{BoxingNoFrameskip-v4}
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Min--Max Norm}]{
-		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_BoxingNoFrameskip-v4.png}%
-		\label{fig:boxing_comparison_minmax}
+	\subfloat[\emph{Min--Max Norm}]{
+		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_AssaultNoFrameskip-v4.png}%
+		\label{fig:assault_minmax}
 	}
 	\quad
-	\subfloat[\textbf{Human Norm}]{
-		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_human_comparison_BoxingNoFrameskip-v4.png}%
-		\label{fig:boxing_comparison_human}
+	\subfloat[\emph{Human Norm}]{
+		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_human_comparison_AssaultNoFrameskip-v4.png}%
+		\label{fig:assault_human}
 	}
-	\caption{\textbf{Boxing:} Episodic returns across 100k steps.}
-	\label{fig:boxing_comparison_combined}
+	\caption{\emph{Assault:} Episodic returns across 100k steps.}
+	\label{fig:assault_comparison_combined}
 \end{figure}
 
-\noindent
-\emph{Commentary.} 
+%------------------ BOXING ------------------
+\paragraph{BoxingNoFrameskip-v4}
+(Figure~\ref{fig:boxing_comparison_combined})
 Min--max values bunch around 0.5--0.8, with \texttt{DDQN} (red) sometimes near 0.8. 
 \texttt{C51} (pink) hovers ~0.55--0.65. Meanwhile, in human norm, 
 \texttt{C51} and \texttt{Reinforce} see large negative dips below -5.0, 
@@ -3017,57 +2984,48 @@ showing how Boxing’s limited raw score range drastically affects the human sca
 \texttt{PPO} (blue) and \texttt{Dueling\_DQN} (dark blue) stay near 0.0--1.0 
 in that scale.
 
-\bigskip
-
-%------------------ BREAKOUT ------------------
-\noindent
-\textbf{BreakoutNoFrameskip-v4}
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Min--Max Norm}]{
-		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_BreakoutNoFrameskip-v4.png}%
-		\label{fig:breakout_comparison_minmax}
+	\subfloat[\emph{Min--Max Norm}]{
+		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_BoxingNoFrameskip-v4.png}%
+		\label{fig:boxing_comparison_minmax}
 	}
 	\quad
-	\subfloat[\textbf{Human Norm}]{
-		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_human_comparison_BreakoutNoFrameskip-v4.png}%
-		\label{fig:breakout_comparison_human}
+	\subfloat[\emph{Human Norm}]{
+		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_human_comparison_BoxingNoFrameskip-v4.png}%
+		\label{fig:boxing_comparison_human}
 	}
-	\caption{\textbf{Breakout:} Episodic returns across 100k steps.}
-	\label{fig:breakout_comparison_combined}
+	\caption{\emph{Boxing:} Episodic returns across 100k steps.}
+	\label{fig:boxing_comparison_combined}
 \end{figure}
 
-\noindent
-\emph{Commentary.}
+%------------------ BREAKOUT ------------------
+\paragraph{BreakoutNoFrameskip-v4}
+(Figure~\ref{fig:breakout_comparison_combined})
 \texttt{SAC} (dark red) excels around 60k--100k steps, surpassing 0.5 in min--max 
 and ~0.4--0.5 in human norm. \texttt{PPO} (blue) lags near 0.2, and \texttt{DQN} (gold) 
 settles around 0.2--0.3. 
 \texttt{Reinforce} (orange) stays near or below 0.1. 
-Breakout highlights \textbf{SAC}’s potential for strong late-game performance, 
+Breakout highlights \emph{SAC}’s potential for strong late-game performance, 
 albeit at a higher computational cost (\S\ref{subsec:overall_algo_comparison}).
-
-\bigskip
-
-%------------------ FREEWAY ------------------
-\noindent
-\textbf{FreewayNoFrameskip-v4}
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Min--Max Norm}]{
-		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_FreewayNoFrameskip-v4.png}%
-		\label{fig:freeway_comparison_minmax}
+	\subfloat[\emph{Min--Max Norm}]{
+		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_BreakoutNoFrameskip-v4.png}%
+		\label{fig:breakout_comparison_minmax}
 	}
 	\quad
-	\subfloat[\textbf{Human Norm}]{
-		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_human_comparison_FreewayNoFrameskip-v4.png}%
-		\label{fig:freeway_comparison_human}
+	\subfloat[\emph{Human Norm}]{
+		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_human_comparison_BreakoutNoFrameskip-v4.png}%
+		\label{fig:breakout_comparison_human}
 	}
-	\caption{\textbf{Freeway:} Episodic returns across 100k steps.}
-	\label{fig:freeway_comparison_combined}
+	\caption{\emph{Breakout:} Episodic returns across 100k steps.}
+	\label{fig:breakout_comparison_combined}
 \end{figure}
 
-\noindent
-\emph{Commentary.}
+%------------------ FREEWAY ------------------
+\paragraph{FreewayNoFrameskip-v4}
+(Figure~\ref{fig:freeway_comparison_combined})
 Here, \texttt{DDQN} (red) rapidly climbs to 0.85+ in min--max by ~15k steps, 
 with \texttt{C51} (pink) and \texttt{DQN} (gold) following suit. 
 \texttt{PPO} (blue) only reaches ~0.6, 
@@ -3075,29 +3033,24 @@ with \texttt{C51} (pink) and \texttt{DQN} (gold) following suit.
 remain near 0.0. 
 In human norm, these large raw scores translate to 0.3--0.8 for the top algorithms, 
 reflecting that Freeway has a high reward potential even early in training.
-
-\bigskip
-
-%------------------ MS PAC-MAN ------------------
-\noindent
-\textbf{MsPacmanNoFrameskip-v4}
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Min--Max Norm}]{
-		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_MsPacmanNoFrameskip-v4.png}%
-		\label{fig:mspacman_comparison_minmax}
+	\subfloat[\emph{Min--Max Norm}]{
+		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_FreewayNoFrameskip-v4.png}%
+		\label{fig:freeway_comparison_minmax}
 	}
 	\quad
-	\subfloat[\textbf{Human Norm}]{
-		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_human_comparison_MsPacmanNoFrameskip-v4.png}%
-		\label{fig:mspacman_comparison_human}
+	\subfloat[\emph{Human Norm}]{
+		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_human_comparison_FreewayNoFrameskip-v4.png}%
+		\label{fig:freeway_comparison_human}
 	}
-	\caption{\textbf{MsPacman:} Episodic returns across 100k steps.}
-	\label{fig:mspacman_comparison_combined}
+	\caption{\emph{Freeway:} Episodic returns across 100k steps.}
+	\label{fig:freeway_comparison_combined}
 \end{figure}
 
-\noindent
-\emph{Commentary.}
+%------------------ MS PAC-MAN ------------------
+\paragraph{MsPacmanNoFrameskip-v4}
+(Figure~\ref{fig:mspacman_comparison_combined})
 No single algorithm dominates strongly, but \texttt{dqn} (gold) and \texttt{ddqn} (red) 
 occasionally spike above 0.25 in min--max, while \texttt{reinforce} (orange) remains 
 near 0.0--0.1. \texttt{PPO} (blue) hovers around 0.15--0.20, 
@@ -3105,28 +3058,24 @@ with \texttt{c51} (pink) also in that range.
 Under human norm, the entire scale is fairly tight (~0.0--0.08) 
 due to MsPacman’s moderate raw reward potential within 100k steps.
 
-\bigskip
-
-%------------------ PONG ------------------
-\noindent
-\textbf{PongNoFrameskip-v4}
 \begin{figure} 
 	\centering
-	\subfloat[\textbf{Min--Max Norm}]{
-		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_PongNoFrameskip-v4.png}%
-		\label{fig:pong_comparison_minmax}
+	\subfloat[\emph{Min--Max Norm}]{
+		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_MsPacmanNoFrameskip-v4.png}%
+		\label{fig:mspacman_comparison_minmax}
 	}
 	\quad
-	\subfloat[\textbf{Human Norm}]{
-		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_human_comparison_PongNoFrameskip-v4.png}%
-		\label{fig:pong_comparison_human}
+	\subfloat[\emph{Human Norm}]{
+		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_human_comparison_MsPacmanNoFrameskip-v4.png}%
+		\label{fig:mspacman_comparison_human}
 	}
-	\caption{\textbf{Pong:} Episodic returns across 100k steps.}
-	\label{fig:pong_comparison_combined}
+	\caption{\emph{MsPacman:} Episodic returns across 100k steps.}
+	\label{fig:mspacman_comparison_combined}
 \end{figure}
 
-\noindent
-\emph{Commentary.}
+%------------------ PONG ------------------
+\paragraph{PongNoFrameskip-v4}
+(Figure~\ref{fig:pong_comparison_combined})
 \texttt{PER} (green) occasionally spikes near 0.3--0.4 in min--max, 
 \texttt{DQN} (gold) has mid-range fluctuations, 
 \texttt{PPO} (blue) and \texttt{Reinforce} (orange) remain under 0.2 for most runs. 
@@ -3136,7 +3085,20 @@ the human norm figure is mostly 0.0--0.1. None of the algorithms achieve
 the large positive returns that DQN-based methods have historically 
 reached with much longer training.
 
-\bigskip
+\begin{figure} 
+	\centering
+	\subfloat[\emph{Min--Max Norm}]{
+		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_comparison_PongNoFrameskip-v4.png}%
+		\label{fig:pong_comparison_minmax}
+	}
+	\quad
+	\subfloat[\emph{Human Norm}]{
+		\includegraphics[width=0.45\textwidth]{figures/comparison/charts_episodic_return_human_comparison_PongNoFrameskip-v4.png}%
+		\label{fig:pong_comparison_human}
+	}
+	\caption{\emph{Pong:} Episodic returns across 100k steps.}
+	\label{fig:pong_comparison_combined}
+\end{figure}
 
 \paragraph{Summary of Environment-Level Comparisons}
 These per-environment plots reinforce the observations from our aggregate metrics 
@@ -3156,7 +3118,6 @@ Overall, each game’s reward structure significantly influences how algorithms 
 over 100k steps, corroborating the broader performance–emissions findings in 
 Section~\ref{subsec:overall_algo_comparison}.
 
-
 \subsubsection{Summary}
 Bringing all eight algorithms together reveals distinct trade‐offs among performance, 
 emissions, and runtime:
@@ -3168,7 +3129,7 @@ emissions, and runtime:
 	emissions and slowest SPS, taking over 11h to finish.
 	\item \textbf{DQN-based variants} occupy a middle ground in both carbon 
 	footprint ($\sim0.006$--0.008 kg\,CO$_2$) and total runtime (5--7h). 
-	Some, like DUELING\_DQN, achieve strong mean returns.
+	Some, like Dueling DQN, achieve strong mean returns.
 	\item \textbf{REINFORCE} similarly runs about 6h total, but yields lower 
 	performance than DQN methods or PPO in most tasks.
 \end{itemize}

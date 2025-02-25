@@ -31,7 +31,7 @@ In this final section, we synthesize the findings and propose next steps.
 The tension between \emph{advanced techniques} and \emph{computational overhead} emerges 
 as a core challenge in DRL. Under a short 100k-step regime, simpler methods (PPO, 
 baseline DQN) often provide a better ratio of performance to carbon cost, while 
-fancier algorithms—like SAC or distributional DQN variants—struggle to gain a decisive edge 
+more advanced algorithms, like SAC or distributional DQN variants, struggle to gain a decisive edge 
 before the run ends.
 
 In realistic production or industry settings with limited time/budget for model tuning, 
@@ -45,38 +45,31 @@ surpass simpler ones in raw returns.
 
 Several pathways could extend this project:
 
-\paragraph{Longer Training Horizons.}
+\paragraph{Longer Training Horizons}
 Repeating these experiments at 1--5 million steps would clarify how advanced DQN tweaks 
 or policy gradient expansions (Rainbow, TD3, etc.) surpass simpler baselines given more time. 
 One might track the exact moment (in interactions) at which these enhancements repay 
 their higher emissions.
 
-\paragraph{Wider Environment Coverage.}
+\paragraph{Wider Environment Coverage}
 Our 8 chosen games reasonably sample different Atari mechanics, but including 
 the full 26 Atari 100k or 55+ ALE tasks 
 could reveal whether certain algorithms generalize better to more varied or obscure games.
 
-\paragraph{Alternative Normalizations.}
-In addition to “human” and “min–max” returns, 
-some tasks might benefit from scoreboard-based normalization (comparing to 
-public baselines) or reward shaping to unify the scale across tasks more strictly.
-
-\paragraph{Real-Time Emissions Minimization.}
+\paragraph{Real-Time Emissions Minimization}
 One future direction might involve \emph{dynamic resource scheduling} or 
 \emph{carbon-aware training}, adjusting GPU usage or frequency if real-time 
 energy prices or carbon intensities fluctuate throughout the day. 
-This idea merges RL with HPC resource management for a truly “green AI.”
+This idea merges RL with HPC resource management for a truly "green AI".
 
-\paragraph{Hybrid CPU–GPU Profiling.}
-Finally, a more robust toolchain for CPU and RAM tracking (e.g., Intel PCM on Linux) 
+\paragraph{CPU–GPU Profiling}
+A more robust toolchain for CPU and RAM tracking
 would help produce more accurate system-level carbon footprints, 
 especially for on-policy methods that rely heavily on CPU-based data collection.
 
-\medskip
+\paragraph{RL for LLMs Focus}
+In reinforcement learning for LLMs the algorithm choice can have significant sustainability implications. Our results, which confirm that PPO consistently achieves lower carbon emissions and shorter training times even compared to simpler methods, suggest that PPO's dominance in RL fine-tuning might not only be justified by its robust performance but also by its favorable energy efficiency. Nonetheless, emerging proposals such as GRPO, or those discussed in~\cite{ahmadian:back_to_basics}, indicate that even simpler RL approaches might eventually be competitive. A systematic comparison of these methods in the context of LLM fine-tuning is warranted to determine whether further reductions in energy consumption can be achieved without sacrificing performance.
+
 With these possible directions in mind, we hope that the insights gained from 
 our 100k-step experiments can foster a broader conversation on 
 \emph{energy-efficient deep RL}, balancing performance with real-world sustainability needs.
-
-
-\paragraph{Comments on RL Algorithm Choice in Contemporary Applications.}
-Recent studies and industry practices have highlighted that the choice of reinforcement learning (RL) algorithm may not critically affect final outcomes in settings where human supervision is employed. For instance, early work in RL fine-tuning for large language models (LLMs) often utilized Proximal Policy Optimization (PPO) due to its robust performance and ease of integration with human feedback. However, subsequent investigations found that simpler methods, such as Vanilla Policy Gradient (VPG), yield comparable results with a lower computational overhead and easier implementation \cite{raffel:exploring_rl_for_llms, ouyang:ppo_vpg_comparison}. Similarly, in emerging frameworks like DeepSeek, preliminary reports suggest that the specific choice of RL algorithm may be less decisive than originally assumed---with experimental results showing negligible differences in performance across various RL methods, although further systematic experimentation is required to substantiate these claims \cite{deepseek:blog, zhang:rl_in_deepseek}. This trend implies that, for many practical applications, selecting a more energy-efficient or computationally economical algorithm (e.g., VPG over PPO) might be preferable without incurring significant performance penalties.
