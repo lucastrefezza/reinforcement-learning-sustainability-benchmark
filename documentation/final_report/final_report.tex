@@ -79,13 +79,13 @@
 	\maketitle
 	
 \begin{abstract}
-	This project explores the energy consumption of deep reinforcement learning (DRL) algorithms and their impact on the environment and business costs. Beginning with the development of Deep Q-Networks (DQN) by DeepMind, numerous algorithms have been proposed to enhance the performance of DRL agents. However, the energy implications of these improvements have not been extensively studied. This project aims to fill this gap by benchmarking the energy consumption and performance of several widely used DRL algorithms.
+	This study presents a comprehensive benchmark of the energy consumption and performance trade-offs of deep reinforcement learning (DRL) algorithms, providing novel insights into their sustainability implications. Although advancements in DRL have traditionally prioritized performance, the associated computational costs and environmental impacts remain underexplored.
 	
-	We train various reinforcement learning algorithms on the same task: Atari 100k, a widely recognized benchmark in the DRL community. The selected algorithms include both value-based methods (such as DQN and RAINBOW) and policy gradient methods (such as REINFORCE with baseline and PPO). Each algorithm is evaluated on 8 different Atari games, with 4 runs per game using different random seeds, to ensure statistically significant results.
+	We systematically evaluate several value-based and policy gradient methods—including DQN, Double DQN, Prioritized Experience Replay, Dueling DQN, C51, PPO, REINFORCE, and SAC—using a \num{100000}-step Atari benchmark. Each algorithm is rigorously assessed across \num{8} Atari games with \num{4} random-seeded runs per game to ensure statistically robust comparisons. To capture detailed performance and energy metrics, we employ tools such as Weights and Biases, TensorBoard, and CodeCarbon within a development environment based on CleanRL, which guarantees consistency and reproducibility.
 	
-	To track performance and energy consumption, we utilize Weights and Biases, TensorBoard, and CodeCarbon. The development environment is based on CleanRL, a library that provides single-file implementations of some DRL algorithms, ensuring consistency and reproducibility.
+	Key findings indicate that Proximal Policy Optimization (PPO) achieves the highest energy efficiency (\num{0.0029} kgCO\textsubscript{2}eq), whereas Soft Actor-Critic (SAC) records the highest energy consumption (\num{0.015} kgCO\textsubscript{2}eq) despite strong performance in select environments. DQN-based methods strike a balance, delivering moderate emissions (\num{0.006}--\num{0.008} kgCO\textsubscript{2}eq) alongside varied game-specific advantages. Additionally, our results suggest that short-horizon constraints can limit the effectiveness of more complex architectures, such as those inspired by Rainbow.
 	
-	The preliminary version of this report covers the context, goals, and methodological steps of the project. Future sections will present detailed results and analyses of the trade-offs between performance and energy consumption, contributing to a broader understanding of the sustainability implications of DRL technologies.
+	By providing empirical evidence on the energy-performance trade-offs in DRL, this study contributes to the growing discourse on sustainable AI and underscores the need for balancing computational efficiency with algorithmic advancements.
 \end{abstract}
 
 	

@@ -4,72 +4,70 @@ In this final section, we synthesize the findings and propose next steps.
 
 \subsection{Summary of Findings}
 \label{subsec:summary_of_findings}
-
+This study systematically analyzed the energy efficiency and performance trade-offs of various deep reinforcement learning algorithms in a constrained computational setting (\num{100000} steps). The key findings are:
 \begin{itemize}
-	\item \textbf{Baseline DQN} attains moderate performance across most environments, 
-	emitting $\sim0.0065$\,kg\,CO\textsubscript{2} on average over 100k steps. 
-	DoubleDQN reduces Q-value overestimation but does not yield a clear improvement 
-	in final returns at this short horizon.
-	\item \textbf{PER} overhead raises emissions slightly 
-	($\sim0.00725$\,kg\,CO\textsubscript{2}), 
-	yet the 100k-step limit masks much of its usual advantage in accelerating learning.
-	\item \textbf{DuelingDQN} and \textbf{C51} each show environment-specific benefits 
-	(e.g., \emph{Boxing}, \emph{Freeway}), but their aggregated returns 
-	remain similar to or slightly exceeding baseline DQN, 
-	with comparable runtime/emissions.
-	\item \textbf{PPO} stands out as the most “eco-friendly,” completing runs in only 
-	2.4\,hours for all seeds/games combined and emitting a mere 0.0029\,kg CO\textsubscript{2}. 
-	It achieves respectable performance across many environments.
-	\item \textbf{SAC} occasionally dominates a few tasks (\emph{Breakout}) but 
-	exhibits the highest energy cost (0.015\,kg\,CO\textsubscript{2}), 
-	slow throughput (80--100\,SPS), and large variance in returns.
+	\item \textbf{Baseline DQN} demonstrated moderate performance across most environments, with an average emission of \num{0.0065} kg\,CO\textsubscript{2}. While Double DQN reduced Q-value overestimation, it did not provide a substantial improvement in returns  in this short-horizon setting.
+	\item \textbf{PER} overhead raises emissions slightly (\num{0.00725}\,kg\,CO\textsubscript{2}), yet the 100k-step limit masks much of its usual advantage in accelerating learning.
+	\item \textbf{PPO} emerged as the most energy-efficient method, completing training runs with the lowest carbon emissions (\num{0.0029}\,kg\,CO\textsubscript{2}) and shortest runtime (\num{2.4} hours) for all seeds/games combined. Despite this, it achieves respectable performance across many environments, making it a strong candidate for sustainability-conscious applications.
+	\item \textbf{SAC}, while excelling in specific environments (e.g., Breakout), had the highest computational cost (\num{0.015} kgCO\textsubscript{2}), slowest throughput (\num{80}–\num{100} SPS), and large variance in returns, making it less viable for short-horizon tasks.
+	\item \textbf{DQN-based algorithms} (e.g. Dueling DQN, C51) occupied a middle ground in emissions (\num{0.006}–\num{0.008} kgCO\textsubscript{2}) and training time (\num{5}–\num{7} hours), with some environment-specific benefits, but overall their aggregated returns remain similar to baseline DQN.
+	\item \textbf{Short-horizon benchmarks (100k steps)} limited the ability of more advanced methods to demonstrate their full potential.
 \end{itemize}
+These results underscore a fundamental trade-off in DRL: algorithms optimized for performance often incur higher computational costs, raising concerns about energy consumption and sustainability.
 
 \subsection{Final Thoughts on Energy-Efficient Reinforcement Learning}
 \label{subsec:final_thoughts_energy_eff}
+The findings highlight a crucial challenge in DRL research: balancing the tension between algorithmic sophistication and computational efficiency. In real-world applications, where hardware constraints, deployment budgets, and environmental impact are key considerations, prioritizing algorithms that achieve acceptable performance with lower energy costs can lead to significant efficiency gains.
 
-The tension between \emph{advanced techniques} and \emph{computational overhead} emerges 
-as a core challenge in DRL. Under a short 100k-step regime, simpler methods (PPO, 
-baseline DQN) often provide a better ratio of performance to carbon cost, while 
-more advanced algorithms, like SAC or distributional DQN variants, struggle to gain a decisive edge 
-before the run ends.
+Furthermore, the study contributes to the growing discourse on sustainability in AI research. Given the increasing deployment of RL-based models in commercial and industrial settings, these results provide actionable insights for optimizing reinforcement learning workloads while minimizing environmental impact, for example, with limited time/budget for model tuning, prioritizing algorithms that quickly converge to adequate performance can yield significant energy savings.
 
-In realistic production or industry settings with limited time/budget for model tuning, 
-prioritizing algorithms that quickly converge to adequate performance can yield 
-significant energy savings. On the other hand, high-level research or competitive RL 
-benchmarks often push beyond millions of steps, letting advanced methods eventually 
-surpass simpler ones in raw returns.
+One of the emerging themes in recent AI developments is the role of \emph{reinforcement learning in fine-tuning large language models (LLMs)}. Newer research suggests that different RL algorithms, including PPO and its variations (e.g., GRPO in DeepSeek-R1), may exhibit comparable performance in triggering chain-of-thought (CoT) reasoning in LLMs. If these findings hold across larger-scale experiments, optimizing for computational efficiency in RL-driven LLM fine-tuning could significantly reduce the resource demands of modern AI models.
 
 \subsection{Future Research Directions}
 \label{subsec:future_research}
 
-Several pathways could extend this project:
+%\paragraph{Longer Training Horizons}
+%Repeating these experiments at 1--5 million steps would clarify how advanced DQN tweaks 
+%or policy gradient expansions (Rainbow, TD3, etc.) surpass simpler baselines given more time. 
+%One might track the exact moment (in interactions) at which these enhancements repay 
+%their higher emissions.
 
-\paragraph{Longer Training Horizons}
-Repeating these experiments at 1--5 million steps would clarify how advanced DQN tweaks 
-or policy gradient expansions (Rainbow, TD3, etc.) surpass simpler baselines given more time. 
-One might track the exact moment (in interactions) at which these enhancements repay 
-their higher emissions.
+%\paragraph{Wider Environment Coverage}
+%Our 8 chosen games reasonably sample different Atari mechanics, but including 
+%the full 26 Atari 100k or 55+ ALE tasks 
+%could reveal whether certain algorithms generalize better to more varied or obscure games.
 
-\paragraph{Wider Environment Coverage}
-Our 8 chosen games reasonably sample different Atari mechanics, but including 
-the full 26 Atari 100k or 55+ ALE tasks 
-could reveal whether certain algorithms generalize better to more varied or obscure games.
+%\paragraph{Real-Time Emissions Minimization}
+%One future direction might involve \emph{dynamic resource scheduling} or 
+%\emph{carbon-aware training}, adjusting GPU usage or frequency if real-time 
+%energy prices or carbon intensities fluctuate throughout the day. 
+%This idea merges RL with HPC (high-performance components) resource management for a truly "green AI".
 
-\paragraph{Real-Time Emissions Minimization}
-One future direction might involve \emph{dynamic resource scheduling} or 
-\emph{carbon-aware training}, adjusting GPU usage or frequency if real-time 
-energy prices or carbon intensities fluctuate throughout the day. 
-This idea merges RL with HPC resource management for a truly "green AI".
+%\paragraph{CPU–GPU Profiling}
+%A more robust toolchain for CPU and RAM tracking
+%would help produce more accurate system-level carbon footprints, 
+%especially for on-policy methods that rely heavily on CPU-based data collection.
 
-\paragraph{CPU–GPU Profiling}
-A more robust toolchain for CPU and RAM tracking
-would help produce more accurate system-level carbon footprints, 
-especially for on-policy methods that rely heavily on CPU-based data collection.
+%\paragraph{RL for LLMs Focus}
+%In reinforcement learning for LLMs the algorithm choice can have significant sustainability implications. Our results, which confirm that PPO consistently achieves lower carbon emissions and shorter training times even compared to simpler methods, suggest that PPO's dominance in RL fine-tuning might not only be justified by its robust performance but also by its favorable energy efficiency. Nonetheless, emerging proposals such as GRPO, or those discussed in~\cite{ahmadian:back_to_basics}, indicate that even simpler RL approaches might eventually be competitive. A systematic comparison of these methods in the context of LLM fine-tuning is warranted to determine whether further reductions in energy consumption can be achieved without sacrificing performance.
 
-\paragraph{RL for LLMs Focus}
-In reinforcement learning for LLMs the algorithm choice can have significant sustainability implications. Our results, which confirm that PPO consistently achieves lower carbon emissions and shorter training times even compared to simpler methods, suggest that PPO's dominance in RL fine-tuning might not only be justified by its robust performance but also by its favorable energy efficiency. Nonetheless, emerging proposals such as GRPO, or those discussed in~\cite{ahmadian:back_to_basics}, indicate that even simpler RL approaches might eventually be competitive. A systematic comparison of these methods in the context of LLM fine-tuning is warranted to determine whether further reductions in energy consumption can be achieved without sacrificing performance.
+%With these possible directions in mind, we hope that the insights gained from 
+%our 100k-step experiments can foster a broader conversation on 
+%\emph{energy-efficient deep RL}, balancing performance with real-world sustainability needs.
 
-With these possible directions in mind, we hope that the insights gained from 
-our 100k-step experiments can foster a broader conversation on 
-\emph{energy-efficient deep RL}, balancing performance with real-world sustainability needs.
+Several avenues for future research emerge from this study:
+
+\begin{description}
+	\item[Extending Training Horizons:] many DRL advancements, whether DQN tweaks (e.g., Rainbow DQN, multi-step learning, distributional methods) or policy gradient expansions (DDPG, TD3, SAC, etc.) demonstrate their full potential beyond \num{1000000} steps and surpass simpler baselines given more time. A follow-up study with longer training durations could better assess the trade-offs between performance and energy efficiency, one might even track the exact moment (in interactions) at which these enhancements repay their higher emissions.
+	
+	\item[Wider Environment Coverage:] our 8 chosen games reasonably sample different Atari mechanics, but including the full 26 Atari 100k or 55+ ALE tasks could reveal whether certain algorithms generalize better to more varied or obscure games.
+	
+	\item[Hardware-Specific Optimization:] while this study provided general insights into energy efficiency, RL emissions are hardware-dependent. Investigating how different hardware architectures (e.g., TPUs vs. GPUs vs. energy-efficient AI accelerators) affect emissions and training dynamics could refine deployment strategies. Related to this, a more robust toolchain for CPU and RAM tracking would help produce more accurate system-level carbon footprints, especially for on-policy methods that rely heavily on non-GPU-based data collection.
+		
+	\item[Real-Time Emissions Minimization:] One future direction might involve \emph{dynamic resource scheduling} or 
+	\emph{carbon-aware training}, adjusting GPU usage or frequency if real-time energy prices or carbon intensities fluctuate throughout the day. This idea merges RL with HPC (high-performance components) resource management for a truly "green AI".
+	
+	\item[RL Approaches for LLM Fine-Tuning:] Given the discussion in Section~\ref{subsubsec:rlhf} on reinforcement learning algorithm choices for LLM training, further work should compare PPO, GRPO, and alternative policy-gradient methods like those discussed in~\cite{ahmadian:back_to_basics} under the lens of the energy-efficiency/performance trade-off, since the algorithm choice in this context can have significant sustainability implications. The goal would be to identify a method that maximizes sustainability while maintaining optimal fine-tuning quality.
+\end{description}
+
+With these possible directions in mind, we hope that the insights gained from our \num{100000}-step experiments can foster a broader conversation on \emph{energy-efficient deep RL}, and that future work can build upon them to advance both \emph{reinforcement learning efficiency} and \emph{sustainability in AI systems}.
