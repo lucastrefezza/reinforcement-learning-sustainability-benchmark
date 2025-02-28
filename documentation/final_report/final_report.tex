@@ -73,9 +73,8 @@
 	\titlehead{RLSB}
 	\subject{Software Engineering for Artificial Intelligence}
 	\title{Reinforcement Learning Sustainability Benchmark}
-	\subtitle{Report v1.0}
+	\subtitle{Final Report}
 	\author{Luca Strefezza\thanks{l.strefezza1@studenti.unisa.it}}
-	%\date{Data da inserire}
 	\maketitle
 	
 \begin{abstract}
@@ -83,9 +82,13 @@
 	
 	We systematically evaluate several value-based and policy gradient methods—including DQN, Double DQN, Prioritized Experience Replay, Dueling DQN, C51, PPO, REINFORCE, and SAC—using a \num{100000}-step Atari benchmark. Each algorithm is rigorously assessed across \num{8} Atari games with \num{4} random-seeded runs per game to ensure statistically robust comparisons. To capture detailed performance and energy metrics, we employ tools such as Weights and Biases, TensorBoard, and CodeCarbon within a development environment based on CleanRL, which guarantees consistency and reproducibility.
 	
-	Key findings indicate that Proximal Policy Optimization (PPO) achieves the highest energy efficiency (\num{0.0029} kgCO\textsubscript{2}eq), whereas Soft Actor-Critic (SAC) records the highest energy consumption (\num{0.015} kgCO\textsubscript{2}eq) despite strong performance in select environments. DQN-based methods strike a balance, delivering moderate emissions (\num{0.006}--\num{0.008} kgCO\textsubscript{2}eq) alongside varied game-specific advantages. Additionally, our results suggest that short-horizon constraints can limit the effectiveness of more complex architectures, such as those inspired by Rainbow.
+	Key findings indicate that Proximal Policy Optimization (PPO) achieves the highest energy efficiency (\num{0.0029} kg\,CO\textsubscript{2}\,eq), whereas Soft Actor-Critic (SAC) records the highest energy consumption (\num{0.015} kg\,CO\textsubscript{2}\,eq) despite strong performance in select environments. DQN-based methods strike a balance, delivering moderate emissions (\num{0.006}--\num{0.008}~kg\,CO\textsubscript{2}\,eq) alongside varied game-specific advantages. Additionally, our results suggest that short-horizon constraints can limit the effectiveness of more complex architectures, such as those inspired by Rainbow.
 	
 	By providing empirical evidence on the energy-performance trade-offs in DRL, this study contributes to the growing discourse on sustainable AI and underscores the need for balancing computational efficiency with algorithmic advancements.
+	
+\vskip 1em
+\noindent
+\href{https://github.com/lucastrefezza/reinforcement-learning-sustainability-benchmark}{\textbf{Github repository}}
 \end{abstract}
 
 	

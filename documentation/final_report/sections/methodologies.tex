@@ -2,7 +2,7 @@
 \label{sec:methodologies}
 
 The methodology used follows from the basic idea of this benchmark: to execute all the algorithms for the same number of environment interactions, enabling a direct comparison of both their achieved scores and energy consumption.
-An alternative comparison would involve taking the score of the lowest-performing algorithm from the initial trial and retraining all algorithms until they achieve that score. This would allow us to compare the time and energy required by each algorithm to reach a common performance level. Unfortunately, time and resources constraints make retraining all algorithms unfeasible, therefore, we will either approximate this comparison by using the logged training returns from the initial trial, or delay this comparison to future works. The logging includes the \verb*|global_step|, indicating the environment interaction we are at, and the \verb*|episodic_return|, which is the return of the episode (i.e., the score on which to compare), as well as all performance and power consumption data up to that point. By analyzing these logs, we can estimate how much time and energy each algorithm would take to reach the score obtained by the lowest performer in the initial trial. 
+An alternative comparison would involve taking the score of the lowest-performing algorithm from the initial trial and retraining all algorithms until they achieve that score. This would allow us to compare the time and energy required by each algorithm to reach a common performance level. Unfortunately, time and resource constraints make retraining all algorithms unfeasible, therefore, we will either approximate this comparison by using the logged training returns from the initial trial, or delay this comparison to future works. The logging includes the \verb*|global_step|, indicating the environment interaction we are at, and the \verb*|episodic_return|, which is the return of the episode (i.e., the score on which to compare), as well as all performance and power consumption data up to that point. By analyzing these logs, we can estimate how much time and energy each algorithm would take to reach the score obtained by the lowest performer in the initial trial. 
 
 The following sections outline the several key steps involved in the methodology adopted for this project.
 
@@ -45,7 +45,7 @@ Policy gradient methods directly approximate the policy and include as a special
 \subsection{Task Selection}
 \label{subsec:task_selection}
 
-Regarding the task on which to compare the algorithms, there were several suitable candidates: Atari 100k~\cite{kaiser:atari100k}, a continuous control task from the DeepMind Control Suite, or one of the many other task (besides Atari) included in OpenAI Gymnasium (formerly Gym). After various tests and research we opted for the Atari 100k benchmark, a discrete task that consists of playing selected Atari games for only \num{100000} environment interactions.
+Regarding the task on which to compare the algorithms, there were several suitable candidates: Atari 100k~\cite{kaiser:atari100k}, one of the continuous control tasks from the DeepMind Control Suite, or one of the many other task (besides Atari) included in OpenAI's Gymnasium (formerly Gym). After various tests and research we opted for the Atari 100k benchmark, a discrete task that consists of playing selected Atari games for only \num{100000} environment interactions.
 
 The reason for this choice is multifaceted. Atari 100k is a widely used benchmark in the DRL community, the wealth of available prior research and baseline results facilitates a more straightforward validation and comparison of our experimental results with those from other studies and algorithms. It is also well suited for evaluating the performance of almost all popular DRL algorithms, ensuring a comprehensive assessment. Additionally, Atari games provide a range of different challenges, including planning, reaction time, and strategy, making it a robust benchmark for assessing general DRL capabilities.
 
@@ -65,7 +65,7 @@ In determining how many runs to carry out during the experimentation and testing
 
 In addressing the first aspect we can refer to the literature to get an idea of how many runs with different seeds are usually performed to alleviate this problem. If in the early days of RL (and not DRL) the number of runs stood at around 100 and in any case did not fall below 30, at least until the introduction of ALE (Arcade Learning Environment)~\cite{bellemare:ale} included, with the advent of DRL the number of runs was consistently reduced to 5 or less because of the high cost in terms of time and resources per run. Although this has been the standard for years, a more recent work~\cite{agarwal:statistical_precipice} has shown that this is the source of a problem. Practitioners use point estimates such as mean and median to aggregate performances  scores across tasks to summarize the results of the various runs, but this metrics are not the best way to do so because they ignore the statistical uncertainty inherent in performing only a few runs.
 
-In particular, the study points out that in the case of Atari at least 100 runs per environment are required to obtain robust results, a value that is, however, impractical in reality. To address this, the study recommends using alternative aggregation metrics, such as interquartile means, designed precisely to obtain more efficient and robust estimates and have small uncertainty even with a handful of runs, since they are not overly affected by outliers like the point estimates.
+In particular, the study points out that in the case of Atari at least 100 runs per environment are required to obtain robust results, a value that is, however, impractical in reality. To address this, the study recommends using alternative aggregation metrics, such as \emph{interquartile means} (\emph{iqmean} or \emph{IQM}), designed precisely to obtain more efficient and robust estimates and have small uncertainty even with a handful of runs, since they are not overly affected by outliers like the point estimates.
 
 In our case we will be forced to limit ourselves to 4 runs per environment, so we will use, in addition to the more classic and popular metrics such as the point estimates mentioned above, the other metrics suggested in~\cite{agarwal:statistical_precipice}.  It should anyway be noted that a low number of runs is a less significant problem for us, since we are not attempting to advance the state of the art performance of DRL algorithms, but have instead a focus on energy consumption and emissions, which should in any case remain constant regardless of the actual learning of the agent, which is instead related to randomness.
 
@@ -92,9 +92,9 @@ So, to summarize, each algorithm will be evaluated on 8 different Atari games, w
 
 Collecting comprehensive and accurate data is crucial for evaluating both the performance and energy consumption of the algorithms. We employ several tools and services to ensure robust data collection and analysis.
 
-To track the performance metrics, we use both online and local tools. The online service \textit{Weights and Biases} (wandb) is used for real-time monitoring and storage of experimental data. This platform allows for easy sharing and collaboration, as well as providing powerful visualization and analysis tools. Locally, we use \textit{TensorBoard}, which integrates seamlessly with our training workflows and offers detailed insights into the training process through its rich set of visualizations.
+To track the performance metrics, we use both online and local tools. The online service \textit{Weights and Biases} (wandb or W\&B) is used for real-time monitoring and storage of experimental data. This platform allows for easy sharing and collaboration, as well as providing powerful visualization and analysis tools. Locally, we use \textit{TensorBoard}, which integrates seamlessly with our training workflows and offers detailed insights into the training process through its rich set of visualizations.
 
-In addition to tracking performance metrics, monitoring energy consumption and emissions is the key aspect of the project. For this we use \textit{CodeCarbon}, a tool designed to measure the carbon footprint of computing activities. As stated in their documentation, this package enables developers to track emissions, measured as kilograms of \mbox{$\text{CO}_2$-equivalents} ($\text{CO}_2$eq) in order to estimate the carbon footprint of their work. \mbox{$CO_2$-eq} is a standardized measure used to express the global warming potential of various greenhouse gases: the amount of $\text{CO}_2$ that would have the equivalent global warming impact. For computing, which emits $\text{CO}_2$ via the electricity it is consuming, carbon emissions are measured in kilograms of $\text{CO}_2$-equivalent per kilowatt-hour~\cite{benoit:code_carbon}. See \href{https://mlco2.github.io/codecarbon/methodology.html}{this} page and section \ref{subsec:exp_setup_adjustments} for more information on their methodology.
+In addition to tracking performance metrics, monitoring energy consumption and emissions is the key aspect of the project. For this we use \textit{CodeCarbon}, a tool designed to measure the carbon footprint of computing activities. As stated in their documentation, this package enables developers to track emissions, measured as kilograms of \mbox{CO\textsubscript{2}-equivalents} (CO\textsubscript{2}\,eq) in order to estimate the carbon footprint of their work. \mbox{CO\textsubscript{2}\,eq} is a standardized measure used to express the global warming potential of various greenhouse gases: the amount of $\text{CO}_2$ that would have the equivalent global warming impact. For computing, which emits CO\textsubscript{2} via the electricity it is consuming, carbon emissions are measured in kilograms of $\text{CO}_2$-equivalent per kilowatt-hour~\cite{benoit:code_carbon}. See \href{https://mlco2.github.io/codecarbon/methodology.html}{this} page and section \ref{subsec:exp_setup_adjustments} for more information on their methodology.
 
 Explained the tools, the metrics we collect through them include:
 \begin{itemize}
@@ -104,7 +104,7 @@ Explained the tools, the metrics we collect through them include:
 	\item \textit{Value Estimates:} such as Q-values or value function estimates, offering insight into the agent's decision-making process.
 	\item \textit{Policy Entropy:} measures the randomness in the policy and how much it differs from the previous one, useful for understanding exploration behavior and how much room for improvement is still left.
 	\item \textit{Learning Rate:} the rate at which the model learns, especially if it changes during training.
-	\item \textit{Emissions:} the amount of $CO_2$-eq emitted during training, tracked by CodeCarbon.
+	\item \textit{Emissions:} the amount of CO\textsubscript{2}\,eq emitted during training, tracked by CodeCarbon.
 \end{itemize}
 
 Weights and Biases facilitates a coarse aggregation and visualization of these metrics across multiple runs and environments, making it easier to compare results at a first glance and draw some first insights. TensorBoard provide supplementary local visualizations to help diagnose any issues during training and ensure the integrity of the collected data.
@@ -163,7 +163,7 @@ The preprocessing pipeline ensures consistent input representations across diffe
 \end{description}
 
 \paragraph{Choice of the Environments Version}
-The Arcade Learning Environment (ALE)~\cite{bellemare:ale} provides multiple versions of Atari environments~\cite{farama:ale} to address different research requirements and needs. These environments versions encapsulate the preprocessing steps we talked about, each one setting a different default value for them and some other aspects of the games. Two of the most widely used versions are \textit{NoFrameskip-v4} and \textit{v5}. The main distinction between these is the inclusion of \textit{sticky actions} in \textit{v5}, as recommended in~\cite{machado:revisiting_ale}. Sticky actions introduce a 25\% probability of repeating the previous action, adding stochasticity to the environment to prevent overfitting when training deterministic policies. 
+The Arcade Learning Environment (ALE)~\cite{bellemare:ale} provides multiple versions of Atari environments~\cite{farama:ale} to address different research requirements and needs. These environments versions encapsulate the preprocessing steps we talked about, each one setting a different default value for them and some other aspects of the games. Two of the most widely used versions are \textit{NoFrameskip-v4} and \textit{v5}. The main distinction between these is the inclusion of \textit{sticky actions} in \textit{v5}, as recommended in~\cite{machado:revisiting_ale}. Sticky actions introduce a 25\% probability of repeating the previous action, instead of taking the one selected by the agent in the current timestep, adding stochasticity to the environment to prevent overfitting when training deterministic policies. 
 
 In this study, we use the \textit{NoFrameskip-v4} environments~\cite{farama:ale}. This choice is motivated by several factors. First, \textit{NoFrameskip-v4} ensures fully deterministic execution when a fixed random seed is used, which is crucial for the reproducibility of our experiments. This determinism allows us to conduct controlled comparisons of different algorithms while minimizing the influence of environment stochasticity on performance evaluation. Additionally, since our preprocessing pipeline explicitly applies \verb|MaxAndSkipEnv(skip=4)| to handle frame skipping in a standardized way (as discussed in the previous section), the built-in frame skipping behavior of other environment versions is unnecessary and would introduce redundant processing.
 
@@ -230,9 +230,9 @@ While, to avoid interference with the training process, we disable video recordi
 
 The collected episodic returns undergo statistical analysis following the methods described in \nameref{subsec:data_analysis}. Specifically:
 \begin{itemize}
-	\item We apply normalization to the collected data, both \textbf{human normalization} and \textbf{min-max normalization}, as detailed in \ref{subsubsec:normalization}.
+	\item We apply normalization to the collected data, both \emph{human normalization} and \emph{min-max normalization}, as detailed in \ref{subsubsec:normalization}.
 	\item Basic statistics are computed on the normalized data, including mean, standard deviation, and median.
-	\item The \textbf{interquartile mean (IQM)} is used as a robust estimator, as suggested in prior research.
+	\item The \emph{interquartile mean (IQM)} is used as a robust estimator, as suggested in prior research.
 
 \end{itemize}
 
@@ -244,14 +244,14 @@ The evaluation script loads the trained model, initializes a synchronized evalua
 A critical part of this project involved consolidating and analyzing the training logs in a consistent and reproducible manner. Although \textit{Weights \& Biases} (W\&B) and \textit{TensorBoard} can both display metrics across runs, they each have limitations for comparative analysis—particularly when plotting multiple algorithms or combining results with additional metadata (e.g., hyperparameters, emissions data). Consequently, a custom data-processing pipeline was built to generate unified plots and aggregated statistics.
 
 \subsubsection{Log Collection and Merging}
-We collected detailed logs for each run: TensorBoard event files (containing metrics such as episodic returns, steps per second, losses, etc.) and W\&B logs, which contains all the data of the TensorBoard logs (extrapolated from the uploaded TensorBoard logs), plus some other system related metrics. To work on this data in Python with its scientific tools we employed the \texttt{tbparse} library to parse the TensorBoard logs, making modifications to the library where necessary to handle deprecated NumPy types. These parsed logs resulted in two CSV files, one with all the metrics for all the runs, the other containing additional information about hyperparameters (e.g., learning rate, buffer size, and so forth) from the experimental configuration. We then merged the two files into a single, larger CSV dataset containing all runs from all algorithms.
+We collected detailed logs for each run: TensorBoard event files (containing metrics such as episodic returns, steps per second, losses, etc.) and W\&B logs, which contains all the data from the TensorBoard logs (extrapolated from the uploaded TensorBoard files), along with additional system related metrics. To work on this data in Python with its scientific tools we employed the \texttt{tbparse} library to parse the TensorBoard logs, making modifications to the library where necessary to handle deprecated NumPy types. These parsed logs resulted in two CSV files, one with all the metrics for all the runs, the other containing additional information about hyperparameters (e.g., learning rate, buffer size, and so forth) from the experimental configuration. We then merged the two files into a single, comprehensive CSV dataset covering all the algorithms' runs.
 
 \subsubsection{Normalization of Returns}
 \label{subsubsec:normalization}
-Since the raw episodic returns for Atari games vary widely in scale, a fair and not skewd comparison needed a normalization step. This is one of the reasons that prevented us from directly using tensorboard and wandb plots. We performed two distinct normalization procedures:
+Since the raw episodic returns for Atari games vary widely in scale, a fair and not skewed comparison needed a normalization step. This is the main (although not the only) reason that prevented us from directly using tensorboard and wandb plots. We performed two distinct normalization procedures:
 \begin{description}
-	\item[Human-Normalized Returns:] in this approach, for each game, we subtract the score of a random agent and divide by the difference between the human baseline and the random baseline. This is a standard practice in Atari benchmarks to contextualize performance relative to human play. Among the first to use this approach were the authors of~\cite{mnih:human}, from which we took the random policy and professional human player values used for normalization. The formula for obtaining the normalized value is: $x_{\text{norm}} = \frac{x - x_\text{random}}{x_\text{human} - x_\text{random}}$, where $x$ is the agent score, $x_\text{random}$ is the random policy score, and $x_\text{human}$ is the professional human player score.
-	\item[Min-Max Normalization:] a classic min-max scaling (\emph{i.e.}, $x_{\text{norm}} = \frac{x - x_{\min}}{x_{\max} - x_{\min}}$) on a per-game basis, where $x_{\min}$ and $x_{\max}$ come from the observed range of returns for that game, over training and evaluation of all algorithms.
+	\item[Human-Normalized Returns:] in this approach, for each game, we subtract the score of a random agent and divide by the difference between the human baseline and the random baseline. This is a standard practice in Atari benchmarks to contextualize performance relative to human play. Among the first to use this approach were the authors of~\cite{mnih:human}, from which we took the random policy and professional human player values used for normalization. The formula for obtaining the normalized value is: $x_{\text{norm}} = \frac{x - x_\text{random}}{x_\text{human} - x_\text{random}}$, where $x$ is the agent's score, $x_\text{random}$ is the random policy's score, and $x_\text{human}$ is the professional human player's score.
+	\item[Min-Max Normalization:] a classic min-max scaling ($x_{\text{norm}} = \frac{x - x_{\min}}{x_{\max} - x_{\min}}$) on a per-game basis, where $x_{\min}$ and $x_{\max}$ come from the observed range of returns for that game, over training and evaluation of all algorithms.
 \end{description}
 These normalized returns facilitate more intuitive cross-game comparisons, ensuring that no single game with unusually high or low rewards dominates the overall analysis. Since the relative comparison between the algorithms is the same with both normalizations, we can use indifferently either one of them based on which one produce a clearer plot.
 
@@ -267,7 +267,7 @@ In our pipeline, we therefore:
 The interpolation ensures that every run contributes to the curves at the same discrete set of training steps, simplifying the generation of \emph{mean} or \emph{min--max} envelopes. This was crucial for plotting aggregate performance over multiple runs.
 
 \subsubsection{Plot Generation and CSV Output}
-Following the interpolation and aggregation process, the final step was to produce consistent plots for each metric--algorithm pair. We used \texttt{matplotlib} to generate both raster (PNG) and vector (SVG) graphics. Additionally, the aggregated statistics for each plot were saved as a separate CSV file, allowing subsequent combinations of multiple algorithms on a single plot without re-running the entire pipeline.
+Following the interpolation and aggregation process, the final step was to produce consistent plots for each metric--algorithm pair. We used \emph{matplotlib} to generate both raster (PNG) and vector (SVG) graphics. Additionally, the aggregated statistics for each plot were saved as a separate CSV file, allowing subsequent combinations of multiple algorithms on a single plot without re-running the entire pipeline.
 
 Overall, this approach provided:
 \begin{itemize}
@@ -276,55 +276,3 @@ Overall, this approach provided:
 	\item Easy export to consistent plots and CSVs for further analysis.
 \end{itemize}
 By integrating custom plotting and data analysis with the logs from W\&B and TensorBoard, we ensure reproducibility and enable deeper insights into the trade-offs between performance and energy consumption across all tested algorithms.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%The training procedures for reinforcement learning experiments require careful tuning of hyperparameters to ensure stability and performance across different environments and algorithms. In this section, we provide an overview of the hyperparameters used across all experimental runs and discuss general trends in their configurations. We also highlight parameters included in the training setup that, while not hyperparameters in the traditional sense, influence the experimental procedure.
-%
-%\paragraph{General Hyperparameter Settings}
-%Across all experiments, we observe a set of common hyperparameter choices that are consistent with best practices in reinforcement learning literature. These include:
-%
-%\begin{itemize}
-%	\item \textbf{Total Timesteps:} All experiments are conducted over $100,000$ timesteps, ensuring uniform evaluation across different algorithms and environments.
-%	\item \textbf{Learning Rate:} A low learning rate is used, with values ranging from $0.0001$ (for DQN-based methods) to $0.00025$ or $0.0003$ (for policy-based methods like PPO and SAC). These values are chosen to balance stability and convergence speed.
-%	\item \textbf{Discount Factor $\gamma$:} Set to $0.99$ across all experiments, ensuring that the agent prioritizes long-term rewards.
-%	\item \textbf{Exploration Strategy:} For value-based methods, an $\epsilon$-greedy approach is used, starting at $\epsilon = 1$ and decaying to $\epsilon = 0.01$ over $10\%$ of training timesteps.
-%	\item \textbf{Batch Size:} Typically set to $32$ for DQN-based methods, while PPO and SAC use larger values such as $256$ or $1024$, reflecting their different training dynamics.
-%	\item \textbf{Target Network Update Frequency:} Set to $1000$ for methods utilizing a target network (e.g., DQN, SAC).
-%	\item \textbf{Replay Buffer Size:} Fixed at $10,000$ for DQN-based methods, and increased to $20,000$ for SAC.
-%	\item \textbf{Number of Environments:} While DQN and Reinforce use a single environment, PPO employs $8$ parallel environments to improve data efficiency.
-%\end{itemize}
-%
-%These hyperparameter values reflect common heuristics for stable reinforcement learning training, ensuring fair comparisons across algorithms.
-%
-%
-%\paragraph{Algorithm-Specific Considerations}
-%Each reinforcement learning algorithm has unique hyperparameter requirements and training considerations. Below, we highlight key aspects for each:
-%
-%\paragraph{Dueling DQN}
-%\begin{itemize}
-%	\item Uses a \textbf{target network update frequency} of $1000$ steps to stabilize training.
-%	\item Implements an \textbf{$\epsilon$-greedy exploration strategy} with a decay schedule.
-%\end{itemize}
-%
-%\paragraph{PPO (Proximal Policy Optimization)}
-%\begin{itemize}
-%	\item Utilizes \textbf{multiple epochs per update} (4) and \textbf{minibatches} (4) to process data efficiently.
-%	\item Uses \textbf{entropy regularization} ($0.01$) and \textbf{value function coefficient} ($0.5$) to balance exploration and stability.
-%	\item Implements \textbf{learning rate annealing} to improve convergence.
-%\end{itemize}
-%
-%\paragraph{SAC (Soft Actor-Critic)}
-%\begin{itemize}
-%	\item Uses \textbf{automatic entropy tuning} with a target entropy scale of $0.89$.
-%	\item Employs a \textbf{separate learning rate for policy and Q-networks} ($0.0003$).
-%	\item A larger \textbf{buffer size} ($20,000$) is used to improve sample efficiency.
-%\end{itemize}
-%
-%\paragraph{Reinforce}
-%\begin{itemize}
-%	\item Uses a simple \textbf{monte-carlo update} approach without replay buffers.
-%	\item Employs a \textbf{fixed learning rate} ($0.00025$) with no adaptive mechanisms.
-%\end{itemize}
-%
-%These details are expanded upon in the methodology sections dedicated to each algorithm.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

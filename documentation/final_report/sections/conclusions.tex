@@ -6,11 +6,11 @@ In this final section, we synthesize the findings and propose next steps.
 \label{subsec:summary_of_findings}
 This study systematically analyzed the energy efficiency and performance trade-offs of various deep reinforcement learning algorithms in a constrained computational setting (\num{100000} steps). The key findings are:
 \begin{itemize}
-	\item \textbf{Baseline DQN} demonstrated moderate performance across most environments, with an average emission of \num{0.0065} kg\,CO\textsubscript{2}. While Double DQN reduced Q-value overestimation, it did not provide a substantial improvement in returns  in this short-horizon setting.
-	\item \textbf{PER} overhead raises emissions slightly (\num{0.00725}\,kg\,CO\textsubscript{2}), yet the 100k-step limit masks much of its usual advantage in accelerating learning.
-	\item \textbf{PPO} emerged as the most energy-efficient method, completing training runs with the lowest carbon emissions (\num{0.0029}\,kg\,CO\textsubscript{2}) and shortest runtime (\num{2.4} hours) for all seeds/games combined. Despite this, it achieves respectable performance across many environments, making it a strong candidate for sustainability-conscious applications.
-	\item \textbf{SAC}, while excelling in specific environments (e.g., Breakout), had the highest computational cost (\num{0.015} kgCO\textsubscript{2}), slowest throughput (\num{80}–\num{100} SPS), and large variance in returns, making it less viable for short-horizon tasks.
-	\item \textbf{DQN-based algorithms} (e.g. Dueling DQN, C51) occupied a middle ground in emissions (\num{0.006}–\num{0.008} kgCO\textsubscript{2}) and training time (\num{5}–\num{7} hours), with some environment-specific benefits, but overall their aggregated returns remain similar to baseline DQN.
+	\item \textbf{Baseline DQN} demonstrated moderate performance across most environments, with an average emission of \num{0.0065} kg\,CO\textsubscript{2}\,eq. While Double DQN reduced Q-value overestimation, it did not provide a substantial improvement in returns  in this short-horizon setting.
+	\item \textbf{PER} overhead raises emissions slightly (\num{0.00725}\,kg\,CO\textsubscript{2}\,eq), yet the 100k-step limit masks much of its usual advantage in accelerating learning.
+	\item \textbf{PPO} emerged as the most energy-efficient method, completing training runs with the lowest carbon emissions (\num{0.0029}\,kg\,CO\textsubscript{2}\,eq) and shortest runtime (\num{2.4} hours) for all seeds/games combined. Despite this, it achieves respectable performance across many environments, making it a strong candidate for sustainability-conscious applications.
+	\item \textbf{SAC}, while excelling in specific environments (e.g., Breakout), had the highest computational cost (\num{0.015} kg\,CO\textsubscript{2\,eq}), slowest throughput (\num{80}–\num{100} SPS), and large variance in returns, making it less viable for short-horizon tasks.
+	\item \textbf{DQN-based algorithms} (e.g. Dueling DQN, C51) occupied a middle ground in emissions (\num{0.006}–\num{0.008} kg\,CO\textsubscript{2}\,eq) and training time (\num{5}–\num{7} hours), with some environment-specific benefits, but overall their aggregated returns remain similar to baseline DQN.
 	\item \textbf{Short-horizon benchmarks (100k steps)} limited the ability of more advanced methods to demonstrate their full potential.
 \end{itemize}
 These results underscore a fundamental trade-off in DRL: algorithms optimized for performance often incur higher computational costs, raising concerns about energy consumption and sustainability.
@@ -25,36 +25,6 @@ One of the emerging themes in recent AI developments is the role of \emph{reinfo
 
 \subsection{Future Research Directions}
 \label{subsec:future_research}
-
-%\paragraph{Longer Training Horizons}
-%Repeating these experiments at 1--5 million steps would clarify how advanced DQN tweaks 
-%or policy gradient expansions (Rainbow, TD3, etc.) surpass simpler baselines given more time. 
-%One might track the exact moment (in interactions) at which these enhancements repay 
-%their higher emissions.
-
-%\paragraph{Wider Environment Coverage}
-%Our 8 chosen games reasonably sample different Atari mechanics, but including 
-%the full 26 Atari 100k or 55+ ALE tasks 
-%could reveal whether certain algorithms generalize better to more varied or obscure games.
-
-%\paragraph{Real-Time Emissions Minimization}
-%One future direction might involve \emph{dynamic resource scheduling} or 
-%\emph{carbon-aware training}, adjusting GPU usage or frequency if real-time 
-%energy prices or carbon intensities fluctuate throughout the day. 
-%This idea merges RL with HPC (high-performance components) resource management for a truly "green AI".
-
-%\paragraph{CPU–GPU Profiling}
-%A more robust toolchain for CPU and RAM tracking
-%would help produce more accurate system-level carbon footprints, 
-%especially for on-policy methods that rely heavily on CPU-based data collection.
-
-%\paragraph{RL for LLMs Focus}
-%In reinforcement learning for LLMs the algorithm choice can have significant sustainability implications. Our results, which confirm that PPO consistently achieves lower carbon emissions and shorter training times even compared to simpler methods, suggest that PPO's dominance in RL fine-tuning might not only be justified by its robust performance but also by its favorable energy efficiency. Nonetheless, emerging proposals such as GRPO, or those discussed in~\cite{ahmadian:back_to_basics}, indicate that even simpler RL approaches might eventually be competitive. A systematic comparison of these methods in the context of LLM fine-tuning is warranted to determine whether further reductions in energy consumption can be achieved without sacrificing performance.
-
-%With these possible directions in mind, we hope that the insights gained from 
-%our 100k-step experiments can foster a broader conversation on 
-%\emph{energy-efficient deep RL}, balancing performance with real-world sustainability needs.
-
 Several avenues for future research emerge from this study:
 
 \begin{description}
