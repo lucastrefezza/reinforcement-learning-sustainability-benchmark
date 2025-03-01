@@ -2,7 +2,7 @@
 
 A benchmark among various reinforcement learning algorithms to assess the tradeoff between performance and costs in terms of energy and time.
 
-This project was developed as part of the Software Engineering for Artificial Intelligence course, therefore, in addition to the code, the repository contains the full documentation produced during the project development (see [final_report.pdf](documentation/final_report/final_report.pdf)).
+This project was developed as part of the *Software Engineering for Artificial Intelligence* course, therefore, in addition to the code, the repository contains the full documentation produced during the project development (see [final_report.pdf](documentation/final_report/final_report.pdf)).
 
 ## Overview
 
